@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="de">
-
 <head>
 
 <meta charset="UTF-8">
@@ -20,194 +19,163 @@ user-scalable=no">
 * {
     box-sizing: border-box;
     user-select: none;
+    -webkit-user-select: none;
 }
 
 body {
     margin: 0;
     overflow: hidden;
-    background: #101827;
-    font-family: Arial, sans-serif;
+    background: #0f172a;
+    font-family: Arial;
     color: white;
 }
 
 #menu {
-
     position: fixed;
     inset: 0;
+    z-index: 20;
 
     display: flex;
-
     flex-direction: column;
-
-    justify-content: center;
-
     align-items: center;
+    justify-content: center;
 
     gap: 12px;
 
     background:
-    linear-gradient(
-        135deg,
-        #0f172a,
-        #1e3a8a
+    radial-gradient(
+        circle at center,
+        #1e40af,
+        #020617
     );
-
-    z-index: 20;
 }
 
 #menu h1 {
-
     font-size: 42px;
-
-    margin: 0 0 15px;
-
     color: #38bdf8;
-
-    text-shadow:
-    0 0 15px #38bdf8;
+    text-shadow: 0 0 20px #38bdf8;
 }
 
 input,
 select,
 button {
-
-    width: 270px;
-
+    width: 280px;
     padding: 14px;
-
-    border: none;
-
-    border-radius: 10px;
-
+    border: 0;
+    border-radius: 12px;
     font-size: 16px;
 }
 
 button {
-
     background: #2563eb;
-
     color: white;
-
     font-weight: bold;
-
-    cursor: pointer;
-}
-
-button:hover {
-
-    background: #3b82f6;
 }
 
 #game {
-
     display: none;
-
     position: fixed;
-
     inset: 0;
 }
 
 canvas {
-
     width: 100%;
-
     height: 100%;
-
     display: block;
-
-    background: #263238;
 }
 
 #hud {
-
     position: fixed;
-
     top: 10px;
-
     left: 10px;
-
     z-index: 5;
 }
 
-.hudBox {
-
-    background: rgba(0,0,0,.65);
-
+.box {
+    background: rgba(0,0,0,.7);
     padding: 8px 14px;
-
     border-radius: 8px;
-
     margin-bottom: 5px;
 }
 
 #joystick {
-
     position: fixed;
 
-    width: 130px;
-
-    height: 130px;
-
     left: 25px;
-
     bottom: 25px;
+
+    width: 140px;
+    height: 140px;
 
     border-radius: 50%;
 
     background:
-    rgba(255,255,255,.15);
+    rgba(255,255,255,.12);
 
     border:
-    2px solid
+    3px solid
     rgba(255,255,255,.3);
 
     z-index: 10;
 }
 
 #stick {
-
     position: absolute;
 
-    width: 55px;
+    left: 40px;
+    top: 40px;
 
-    height: 55px;
-
-    left: 36px;
-
-    top: 36px;
+    width: 60px;
+    height: 60px;
 
     border-radius: 50%;
 
     background:
-    rgba(255,255,255,.7);
+    rgba(255,255,255,.75);
 }
 
 #shoot {
-
     position: fixed;
 
     right: 25px;
-
     bottom: 40px;
 
-    width: 100px;
-
-    height: 100px;
+    width: 105px;
+    height: 105px;
 
     border-radius: 50%;
 
     background: #ef4444;
 
-    border: 4px solid white;
+    border: 5px solid white;
 
     z-index: 10;
+
+    font-size: 25px;
 }
 
-@media (min-width: 900px) {
+#weapon {
+    position: fixed;
+
+    bottom: 10px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    background:
+    rgba(0,0,0,.7);
+
+    padding: 10px 20px;
+
+    border-radius: 12px;
+
+    z-index: 5;
+}
+
+@media(min-width:900px) {
 
     #joystick,
     #shoot {
-
         display: none;
     }
 }
@@ -228,20 +196,104 @@ placeholder="Dein Name">
 
 <select id="skin">
 
-<option value="blue">
-🔵 Blau
+<option value="standard">
+⭐ Standard
 </option>
 
-<option value="red">
-🔴 Rot
+<option value="rare1">
+🔵 Selten 1
 </option>
 
-<option value="green">
-🟢 Grün
+<option value="rare2">
+🔵 Selten 2
 </option>
 
-<option value="gold">
-🟡 Gold
+<option value="rare3">
+🔵 Selten 3
+</option>
+
+<option value="rare4">
+🔵 Selten 4
+</option>
+
+<option value="rare5">
+🔵 Selten 5
+</option>
+
+<option value="super1">
+🟣 Superselten 1
+</option>
+
+<option value="super2">
+🟣 Superselten 2
+</option>
+
+<option value="super3">
+🟣 Superselten 3
+</option>
+
+<option value="super4">
+🟣 Superselten 4
+</option>
+
+<option value="super5">
+🟣 Superselten 5
+</option>
+
+<option value="epic1">
+🟪 Episch 1
+</option>
+
+<option value="epic2">
+🟪 Episch 2
+</option>
+
+<option value="epic3">
+🟪 Episch 3
+</option>
+
+<option value="epic4">
+🟪 Episch 4
+</option>
+
+<option value="epic5">
+🟪 Episch 5
+</option>
+
+<option value="mythic1">
+🟠 Mythisch 1
+</option>
+
+<option value="mythic2">
+🟠 Mythisch 2
+</option>
+
+<option value="mythic3">
+🟠 Mythisch 3
+</option>
+
+<option value="mythic4">
+🟠 Mythisch 4
+</option>
+
+<option value="mythic5">
+🟠 Mythisch 5
+</option>
+
+<option value="legend1">
+🟡 Legendär 1
+</option>
+
+<option value="legend2">
+🟡 Legendär 2
+</option>
+
+<option value="legend3">
+🟡 Legendär 3
+</option>
+
+<option value="special">
+👑 SPEZIAL 2001
 </option>
 
 </select>
@@ -279,11 +331,11 @@ placeholder="Dein Name">
 </button>
 
 <input
-id="roomCode"
+id="room"
 placeholder="Raum-Code">
 
 <button onclick="joinRoom()">
-👥 Raum beitreten
+👥 Beitreten
 </button>
 
 </div>
@@ -294,15 +346,24 @@ placeholder="Raum-Code">
 
 <div id="hud">
 
-<div class="hudBox">
-❤️ <span id="health">100</span>
+<div class="box">
+❤️ <span id="hp">100</span>
 </div>
 
-<div class="hudBox">
+<div class="box">
+💀 Kills:
+<span id="kills">0</span>
+</div>
+
+<div class="box">
 🏠 Raum:
-<span id="roomDisplay">---</span>
+<span id="roomText">---</span>
 </div>
 
+</div>
+
+<div id="weapon">
+🔫 <span id="weaponName">---</span>
 </div>
 
 <div id="joystick">
@@ -312,7 +373,7 @@ placeholder="Raum-Code">
 </div>
 
 <button id="shoot">
-🔫
+🔥
 </button>
 
 </div>
@@ -327,82 +388,95 @@ document.getElementById("canvas");
 const ctx =
 canvas.getContext("2d");
 
-let W;
-let H;
+let W = innerWidth;
+let H = innerHeight;
 
-function resize() {
-
-    W = canvas.width =
-    window.innerWidth;
-
-    H = canvas.height =
-    window.innerHeight;
-}
-
-resize();
+canvas.width = W;
+canvas.height = H;
 
 window.addEventListener(
 "resize",
-resize
+() => {
+
+    W = innerWidth;
+    H = innerHeight;
+
+    canvas.width = W;
+    canvas.height = H;
+
+});
+
+let kills =
+Number(
+localStorage.getItem(
+"battleKills"
+) || 0
 );
+
+document.getElementById(
+"kills"
+).textContent = kills;
 
 let player = {
 
-    x: 400,
-
-    y: 300,
+    x: W / 2,
+    y: H / 2,
 
     hp: 100,
 
-    skin: "blue"
+    alive: true,
+
+    skin: "standard",
+
+    weapon: ""
 };
 
-let players = {};
+let entities = {};
 
 let bullets = [];
 
 let keys = {};
 
-let joystickX = 0;
-let joystickY = 0;
+let joyX = 0;
+let joyY = 0;
 
-let mouseX = 500;
-let mouseY = 300;
+let aimX = W / 2 + 100;
+let aimY = H / 2;
 
 const walls = [
 
     {
-        x: 150,
-        y: 120,
-        w: 250,
+        x: W * .1,
+        y: H * .2,
+        w: 230,
         h: 35
     },
 
     {
-        x: 600,
-        y: 120,
-        w: 250,
+        x: W * .65,
+        y: H * .2,
+        w: 230,
         h: 35
     },
 
     {
-        x: 150,
-        y: 500,
-        w: 250,
+        x: W * .1,
+        y: H * .7,
+        w: 230,
         h: 35
     },
 
     {
-        x: 600,
-        y: 500,
-        w: 250,
+        x: W * .65,
+        y: H * .7,
+        w: 230,
         h: 35
     },
 
     {
-        x: 450,
-        y: 250,
-        w: 100,
+        x: W * .43,
+        y: H * .35,
+        w: 110,
         h: 220
     }
 
@@ -410,26 +484,26 @@ const walls = [
 
 document.addEventListener(
 "keydown",
-(e) => {
+e => {
 
-    keys[e.key.toLowerCase()] = true;
+    keys[e.key] = true;
 
 });
 
 document.addEventListener(
 "keyup",
-(e) => {
+e => {
 
-    keys[e.key.toLowerCase()] = false;
+    keys[e.key] = false;
 
 });
 
 canvas.addEventListener(
 "mousemove",
-(e) => {
+e => {
 
-    mouseX = e.clientX;
-    mouseY = e.clientY;
+    aimX = e.clientX;
+    aimY = e.clientY;
 
 });
 
@@ -442,13 +516,15 @@ document
 .getElementById("shoot")
 .addEventListener(
 "touchstart",
-(e) => {
+e => {
 
     e.preventDefault();
 
     shoot();
 
-});
+},
+{passive:false}
+);
 
 function createRoom() {
 
@@ -500,9 +576,8 @@ function joinRoom() {
 
             code:
             document.getElementById(
-                "roomCode"
-            ).value
-            .toUpperCase()
+                "room"
+            ).value.toUpperCase()
 
         }
     );
@@ -511,104 +586,144 @@ function joinRoom() {
 
 socket.on(
 "roomCreated",
-(code) => {
+data => {
 
-    startGame(code);
+    start(data.code);
 
 });
 
 socket.on(
 "joinedRoom",
-(code) => {
+data => {
 
-    startGame(code);
+    start(data.code);
 
 });
 
 socket.on(
 "errorMessage",
-(message) => {
+msg => {
 
-    alert(message);
-
-});
-
-socket.on(
-"roomUpdate",
-(data) => {
-
-    players =
-    data.players || {};
+    alert(msg);
 
 });
 
 socket.on(
-"playerMove",
-(p) => {
+"state",
+data => {
 
-    players[p.id] = p;
+    entities = data.players || {};
+
+    for (
+        const bot of data.bots || []
+    ) {
+
+        entities[bot.id] = bot;
+
+    }
 
 });
 
 socket.on(
-"shot",
-(b) => {
+"bullet",
+data => {
 
     bullets.push({
 
-        x: b.x,
+        x: data.x,
+        y: data.y,
 
-        y: b.y,
+        dx: data.dx,
+        dy: data.dy,
 
-        dx: b.dx,
+        damage: data.damage,
 
-        dy: b.dy,
+        color: data.color,
 
-        owner: b.id
+        owner: data.owner
 
     });
 
 });
 
-function startGame(code) {
+socket.on(
+"elimination",
+data => {
+
+    if (
+        data.killer ===
+        document.getElementById(
+            "name"
+        ).value
+    ) {
+
+        kills++;
+
+        localStorage.setItem(
+            "battleKills",
+            kills
+        );
+
+        document.getElementById(
+            "kills"
+        ).textContent =
+        kills;
+
+    }
+
+});
+
+function start(code) {
 
     document.getElementById(
         "menu"
-    ).style.display = "none";
+    ).style.display =
+    "none";
 
     document.getElementById(
         "game"
-    ).style.display = "block";
+    ).style.display =
+    "block";
 
     document.getElementById(
-        "roomDisplay"
-    ).textContent = code;
+        "roomText"
+    ).textContent =
+    code;
 
 }
 
 function blocked(x,y) {
 
-    for (const wall of walls) {
+    for (
+        const wall of walls
+    ) {
 
         if (
 
-            x > wall.x - 20 &&
+            x > wall.x - 22 &&
 
-            x < wall.x +
-            wall.w + 20 &&
+            x <
+            wall.x +
+            wall.w +
+            22 &&
 
-            y > wall.y - 20 &&
+            y > wall.y - 22 &&
 
-            y < wall.y +
-            wall.h + 20
+            y <
+            wall.y +
+            wall.h +
+            22
 
         ) {
 
             return true;
+
         }
+
     }
 
     return false;
+
 }
 
 function move() {
@@ -616,43 +731,49 @@ function move() {
     let dx = 0;
     let dy = 0;
 
+    // NUR PFEILTASTEN
+
     if (
-        keys["w"] ||
-        keys["arrowup"]
+        keys["ArrowUp"]
     ) dy -= 4;
 
     if (
-        keys["s"] ||
-        keys["arrowdown"]
+        keys["ArrowDown"]
     ) dy += 4;
 
     if (
-        keys["a"] ||
-        keys["arrowleft"]
+        keys["ArrowLeft"]
     ) dx -= 4;
 
     if (
-        keys["d"] ||
-        keys["arrowright"]
+        keys["ArrowRight"]
     ) dx += 4;
 
-    dx += joystickX * 4;
-    dy += joystickY * 4;
+    // MOBILE
 
-    if (!blocked(
-        player.x + dx,
-        player.y
-    )) {
+    dx += joyX * 4;
+    dy += joyY * 4;
+
+    if (
+        !blocked(
+            player.x + dx,
+            player.y
+        )
+    ) {
 
         player.x += dx;
+
     }
 
-    if (!blocked(
-        player.x,
-        player.y + dy
-    )) {
+    if (
+        !blocked(
+            player.x,
+            player.y + dy
+        )
+    ) {
 
         player.y += dy;
+
     }
 
     player.x =
@@ -685,18 +806,20 @@ function move() {
 
 function shoot() {
 
+    if (!player.alive)
+        return;
+
     const angle =
     Math.atan2(
-        mouseY - player.y,
-        mouseX - player.x
+        aimY - player.y,
+        aimX - player.x
     );
 
-    const speed = 10;
+    const speed = 12;
 
     bullets.push({
 
         x: player.x,
-
         y: player.y,
 
         dx:
@@ -707,6 +830,10 @@ function shoot() {
         Math.sin(angle) *
         speed,
 
+        damage: 15,
+
+        color: "#facc15",
+
         owner: "me"
 
     });
@@ -716,7 +843,6 @@ function shoot() {
         {
 
             x: player.x,
-
             y: player.y,
 
             dx:
@@ -732,18 +858,50 @@ function shoot() {
 
 }
 
-function colorForSkin(skin) {
+function skinColor(skin) {
 
-    if (skin === "red")
-        return "#ef4444";
+    if (
+        skin.startsWith("rare")
+    )
+        return "#38bdf8";
 
-    if (skin === "green")
-        return "#22c55e";
+    if (
+        skin.startsWith("super")
+    )
+        return "#a855f7";
 
-    if (skin === "gold")
+    if (
+        skin.startsWith("epic")
+    )
+        return "#ec4899";
+
+    if (
+        skin.startsWith("mythic")
+    )
+        return "#f97316";
+
+    if (
+        skin.startsWith("legend")
+    )
         return "#facc15";
 
-    return "#3b82f6";
+    if (
+        skin === "special"
+    )
+        return "#ffffff";
+
+    if (
+        skin === "botRed"
+    )
+        return "#ef4444";
+
+    if (
+        skin === "botBlue"
+    )
+        return "#3b82f6";
+
+    return "#64748b";
+
 }
 
 function drawCharacter(
@@ -753,42 +911,85 @@ function drawCharacter(
     name
 ) {
 
+    const color =
+    skinColor(skin);
+
+    // Schatten
+
     ctx.fillStyle =
-    colorForSkin(skin);
+    "rgba(0,0,0,.3)";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        x,
+        y + 18,
+        22,
+        9,
+        0,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+    // Körper
+
+    ctx.fillStyle =
+    color;
+
+    ctx.beginPath();
+
+    ctx.roundRect(
+        x - 18,
+        y - 10,
+        36,
+        38,
+        10
+    );
+
+    ctx.fill();
+
+    // Kopf
 
     ctx.beginPath();
 
     ctx.arc(
         x,
-        y,
-        22,
+        y - 18,
+        15,
         0,
         Math.PI * 2
     );
 
     ctx.fill();
 
-    ctx.fillStyle = "white";
+    // Augen
+
+    ctx.fillStyle =
+    "white";
 
     ctx.beginPath();
 
     ctx.arc(
-        x - 7,
-        y - 5,
+        x - 5,
+        y - 20,
         3,
         0,
         Math.PI * 2
     );
 
     ctx.arc(
-        x + 7,
-        y - 5,
+        x + 5,
+        y - 20,
         3,
         0,
         Math.PI * 2
     );
 
     ctx.fill();
+
+    // Name
 
     ctx.font =
     "12px Arial";
@@ -800,128 +1001,14 @@ function drawCharacter(
     "white";
 
     ctx.fillText(
-        name || "Player",
+        name,
         x,
-        y - 30
+        y - 42
     );
 
 }
 
-function draw() {
-
-    ctx.clearRect(
-        0,
-        0,
-        W,
-        H
-    );
-
-    // Boden
-
-    ctx.fillStyle =
-    "#334155";
-
-    ctx.fillRect(
-        0,
-        0,
-        W,
-        H
-    );
-
-    // Raster
-
-    ctx.strokeStyle =
-    "rgba(255,255,255,.04)";
-
-    for (
-        let x = 0;
-        x < W;
-        x += 40
-    ) {
-
-        ctx.beginPath();
-
-        ctx.moveTo(x,0);
-
-        ctx.lineTo(x,H);
-
-        ctx.stroke();
-
-    }
-
-    for (
-        let y = 0;
-        y < H;
-        y += 40
-    ) {
-
-        ctx.beginPath();
-
-        ctx.moveTo(0,y);
-
-        ctx.lineTo(W,y);
-
-        ctx.stroke();
-
-    }
-
-    // Wände
-
-    for (const wall of walls) {
-
-        ctx.fillStyle =
-        "#475569";
-
-        ctx.fillRect(
-            wall.x,
-            wall.y,
-            wall.w,
-            wall.h
-        );
-
-        ctx.strokeStyle =
-        "#94a3b8";
-
-        ctx.strokeRect(
-            wall.x,
-            wall.y,
-            wall.w,
-            wall.h
-        );
-
-    }
-
-    // Spieler
-
-    drawCharacter(
-        player.x,
-        player.y,
-        player.skin,
-        "DU"
-    );
-
-    // Andere Spieler
-
-    for (
-        const id in players
-    ) {
-
-        if (id === socket.id)
-            continue;
-
-        const p =
-        players[id];
-
-        drawCharacter(
-            p.x,
-            p.y,
-            p.skin,
-            p.name
-        );
-
-    }
-
-    // Schüsse
+function updateBullets() {
 
     for (
         let i = bullets.length - 1;
@@ -941,6 +1028,8 @@ function draw() {
         b.x += b.dx;
         b.y += b.dy;
 
+        // Wand getroffen
+
         if (
             blocked(
                 b.x,
@@ -948,16 +1037,14 @@ function draw() {
             )
         ) {
 
-            // Treffer-Effekt
-
             ctx.fillStyle =
             "#facc15";
 
             ctx.beginPath();
 
             ctx.arc(
-                oldX,
-                oldY,
+                b.x,
+                b.y,
                 12,
                 0,
                 Math.PI * 2
@@ -971,12 +1058,15 @@ function draw() {
             );
 
             continue;
+
         }
 
-        ctx.strokeStyle =
-        "#facc15";
+        // Projektil sichtbar
 
-        ctx.lineWidth = 4;
+        ctx.strokeStyle =
+        b.color;
+
+        ctx.lineWidth = 5;
 
         ctx.beginPath();
 
@@ -993,7 +1083,7 @@ function draw() {
         ctx.stroke();
 
         ctx.fillStyle =
-        "#fff";
+        "white";
 
         ctx.beginPath();
 
@@ -1023,95 +1113,107 @@ function draw() {
 
     }
 
-    requestAnimationFrame(
-        draw
-    );
-
 }
 
-function joystickStart(e) {
+function drawGame() {
 
-    e.preventDefault();
-
-    joystickMove(e);
-
-}
-
-function joystickMove(e) {
-
-    e.preventDefault();
-
-    const touch =
-    e.touches[0];
-
-    if (!touch) return;
-
-    const joystick =
-    document.getElementById(
-        "joystick"
+    ctx.clearRect(
+        0,
+        0,
+        W,
+        H
     );
 
-    const rect =
-    joystick.getBoundingClientRect();
+    ctx.fillStyle =
+    "#334155";
 
-    const centerX =
-    rect.left +
-    rect.width / 2;
-
-    const centerY =
-    rect.top +
-    rect.height / 2;
-
-    let dx =
-    touch.clientX -
-    centerX;
-
-    let dy =
-    touch.clientY -
-    centerY;
-
-    const max = 40;
-
-    const distance =
-    Math.sqrt(
-        dx * dx +
-        dy * dy
+    ctx.fillRect(
+        0,
+        0,
+        W,
+        H
     );
 
-    if (distance > max) {
+    // Wände
 
-        dx =
-        dx / distance *
-        max;
+    for (
+        const wall of walls
+    ) {
 
-        dy =
-        dy / distance *
-        max;
+        ctx.fillStyle =
+        "#475569";
+
+        ctx.fillRect(
+            wall.x,
+            wall.y,
+            wall.w,
+            wall.h
+        );
+
+        ctx.strokeStyle =
+        "#94a3b8";
+
+        ctx.lineWidth = 3;
+
+        ctx.strokeRect(
+            wall.x,
+            wall.y,
+            wall.w,
+            wall.h
+        );
+
     }
 
-    joystickX =
-    dx / max;
+    move();
 
-    joystickY =
-    dy / max;
+    drawCharacter(
+        player.x,
+        player.y,
+        player.skin,
+        "DU"
+    );
+
+    for (
+        const id in entities
+    ) {
+
+        const p =
+        entities[id];
+
+        if (
+            id === socket.id
+        )
+            continue;
+
+        if (
+            p.alive === false
+        )
+            continue;
+
+        drawCharacter(
+            p.x,
+            p.y,
+            p.skin,
+            p.name
+        );
+
+    }
+
+    updateBullets();
 
     document.getElementById(
-        "stick"
-    ).style.transform =
-    `translate(${dx}px,${dy}px)`;
-
-}
-
-function joystickEnd() {
-
-    joystickX = 0;
-
-    joystickY = 0;
+        "hp"
+    ).textContent =
+    player.hp;
 
     document.getElementById(
-        "stick"
-    ).style.transform =
-    "translate(0,0)";
+        "weaponName"
+    ).textContent =
+    player.weapon || "Random";
+
+    requestAnimationFrame(
+        drawGame
+    );
 
 }
 
@@ -1120,9 +1222,75 @@ document.getElementById(
     "joystick"
 );
 
+const stick =
+document.getElementById(
+    "stick"
+);
+
+function joystickMove(e) {
+
+    e.preventDefault();
+
+    const touch =
+    e.touches[0];
+
+    if (!touch)
+        return;
+
+    const r =
+    joystick.getBoundingClientRect();
+
+    const cx =
+    r.left + r.width / 2;
+
+    const cy =
+    r.top + r.height / 2;
+
+    let dx =
+    touch.clientX - cx;
+
+    let dy =
+    touch.clientY - cy;
+
+    const max = 42;
+
+    const d =
+    Math.hypot(dx,dy);
+
+    if (d > max) {
+
+        dx =
+        dx / d * max;
+
+        dy =
+        dy / d * max;
+
+    }
+
+    joyX =
+    dx / max;
+
+    joyY =
+    dy / max;
+
+    stick.style.transform =
+    `translate(${dx}px,${dy}px)`;
+
+}
+
+function joystickEnd() {
+
+    joyX = 0;
+    joyY = 0;
+
+    stick.style.transform =
+    "translate(0,0)";
+
+}
+
 joystick.addEventListener(
 "touchstart",
-joystickStart,
+joystickMove,
 {passive:false}
 );
 
@@ -1137,10 +1305,9 @@ joystick.addEventListener(
 joystickEnd
 );
 
-draw();
+drawGame();
 
 </script>
 
 </body>
-
 </html>
