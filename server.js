@@ -1,665 +1,146 @@
+const express = require("express");
 const http = require("http");
-const WebSocket = require("ws");
+const path = require("path");
+const { Server } = require("socket.io");
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
 const PORT = process.env.PORT || 10000;
 
-const server = http.createServer((req, res) => {
-    res.writeHead(200);
-    res.end("Battle Zone Server läuft!");
-});
-
-const wss = new WebSocket.Server({ server });
+app.use(express.static(path.join(__dirname)));
 
 const rooms = {};
 
-const weapons = [
-    "pistol",
-    "smg",
-    "shotgun",
-    "sniper",
-    "sword",
-    "hammer"
-];
+function createCode() {
+    let code;
 
-const colors = [
-    "#3498db",
-    "#e74c3c",
-    "#9b59b6",
-    "#f1c40f",
-    "#1abc9c",
-    "#e67e22"
-];
+    do {
+        code = Math.random()
+            .toString(36)
+            .substring(2, 6)
+            .toUpperCase();
+    } while (rooms[code]);
 
-let nextId = 1;
-
-function randomWeapon() {
-    return weapons[
-        Math.floor(Math.random() * weapons.length)
-    ];
+    return code;
 }
 
-function randomPosition() {
-    return {
-        x: 100 + Math.random() * 800,
-        y: 80 + Math.random() * 490
-    };
-}
+function sendRoom(code) {
+    if (!rooms[code]) return;
 
-function createBot(room, number) {
-
-    const pos = randomPosition();
-
-    const bot = {
-        id: "bot-" + number + "-" + Date.now(),
-        bot: true,
-        x: pos.x,
-        y: pos.y,
-        hp: 100,
-        shield: 50,
-        kills: 0,
-        level: 1,
-        alive: true,
-        weapon: weapons[number % weapons.length],
-        color: colors[number % colors.length],
-        angle: Math.random() * Math.PI * 2,
-        target: null
-    };
-
-    room.players[bot.id] = bot;
-
-    console.log(
-        "Bot erstellt:",
-        bot.id,
-        bot.weapon
-    );
-}
-
-function createBots(room) {
-
-    // Nicht doppelt erstellen
-    if (room.botsCreated) return;
-
-    room.botsCreated = true;
-
-    for (let i = 0; i < 5; i++) {
-        createBot(room, i);
-    }
-
-    console.log("5 Bots wurden erstellt!");
-}
-
-function broadcast(room) {
-
-    const data = JSON.stringify({
-        type: "state",
-        players: room.players
-    });
-
-    room.clients.forEach(ws => {
-
-        if (ws.readyState === WebSocket.OPEN) {
-            ws.send(data);
-        }
-
+    io.to(code).emit("roomUpdate", {
+        players: rooms[code].players,
+        bots: rooms[code].bots
     });
 }
 
-function startBotAI(room) {
+io.on("connection", (socket) => {
 
-    if (room.aiStarted) return;
+    console.log("Spieler verbunden:", socket.id);
 
-    room.aiStarted = true;
+    socket.on("createRoom", (data) => {
 
-    setInterval(() => {
+        const code = createCode();
 
-        const bots =
-            Object.values(room.players)
-            .filter(p => p.bot && p.alive);
+        rooms[code] = {
+            bots: Number(data.bots) || 0,
+            players: {}
+        };
 
-        const humans =
-            Object.values(room.players)
-            .filter(p => !p.bot && p.alive);
+        rooms[code].players[socket.id] = {
+            id: socket.id,
+            name: data.name || "Player",
+            skin: data.skin || "blue",
+            x: 300,
+            y: 300,
+            hp: 100
+        };
 
-        for (const bot of bots) {
+        socket.join(code);
+        socket.room = code;
 
-            let targets = [
-                ...humans,
-                ...bots.filter(
-                    b => b.id !== bot.id
-                )
-            ];
+        socket.emit("roomCreated", code);
 
-            if (targets.length === 0) continue;
+        sendRoom(code);
+    });
 
-            // Nächstes Ziel suchen
-            targets.sort((a, b) => {
+    socket.on("joinRoom", (data) => {
 
-                const da =
-                    Math.hypot(
-                        a.x - bot.x,
-                        a.y - bot.y
-                    );
+        const code = String(data.code || "").toUpperCase();
+        const room = rooms[code];
 
-                const db =
-                    Math.hypot(
-                        b.x - bot.x,
-                        b.y - bot.y
-                    );
-
-                return da - db;
-            });
-
-            const target = targets[0];
-
-            const dx =
-                target.x - bot.x;
-
-            const dy =
-                target.y - bot.y;
-
-            const distance =
-                Math.hypot(dx, dy);
-
-            bot.angle =
-                Math.atan2(dy, dx);
-
-            // Bot bewegt sich zum Ziel
-            if (distance > 100) {
-
-                bot.x +=
-                    (dx / distance) * 3;
-
-                bot.y +=
-                    (dy / distance) * 3;
-            }
-
-            // Angreifen
-            if (distance < 350) {
-
-                bot.lastShot =
-                    bot.lastShot || 0;
-
-                if (
-                    Date.now() -
-                    bot.lastShot >
-                    700
-                ) {
-
-                    bot.lastShot =
-                        Date.now();
-
-                    attack(
-                        room,
-                        bot,
-                        target
-                    );
-                }
-            }
-
-            // Karte begrenzen
-            bot.x =
-                Math.max(
-                    35,
-                    Math.min(
-                        965,
-                        bot.x
-                    )
-                );
-
-            bot.y =
-                Math.max(
-                    35,
-                    Math.min(
-                        615,
-                        bot.y
-                    )
-                );
-        }
-
-        broadcast(room);
-
-    }, 100);
-}
-
-function attack(room, attacker, target) {
-
-    if (!target.alive) return;
-
-    let damage = 10;
-
-    switch (attacker.weapon) {
-
-        case "pistol":
-            damage = 10;
-            break;
-
-        case "smg":
-            damage = 7;
-            break;
-
-        case "shotgun":
-            damage = 18;
-            break;
-
-        case "sniper":
-            damage = 25;
-            break;
-
-        case "sword":
-            damage = 20;
-            break;
-
-        case "hammer":
-            damage = 24;
-            break;
-    }
-
-    // Nahkampf braucht Nähe
-    if (
-        attacker.weapon === "sword" ||
-        attacker.weapon === "hammer"
-    ) {
-
-        const distance =
-            Math.hypot(
-                attacker.x - target.x,
-                attacker.y - target.y
-            );
-
-        if (distance > 90) return;
-    }
-
-    // Schild zuerst
-    if (target.shield > 0) {
-
-        target.shield -= damage;
-
-        if (target.shield < 0) {
-
-            target.hp +=
-                target.shield;
-
-            target.shield = 0;
-        }
-
-    } else {
-
-        target.hp -= damage;
-    }
-
-    if (target.hp <= 0) {
-
-        target.hp = 0;
-        target.alive = false;
-
-        attacker.kills++;
-
-        attacker.level =
-            1 +
-            Math.floor(
-                attacker.kills / 2
-            );
-
-        setTimeout(() => {
-
-            respawn(room, target);
-
-        }, 3000);
-    }
-}
-
-function respawn(room, player) {
-
-    const pos =
-        randomPosition();
-
-    player.x = pos.x;
-    player.y = pos.y;
-
-    player.hp = 100;
-    player.shield = 50;
-    player.alive = true;
-}
-
-wss.on("connection", ws => {
-
-    const id =
-        "player-" + nextId++;
-
-    ws.playerId = id;
-
-    ws.send(JSON.stringify({
-        type: "id",
-        id: id
-    }));
-
-    ws.on("message", message => {
-
-        let data;
-
-        try {
-            data = JSON.parse(message);
-        } catch {
+        if (!room) {
+            socket.emit("errorMessage", "Dieser Raum existiert nicht.");
             return;
         }
 
-        // Raum erstellen
-        if (data.type === "create") {
-
-            const roomCode =
-                data.room || "ROOM";
-
-            rooms[roomCode] = {
-
-                players: {},
-
-                clients: new Set(),
-
-                botsCreated: false,
-
-                aiStarted: false
-            };
-
-            const room =
-                rooms[roomCode];
-
-            room.clients.add(ws);
-
-            const pos =
-                randomPosition();
-
-            room.players[id] = {
-
-                id,
-
-                bot: false,
-
-                x: pos.x,
-
-                y: pos.y,
-
-                hp: 100,
-
-                shield: 50,
-
-                kills: 0,
-
-                level: 1,
-
-                alive: true,
-
-                weapon: randomWeapon(),
-
-                color: "#ffffff",
-
-                angle: 0
-            };
-
-            ws.room = roomCode;
-
-            // HIER werden die 5 Bots erstellt
-            createBots(room);
-
-            startBotAI(room);
-
-            ws.send(JSON.stringify({
-                type: "created",
-                room: roomCode
-            }));
-
-            broadcast(room);
-        }
-
-        // Raum beitreten
-        if (data.type === "join") {
-
-            const room =
-                rooms[data.room];
-
-            if (!room) {
-
-                ws.send(JSON.stringify({
-                    type: "error",
-                    message: "Raum nicht gefunden"
-                }));
-
-                return;
-            }
-
-            room.clients.add(ws);
-
-            const pos =
-                randomPosition();
-
-            room.players[id] = {
-
-                id,
-
-                bot: false,
-
-                x: pos.x,
-
-                y: pos.y,
-
-                hp: 100,
-
-                shield: 50,
-
-                kills: 0,
-
-                level: 1,
-
-                alive: true,
-
-                weapon: randomWeapon(),
-
-                color: "#ffffff",
-
-                angle: 0
-            };
-
-            ws.room = data.room;
-
-            createBots(room);
-
-            startBotAI(room);
-
-            ws.send(JSON.stringify({
-                type: "joined",
-                room: data.room
-            }));
-
-            broadcast(room);
-        }
-
-        // Spieler bewegen
-        if (
-            data.type === "move" &&
-            ws.room
-        ) {
-
-            const room =
-                rooms[ws.room];
-
-            const player =
-                room.players[id];
-
-            if (!player || !player.alive)
-                return;
-
-            const length =
-                Math.hypot(
-                    data.dx,
-                    data.dy
-                );
-
-            if (length === 0)
-                return;
-
-            player.x +=
-                (data.dx / length) * 5;
-
-            player.y +=
-                (data.dy / length) * 5;
-
-            player.x =
-                Math.max(
-                    25,
-                    Math.min(
-                        975,
-                        player.x
-                    )
-                );
-
-            player.y =
-                Math.max(
-                    25,
-                    Math.min(
-                        625,
-                        player.y
-                    )
-                );
-
-            broadcast(room);
-        }
-
-        // Zielen
-        if (
-            data.type === "aim" &&
-            ws.room
-        ) {
-
-            const room =
-                rooms[ws.room];
-
-            const player =
-                room.players[id];
-
-            if (player) {
-                player.angle =
-                    data.angle;
-            }
-        }
-
-        // Schießen
-        if (
-            data.type === "shoot" &&
-            ws.room
-        ) {
-
-            const room =
-                rooms[ws.room];
-
-            const attacker =
-                room.players[id];
-
-            if (!attacker || !attacker.alive)
-                return;
-
-            let closest = null;
-            let closestDistance = 9999;
-
-            Object.values(
-                room.players
-            ).forEach(target => {
-
-                if (
-                    target.id === attacker.id ||
-                    !target.alive
-                ) return;
-
-                const dx =
-                    target.x -
-                    attacker.x;
-
-                const dy =
-                    target.y -
-                    attacker.y;
-
-                const distance =
-                    Math.hypot(dx, dy);
-
-                if (
-                    distance <
-                    closestDistance
-                ) {
-
-                    const angle =
-                        Math.atan2(
-                            dy,
-                            dx
-                        );
-
-                    let difference =
-                        Math.abs(
-                            angle -
-                            data.angle
-                        );
-
-                    if (
-                        difference >
-                        Math.PI
-                    ) {
-                        difference =
-                            Math.PI * 2 -
-                            difference;
-                    }
-
-                    if (
-                        difference <
-                        0.35
-                    ) {
-
-                        closest =
-                            target;
-
-                        closestDistance =
-                            distance;
-                    }
-                }
-            });
-
-            if (closest) {
-
-                attack(
-                    room,
-                    attacker,
-                    closest
-                );
-            }
-
-            broadcast(room);
-        }
+        room.players[socket.id] = {
+            id: socket.id,
+            name: data.name || "Player",
+            skin: data.skin || "blue",
+            x: 700,
+            y: 300,
+            hp: 100
+        };
+
+        socket.join(code);
+        socket.room = code;
+
+        socket.emit("joinedRoom", code);
+
+        sendRoom(code);
     });
 
-    ws.on("close", () => {
+    socket.on("move", (data) => {
 
-        if (!ws.room) return;
+        const code = socket.room;
 
-        const room =
-            rooms[ws.room];
+        if (!code || !rooms[code]) return;
 
-        if (!room) return;
+        const p = rooms[code].players[socket.id];
 
-        delete room.players[id];
+        if (!p) return;
 
-        room.clients.delete(ws);
+        p.x = data.x;
+        p.y = data.y;
 
-        broadcast(room);
-
+        socket.to(code).emit("playerMove", p);
     });
 
+    socket.on("shoot", (data) => {
+
+        const code = socket.room;
+
+        if (!code || !rooms[code]) return;
+
+        socket.to(code).emit("shot", {
+            id: socket.id,
+            x: data.x,
+            y: data.y,
+            dx: data.dx,
+            dy: data.dy
+        });
+    });
+
+    socket.on("disconnect", () => {
+
+        const code = socket.room;
+
+        if (!code || !rooms[code]) return;
+
+        delete rooms[code].players[socket.id];
+
+        sendRoom(code);
+
+        if (Object.keys(rooms[code].players).length === 0) {
+            delete rooms[code];
+        }
+
+        console.log("Spieler getrennt:", socket.id);
+    });
 });
 
-
-server.listen(
-    PORT,
-    "0.0.0.0",
-    () => {
-
-        console.log(
-            `Battle Zone Server läuft auf Port ${PORT}`
-        );
-
-    }
-);
+server.listen(PORT, "0.0.0.0", () => {
+    console.log("Battle Zone Server läuft auf Port " + PORT);
+});
