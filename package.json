@@ -1,7 +1,6 @@
 {
   "name": "svgbattle-zone",
   "version": "1.0.0",
-  "description": "SVG Battle Zone Multiplayer",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
