@@ -2,217 +2,224 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Battle Zone</title>
 
 <style>
-*{
-    box-sizing:border-box;
-    user-select:none;
+* {
+    box-sizing: border-box;
+    user-select: none;
 }
 
-body{
-    margin:0;
-    background:#080b10;
-    color:white;
-    font-family:Arial,sans-serif;
-    overflow:hidden;
+body {
+    margin: 0;
+    overflow: hidden;
+    background: #070b10;
+    font-family: Arial, sans-serif;
+    color: white;
 }
 
-canvas{
-    display:block;
-    margin:auto;
-    background:#263b29;
-    max-width:100vw;
-    max-height:100vh;
+canvas {
+    display: block;
+    margin: auto;
+    background: #29452b;
+    width: 100vw;
+    height: 100vh;
 }
 
-#menu{
-    position:fixed;
-    inset:0;
-    z-index:20;
+#menu {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
 
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 
     background:
-    radial-gradient(circle,#263d59 0%,#090c12 70%);
+        radial-gradient(circle at center, #294b6b, #080b10 70%);
 }
 
-#menu h1{
-    font-size:60px;
-    margin:0;
+#menu h1 {
+    font-size: clamp(42px, 8vw, 75px);
+    margin: 0 0 5px;
 
     text-shadow:
-    0 0 10px #42a5ff,
-    0 0 30px #42a5ff;
+        0 0 10px #35aaff,
+        0 0 35px #35aaff;
 }
 
-#menu p{
-    color:#bbb;
-    margin:8px 0 25px;
+#menu p {
+    color: #bbb;
+    margin-bottom: 25px;
 }
 
-input{
-    width:240px;
-    padding:14px;
-    border:0;
-    border-radius:10px;
+input {
+    width: 250px;
+    padding: 14px;
 
-    text-align:center;
-    font-size:18px;
-    text-transform:uppercase;
+    border: 0;
+    border-radius: 10px;
 
-    outline:none;
+    text-align: center;
+    font-size: 18px;
+
+    outline: none;
 }
 
-button{
-    margin:7px;
-    padding:13px 22px;
+button {
+    padding: 13px 22px;
+    margin: 7px;
 
-    border:0;
-    border-radius:10px;
+    border: 0;
+    border-radius: 10px;
 
-    font-size:16px;
-    font-weight:bold;
+    color: white;
+    background: #303640;
 
-    cursor:pointer;
+    font-size: 16px;
+    font-weight: bold;
 
-    transition:.15s;
+    cursor: pointer;
 }
 
-button:hover{
-    transform:scale(1.06);
+button:hover {
+    transform: scale(1.05);
 }
 
-.primary{
-    background:#309cff;
-    color:white;
+.primary {
+    background: #299cff;
 }
 
-.secondary{
-    background:#30343b;
-    color:white;
+#status {
+    margin-top: 12px;
+    color: #72ff91;
 }
 
-#status{
-    margin-top:10px;
-    color:#72ff91;
+#hud {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+
+    z-index: 10;
+
+    line-height: 1.5;
+    font-size: 17px;
+
+    text-shadow: 2px 2px 5px black;
 }
 
-#hud{
-    position:fixed;
-    top:15px;
-    left:15px;
+.bar {
+    width: 170px;
+    height: 8px;
 
-    z-index:10;
+    background: #202020;
+    border-radius: 5px;
 
-    font-size:18px;
-    line-height:1.7;
-
-    text-shadow:2px 2px 5px black;
+    overflow: hidden;
 }
 
-#weapon{
-    position:fixed;
-
-    bottom:20px;
-    left:50%;
-
-    transform:translateX(-50%);
-
-    z-index:10;
-
-    padding:10px 20px;
-
-    background:rgba(0,0,0,.65);
-
-    border-radius:12px;
-
-    font-size:20px;
-    font-weight:bold;
+#hpbar {
+    width: 100%;
+    height: 100%;
+    background: #29d66d;
 }
 
-#message{
-    position:fixed;
+#shieldbar {
+    width: 100%;
+    height: 100%;
+    background: #32bfff;
+}
 
-    top:40%;
-    left:0;
+#weapon {
+    position: fixed;
 
-    width:100%;
+    bottom: 25px;
+    left: 50%;
 
-    z-index:15;
+    transform: translateX(-50%);
 
-    text-align:center;
+    z-index: 10;
 
-    font-size:55px;
-    font-weight:bold;
+    padding: 10px 20px;
+
+    background: rgba(0,0,0,.7);
+    border-radius: 12px;
+
+    font-size: 20px;
+    font-weight: bold;
+}
+
+#message {
+    position: fixed;
+
+    top: 42%;
+    left: 0;
+
+    width: 100%;
+
+    z-index: 30;
+
+    text-align: center;
+
+    font-size: clamp(35px, 7vw, 65px);
+    font-weight: bold;
 
     text-shadow:
-    0 0 10px black,
-    0 0 30px black;
+        0 0 10px black,
+        0 0 30px black;
 
-    pointer-events:none;
+    pointer-events: none;
 }
 
-#help{
-    position:fixed;
+#help {
+    position: fixed;
 
-    bottom:10px;
-    left:10px;
+    bottom: 8px;
+    left: 10px;
 
-    z-index:10;
+    z-index: 10;
 
-    color:#ccc;
-    font-size:13px;
+    color: #ddd;
+    font-size: 13px;
 
-    opacity:.7;
+    opacity: .75;
 }
 
-#crosshair{
-    position:fixed;
+#crosshair {
+    position: fixed;
 
-    width:18px;
-    height:18px;
+    width: 18px;
+    height: 18px;
 
-    border:2px solid white;
-    border-radius:50%;
+    border: 2px solid white;
+    border-radius: 50%;
 
-    pointer-events:none;
+    z-index: 12;
 
-    z-index:12;
+    pointer-events: none;
 
-    transform:translate(-50%,-50%);
+    transform: translate(-50%, -50%);
 
-    box-shadow:0 0 5px black;
+    box-shadow: 0 0 5px black;
 }
 
-.bar{
-    width:160px;
-    height:8px;
+#connection {
+    position: fixed;
 
-    background:#222;
+    top: 15px;
+    right: 15px;
 
-    border-radius:5px;
+    z-index: 10;
 
-    overflow:hidden;
+    padding: 7px 12px;
 
-    margin-top:2px;
-}
+    background: rgba(0,0,0,.65);
 
-#hpbar{
-    height:100%;
-    width:100%;
-    background:#29d66d;
-}
+    border-radius: 8px;
 
-#shieldbar{
-    height:100%;
-    width:100%;
-    background:#35bfff;
+    font-size: 13px;
 }
 </style>
 </head>
@@ -241,7 +248,6 @@ button:hover{
         </button>
 
         <button
-            class="secondary"
             onclick="joinRoom()"
         >
             👥 Beitreten
@@ -249,29 +255,33 @@ button:hover{
 
     </div>
 
-    <button
-        class="secondary"
-        onclick="startTraining()"
-    >
+    <button onclick="startTraining()">
         🏋️ Training
     </button>
 
     <div id="status">
-        Verbinde mit Server...
+        🔄 Verbinde...
     </div>
 
 </div>
 
 
+<div id="connection">
+    🔴 Offline
+</div>
+
+
 <div id="hud">
 
-    ❤️ <span id="hp">100</span>
+    ❤️ HP:
+    <span id="hp">100</span>
 
     <div class="bar">
         <div id="hpbar"></div>
     </div>
 
-    🛡️ <span id="shield">50</span>
+    🛡️ Schild:
+    <span id="shield">50</span>
 
     <div class="bar">
         <div id="shieldbar"></div>
@@ -294,7 +304,7 @@ button:hover{
 
 
 <div id="weapon">
-    🔫 <span id="weaponName">Keine Waffe</span>
+    🔫 Keine Waffe
 </div>
 
 
@@ -302,11 +312,10 @@ button:hover{
 
 <div id="crosshair"></div>
 
-
 <div id="help">
-    ⬆️⬇️⬅️➡️ Bewegen |
-    Maus Zielen |
-    Linksklick Angreifen
+    ⬆️ ⬇️ ⬅️ ➡️ Bewegen |
+    Maus = Zielen |
+    Linksklick = Angreifen
 </div>
 
 
@@ -319,52 +328,38 @@ button:hover{
 
 <script>
 
-/* =========================================
-   SERVER
-========================================= */
-
-/*
-    SPÄTER deine Render-Adresse eintragen.
-
-    Beispiel:
-
-    const SERVER_URL =
-        "wss://battle-zone.onrender.com";
-
-*/
+/* ==================================================
+   LIVE MULTIPLAYER SERVER
+================================================== */
 
 const SERVER_URL =
-    "wss://DEIN-SERVER.onrender.com";
+    "wss://svgbattle-server.onrender.com";
 
 
 let socket = null;
-
 let myId = null;
 
 let connected = false;
-
 let gameStarted = false;
 
 const players = {};
 
-let mouse = {
-    x:500,
-    y:325,
-    down:false
-};
-
 const keys = {};
 
-let particles = [];
+const mouse = {
+    x: 500,
+    y: 325,
+    down: false
+};
 
-let floatingTexts = [];
+let particles = [];
 
 let lastAttack = 0;
 
 
-/* =========================================
+/* ==================================================
    CANVAS
-========================================= */
+================================================== */
 
 const canvas =
     document.getElementById("game");
@@ -373,58 +368,50 @@ const ctx =
     canvas.getContext("2d");
 
 
-/* =========================================
-   WEAPON NAMES
-========================================= */
+/* ==================================================
+   WEAPONS
+================================================== */
 
 const weaponNames = {
 
-    pistol:"🔫 Pistole",
+    pistol: "🔫 Pistole",
 
-    smg:"🔫 SMG",
+    smg: "🔫 SMG",
 
-    shotgun:"💥 Shotgun",
+    shotgun: "💥 Shotgun",
 
-    sniper:"🎯 Sniper",
+    sniper: "🎯 Sniper",
 
-    sword:"⚔️ Schwert",
+    sword: "⚔️ Schwert",
 
-    hammer:"🔨 Hammer"
+    hammer: "🔨 Hammer"
 
 };
 
 
-/* =========================================
+/* ==================================================
    CONNECT
-========================================= */
+================================================== */
 
-function connectServer(){
+function connectServer() {
 
-    if(
-        SERVER_URL.includes(
-            "DEIN-SERVER"
-        )
-    ){
-
-        setStatus(
-            "⚠️ Server-Adresse fehlt"
-        );
-
-        return;
-
-    }
+    setStatus("🔄 Verbinde mit Server...");
 
     socket =
-        new WebSocket(
-            SERVER_URL
-        );
+        new WebSocket(SERVER_URL);
+
 
     socket.onopen = () => {
 
         connected = true;
 
+        document.getElementById(
+            "connection"
+        ).textContent =
+            "🟢 Online";
+
         setStatus(
-            "🟢 Server verbunden"
+            "🟢 Server verbunden!"
         );
 
     };
@@ -433,6 +420,11 @@ function connectServer(){
     socket.onclose = () => {
 
         connected = false;
+
+        document.getElementById(
+            "connection"
+        ).textContent =
+            "🔴 Offline";
 
         setStatus(
             "🔴 Verbindung verloren"
@@ -444,45 +436,50 @@ function connectServer(){
     socket.onerror = () => {
 
         setStatus(
-            "❌ Server nicht erreichbar"
+            "❌ Serverfehler"
         );
 
     };
 
 
-    socket.onmessage = event => {
+    socket.onmessage =
+        event => {
 
-        let data;
+            let data;
 
-        try{
+            try {
 
-            data =
-                JSON.parse(
-                    event.data
-                );
+                data =
+                    JSON.parse(
+                        event.data
+                    );
 
-        }catch{
+            } catch {
 
-            return;
+                return;
 
-        }
+            }
 
-        handleServerMessage(
-            data
-        );
+            handleServerMessage(
+                data
+            );
 
-    };
+        };
 
 }
 
 
-function send(data){
+/* ==================================================
+   SEND
+================================================== */
 
-    if(
+function send(data) {
+
+    if (
         socket &&
         socket.readyState ===
         WebSocket.OPEN
-    ){
+    ) {
 
         socket.send(
             JSON.stringify(data)
@@ -493,132 +490,23 @@ function send(data){
 }
 
 
-/* =========================================
-   ROOM
-========================================= */
-
-function createRoom(){
-
-    if(!connected){
-
-        setStatus(
-            "❌ Nicht mit Server verbunden"
-        );
-
-        return;
-
-    }
-
-    const code =
-        Math.random()
-        .toString(36)
-        .substring(2,8)
-        .toUpperCase();
-
-    document.getElementById(
-        "room"
-    ).value = code;
-
-    send({
-
-        type:"create",
-
-        room:code
-
-    });
-
-}
-
-
-function joinRoom(){
-
-    if(!connected){
-
-        setStatus(
-            "❌ Nicht mit Server verbunden"
-        );
-
-        return;
-
-    }
-
-    const code =
-        document.getElementById(
-            "room"
-        ).value
-        .trim()
-        .toUpperCase();
-
-    if(
-        code.length < 3
-    ){
-
-        setStatus(
-            "❌ Raumcode eingeben"
-        );
-
-        return;
-
-    }
-
-    send({
-
-        type:"join",
-
-        room:code
-
-    });
-
-}
-
-
-function startTraining(){
-
-    if(!connected){
-
-        setStatus(
-            "❌ Server nicht verbunden"
-        );
-
-        return;
-
-    }
-
-    const code =
-        "TRAIN" +
-        Math.floor(
-            Math.random()*999
-        );
-
-    send({
-
-        type:"create",
-
-        room:code
-
-    });
-
-}
-
-
-/* =========================================
+/* ==================================================
    SERVER MESSAGES
-========================================= */
+================================================== */
 
-function handleServerMessage(data){
+function handleServerMessage(data) {
 
-    if(data.type==="id"){
+    if (data.type === "id") {
 
-        myId =
-            data.id;
+        myId = data.id;
 
     }
 
 
-    if(
-        data.type==="created" ||
-        data.type==="joined"
-    ){
+    if (
+        data.type === "created" ||
+        data.type === "joined"
+    ) {
 
         gameStarted = true;
 
@@ -627,46 +515,25 @@ function handleServerMessage(data){
         ).style.display =
             "none";
 
-        setStatus(
-            "Raum: "+data.room
+        showMessage(
+            "🎮 LOS!"
         );
-
-
-        if(
-            data.type==="created"
-        ){
-
-            setTimeout(
-                () => {
-
-                    send({
-                        type:"addBots"
-                    });
-
-                },
-                500
-            );
-
-        }
 
     }
 
 
-    if(data.type==="state"){
+    if (data.type === "state") {
 
-        Object.keys(
-            players
-        ).forEach(id => {
+        Object.keys(players)
+            .forEach(id => {
 
-            if(
-                !data.players[id]
-            ){
+                if (!data.players[id]) {
 
-                delete players[id];
+                    delete players[id];
 
-            }
+                }
 
-        });
+            });
 
 
         Object.assign(
@@ -680,19 +547,27 @@ function handleServerMessage(data){
     }
 
 
-    if(
-        data.type==="elimination"
-    ){
+    if (
+        data.type ===
+        "elimination"
+    ) {
 
-        createExplosion(
-            randomX(),
-            randomY()
-        );
+        const victim =
+            players[data.victim];
+
+        if (victim) {
+
+            createExplosion(
+                victim.x,
+                victim.y
+            );
+
+        }
 
 
-        if(
+        if (
             data.killer === myId
-        ){
+        ) {
 
             showMessage(
                 "☠️ ELIMINIERT!"
@@ -703,9 +578,9 @@ function handleServerMessage(data){
         }
 
 
-        if(
+        if (
             data.victim === myId
-        ){
+        ) {
 
             showMessage(
                 "💀 DU BIST RAUS!"
@@ -718,13 +593,11 @@ function handleServerMessage(data){
     }
 
 
-    if(
-        data.type==="winner"
-    ){
+    if (data.type === "winner") {
 
-        if(
+        if (
             data.id === myId
-        ){
+        ) {
 
             showMessage(
                 "🏆 SIEG!"
@@ -732,7 +605,7 @@ function handleServerMessage(data){
 
             soundWin();
 
-        }else{
+        } else {
 
             showMessage(
                 "💀 VERLOREN!"
@@ -745,23 +618,23 @@ function handleServerMessage(data){
     }
 
 
-    if(
-        data.type==="levelUp"
-    ){
+    if (data.type === "levelUp") {
 
         showMessage(
-            "⭐ LEVEL "+data.level
+            "⭐ LEVEL " +
+            data.level
         );
 
-        soundWin();
+        soundLevel();
 
     }
 
 
-    if(data.type==="error"){
+    if (data.type === "error") {
 
         setStatus(
-            "❌ "+data.message
+            "❌ " +
+            data.message
         );
 
     }
@@ -769,9 +642,126 @@ function handleServerMessage(data){
 }
 
 
-/* =========================================
+/* ==================================================
+   ROOMS
+================================================== */
+
+function createRoom() {
+
+    if (!connected) {
+
+        setStatus(
+            "❌ Server nicht verbunden"
+        );
+
+        return;
+
+    }
+
+
+    const code =
+        Math.random()
+        .toString(36)
+        .substring(2, 8)
+        .toUpperCase();
+
+
+    document.getElementById(
+        "room"
+    ).value =
+        code;
+
+
+    send({
+
+        type: "create",
+
+        room: code
+
+    });
+
+}
+
+
+function joinRoom() {
+
+    if (!connected) {
+
+        setStatus(
+            "❌ Server nicht verbunden"
+        );
+
+        return;
+
+    }
+
+
+    const code =
+        document.getElementById(
+            "room"
+        ).value
+        .trim()
+        .toUpperCase();
+
+
+    if (
+        code.length < 3
+    ) {
+
+        setStatus(
+            "❌ Raumcode eingeben"
+        );
+
+        return;
+
+    }
+
+
+    send({
+
+        type: "join",
+
+        room: code
+
+    });
+
+}
+
+
+function startTraining() {
+
+    if (!connected) {
+
+        setStatus(
+            "❌ Server nicht verbunden"
+        );
+
+        return;
+
+    }
+
+
+    const code =
+        "TRAIN" +
+        Math.floor(
+            Math.random() * 999
+        );
+
+
+    send({
+
+        type: "create",
+
+        room: code
+
+    });
+
+}
+
+
+/* ==================================================
    KEYBOARD
-========================================= */
+================================================== */
 
 document.addEventListener(
     "keydown",
@@ -793,9 +783,9 @@ document.addEventListener(
 );
 
 
-/* =========================================
+/* ==================================================
    MOUSE
-========================================= */
+================================================== */
 
 canvas.addEventListener(
     "mousemove",
@@ -804,15 +794,17 @@ canvas.addEventListener(
         const rect =
             canvas.getBoundingClientRect();
 
+
         mouse.x =
             (event.clientX -
-            rect.left) *
+                rect.left) *
             canvas.width /
             rect.width;
 
+
         mouse.y =
             (event.clientY -
-            rect.top) *
+                rect.top) *
             canvas.height /
             rect.height;
 
@@ -822,11 +814,13 @@ canvas.addEventListener(
                 "crosshair"
             );
 
+
         crosshair.style.left =
-            event.clientX+"px";
+            event.clientX + "px";
+
 
         crosshair.style.top =
-            event.clientY+"px";
+            event.clientY + "px";
 
     }
 );
@@ -836,7 +830,9 @@ canvas.addEventListener(
     "mousedown",
     event => {
 
-        if(event.button===0){
+        if (
+            event.button === 0
+        ) {
 
             mouse.down = true;
 
@@ -856,59 +852,74 @@ document.addEventListener(
 );
 
 
-/* =========================================
-   MOVEMENT
-========================================= */
+/* ==================================================
+   GAME LOOP / CONTROLS
+================================================== */
 
 setInterval(
     () => {
 
-        if(
+        if (
             !gameStarted ||
             !connected
-        ){
+        ) {
+
             return;
+
         }
 
 
-        let dx=0;
-        let dy=0;
+        let dx = 0;
+        let dy = 0;
 
 
-        if(keys["ArrowUp"]){
+        if (
+            keys["ArrowUp"]
+        ) {
 
             dy--;
 
         }
 
-        if(keys["ArrowDown"]){
+
+        if (
+            keys["ArrowDown"]
+        ) {
 
             dy++;
 
         }
 
-        if(keys["ArrowLeft"]){
+
+        if (
+            keys["ArrowLeft"]
+        ) {
 
             dx--;
 
         }
 
-        if(keys["ArrowRight"]){
+
+        if (
+            keys["ArrowRight"]
+        ) {
 
             dx++;
 
         }
 
 
-        if(dx!==0 || dy!==0){
+        if (
+            dx !== 0 ||
+            dy !== 0
+        ) {
 
             send({
 
-                type:"move",
+                type: "move",
 
-                dx:dx,
-
-                dy:dy
+                dx,
+                dy
 
             });
 
@@ -918,44 +929,53 @@ setInterval(
         const me =
             players[myId];
 
-        if(!me) return;
+
+        if (!me) {
+
+            return;
+
+        }
 
 
         const angle =
             Math.atan2(
-                mouse.y-me.y,
-                mouse.x-me.x
+                mouse.y - me.y,
+                mouse.x - me.x
             );
 
 
         send({
 
-            type:"aim",
+            type: "aim",
 
-            angle:angle
+            angle
 
         });
 
 
-        if(mouse.down){
+        if (
+            mouse.down
+        ) {
 
             const now =
                 Date.now();
 
 
-            if(
-                now-lastAttack >
-                80
-            ){
+            if (
+                now -
+                lastAttack >
+                150
+            ) {
 
-                lastAttack = now;
+                lastAttack =
+                    now;
 
 
                 send({
 
-                    type:"shoot",
+                    type: "shoot",
 
-                    angle:angle
+                    angle
 
                 });
 
@@ -978,14 +998,15 @@ setInterval(
 );
 
 
-/* =========================================
+/* ==================================================
    HUD
-========================================= */
+================================================== */
 
-function updateHUD(){
+function updateHUD() {
 
     const me =
         players[myId];
+
 
     document.getElementById(
         "players"
@@ -995,24 +1016,26 @@ function updateHUD(){
         ).length;
 
 
-    if(!me) return;
+    if (!me) {
+
+        return;
+
+    }
 
 
     document.getElementById(
         "hp"
     ).textContent =
-        Math.max(
-            0,
-            Math.round(me.hp)
+        Math.round(
+            me.hp
         );
 
 
     document.getElementById(
         "shield"
     ).textContent =
-        Math.max(
-            0,
-            Math.round(me.shield)
+        Math.round(
+            me.shield
         );
 
 
@@ -1034,7 +1057,7 @@ function updateHUD(){
         Math.max(
             0,
             me.hp
-        )+"%";
+        ) + "%";
 
 
     document.getElementById(
@@ -1042,93 +1065,94 @@ function updateHUD(){
     ).style.width =
         Math.max(
             0,
-            me.shield*2
-        )+"%";
+            me.shield * 2
+        ) + "%";
 
 
     document.getElementById(
-        "weaponName"
+        "weapon"
     ).textContent =
         weaponNames[
             me.weapon
-        ] || "Keine Waffe";
+        ] ||
+        "🔫 Keine Waffe";
 
 }
 
 
-/* =========================================
+/* ==================================================
    MAP
-========================================= */
+================================================== */
 
 const walls = [
 
     {
-        x:100,
-        y:100,
-        w:200,
-        h:30
+        x: 100,
+        y: 100,
+        w: 200,
+        h: 30
     },
 
     {
-        x:400,
-        y:100,
-        w:200,
-        h:30
+        x: 400,
+        y: 100,
+        w: 200,
+        h: 30
     },
 
     {
-        x:700,
-        y:100,
-        w:180,
-        h:30
+        x: 700,
+        y: 100,
+        w: 180,
+        h: 30
     },
 
     {
-        x:180,
-        y:270,
-        w:170,
-        h:30
+        x: 180,
+        y: 270,
+        w: 170,
+        h: 30
     },
 
     {
-        x:650,
-        y:270,
-        w:170,
-        h:30
+        x: 650,
+        y: 270,
+        w: 170,
+        h: 30
     },
 
     {
-        x:400,
-        y:300,
-        w:200,
-        h:30
+        x: 400,
+        y: 300,
+        w: 200,
+        h: 30
     },
 
     {
-        x:100,
-        y:500,
-        w:200,
-        h:30
+        x: 100,
+        y: 500,
+        w: 200,
+        h: 30
     },
 
     {
-        x:400,
-        y:500,
-        w:200,
-        h:30
+        x: 400,
+        y: 500,
+        w: 200,
+        h: 30
     },
 
     {
-        x:700,
-        y:500,
-        w:180,
-        h:30
+        x: 700,
+        y: 500,
+        w: 180,
+        h: 30
     }
 
 ];
 
 
-function drawMap(){
+function drawMap() {
 
     ctx.fillStyle =
         "#29452b";
@@ -1141,20 +1165,22 @@ function drawMap(){
     );
 
 
-    /* Bodenlinien */
-
     ctx.strokeStyle =
         "rgba(255,255,255,.035)";
 
-    for(
-        let x=0;
-        x<1000;
-        x+=50
-    ){
+
+    for (
+        let x = 0;
+        x < 1000;
+        x += 50
+    ) {
 
         ctx.beginPath();
 
-        ctx.moveTo(x,0);
+        ctx.moveTo(
+            x,
+            0
+        );
 
         ctx.lineTo(
             x,
@@ -1166,15 +1192,18 @@ function drawMap(){
     }
 
 
-    for(
-        let y=0;
-        y<650;
-        y+=50
-    ){
+    for (
+        let y = 0;
+        y < 650;
+        y += 50
+    ) {
 
         ctx.beginPath();
 
-        ctx.moveTo(0,y);
+        ctx.moveTo(
+            0,
+            y
+        );
 
         ctx.lineTo(
             1000,
@@ -1185,8 +1214,6 @@ function drawMap(){
 
     }
 
-
-    /* Wände */
 
     walls.forEach(
         wall => {
@@ -1203,9 +1230,7 @@ function drawMap(){
 
 
             ctx.strokeStyle =
-                "#b7c0ba";
-
-            ctx.lineWidth=2;
+                "#c4ccc7";
 
             ctx.strokeRect(
                 wall.x,
@@ -1220,14 +1245,13 @@ function drawMap(){
 }
 
 
-/* =========================================
-   PLAYER
-========================================= */
+/* ==================================================
+   PLAYERS
+================================================== */
 
-function drawPlayer(p){
+function drawPlayer(p) {
 
     ctx.save();
-
 
     ctx.translate(
         p.x,
@@ -1236,20 +1260,19 @@ function drawPlayer(p){
 
 
     const angle =
-        p.id===myId
+        p.id === myId
 
-        ? Math.atan2(
-            mouse.y-p.y,
-            mouse.x-p.x
-        )
+            ? Math.atan2(
+                mouse.y - p.y,
+                mouse.x - p.x
+            )
 
-        : p.angle;
+            : p.angle;
 
-
-    /* Schatten */
 
     ctx.fillStyle =
         "rgba(0,0,0,.35)";
+
 
     ctx.beginPath();
 
@@ -1260,16 +1283,15 @@ function drawPlayer(p){
         8,
         0,
         0,
-        Math.PI*2
+        Math.PI * 2
     );
 
     ctx.fill();
 
 
-    /* Spieler */
-
     ctx.fillStyle =
         p.color;
+
 
     ctx.beginPath();
 
@@ -1278,22 +1300,20 @@ function drawPlayer(p){
         0,
         18,
         0,
-        Math.PI*2
+        Math.PI * 2
     );
 
     ctx.fill();
 
 
-    /* Ring */
-
-    if(
-        p.id===myId
-    ){
+    if (
+        p.id === myId
+    ) {
 
         ctx.strokeStyle =
-            "#fff";
+            "white";
 
-        ctx.lineWidth=2;
+        ctx.lineWidth = 2;
 
         ctx.beginPath();
 
@@ -1302,7 +1322,7 @@ function drawPlayer(p){
             0,
             23,
             0,
-            Math.PI*2
+            Math.PI * 2
         );
 
         ctx.stroke();
@@ -1310,12 +1330,14 @@ function drawPlayer(p){
     }
 
 
-    /* Waffe */
+    ctx.rotate(
+        angle
+    );
 
-    ctx.rotate(angle);
 
     ctx.fillStyle =
-        "#181818";
+        "#171717";
+
 
     ctx.fillRect(
         10,
@@ -1333,56 +1355,56 @@ function drawPlayer(p){
     ctx.fillStyle =
         "#111";
 
+
     ctx.fillRect(
-        p.x-22,
-        p.y-34,
+        p.x - 22,
+        p.y - 34,
         44,
         6
     );
 
 
     ctx.fillStyle =
-        "#2bd66f";
+        "#29d66d";
+
 
     ctx.fillRect(
-        p.x-22,
-        p.y-34,
-        44*
+        p.x - 22,
+        p.y - 34,
+        44 *
         Math.max(
             0,
-            p.hp/100
+            p.hp / 100
         ),
         6
     );
 
 
-    /* Schild */
+    /* Shield */
 
-    if(
-        p.shield>0
-    ){
+    if (
+        p.shield > 0
+    ) {
 
         ctx.strokeStyle =
-            "#45c7ff";
+            "#42c7ff";
 
-        ctx.lineWidth=2;
+        ctx.lineWidth = 2;
 
         ctx.beginPath();
 
         ctx.arc(
             p.x,
             p.y,
-            25,
+            26,
             0,
-            Math.PI*2
+            Math.PI * 2
         );
 
         ctx.stroke();
 
     }
 
-
-    /* Name */
 
     ctx.fillStyle =
         "white";
@@ -1393,58 +1415,61 @@ function drawPlayer(p){
     ctx.textAlign =
         "center";
 
-    ctx.fillText(
 
-        p.id===myId
+    ctx.fillText(
+        p.id === myId
             ? "DU"
-            : p.id.startsWith("bot_")
+            : p.bot
                 ? "BOT"
                 : "SPIELER",
-
         p.x,
-        p.y-42
-
+        p.y - 42
     );
 
 }
 
 
-/* =========================================
-   PARTICLES
-========================================= */
+/* ==================================================
+   EFFECTS
+================================================== */
 
 function createMuzzleFlash(
     x,
     y,
     angle
-){
+) {
 
-    for(
-        let i=0;
-        i<8;
+    for (
+        let i = 0;
+        i < 8;
         i++
-    ){
+    ) {
 
         particles.push({
 
-            x:x+
-                Math.cos(angle)*25,
+            x:
+                x +
+                Math.cos(angle) *
+                25,
 
-            y:y+
-                Math.sin(angle)*25,
+            y:
+                y +
+                Math.sin(angle) *
+                25,
 
             vx:
-                Math.cos(angle)*
-                (2+Math.random()*3),
+                Math.cos(angle) *
+                (2 + Math.random() * 3),
 
             vy:
-                Math.sin(angle)*
-                (2+Math.random()*3),
+                Math.sin(angle) *
+                (2 + Math.random() * 3),
 
-            life:15,
+            life: 15,
 
             size:
-                2+Math.random()*4
+                2 +
+                Math.random() * 4
 
         });
 
@@ -1456,31 +1481,32 @@ function createMuzzleFlash(
 function createExplosion(
     x,
     y
-){
+) {
 
-    for(
-        let i=0;
-        i<25;
+    for (
+        let i = 0;
+        i < 25;
         i++
-    ){
+    ) {
 
         particles.push({
 
-            x:x,
-
-            y:y,
+            x,
+            y,
 
             vx:
-                (Math.random()-.5)*7,
+                (Math.random() - .5) * 7,
 
             vy:
-                (Math.random()-.5)*7,
+                (Math.random() - .5) * 7,
 
             life:
-                20+Math.random()*20,
+                20 +
+                Math.random() * 20,
 
             size:
-                2+Math.random()*5
+                2 +
+                Math.random() * 5
 
         });
 
@@ -1489,7 +1515,7 @@ function createExplosion(
 }
 
 
-function drawParticles(){
+function drawParticles() {
 
     particles.forEach(
         p => {
@@ -1515,41 +1541,17 @@ function drawParticles(){
 
     particles =
         particles.filter(
-            p => p.life>0
+            p => p.life > 0
         );
 
 }
 
 
-/* =========================================
-   TEXT
-========================================= */
+/* ==================================================
+   UI
+================================================== */
 
-function showMessage(text){
-
-    const element =
-        document.getElementById(
-            "message"
-        );
-
-    element.textContent =
-        text;
-
-
-    setTimeout(
-        () => {
-
-            element.textContent =
-                "";
-
-        },
-        1800
-    );
-
-}
-
-
-function setStatus(text){
+function setStatus(text) {
 
     document.getElementById(
         "status"
@@ -1559,16 +1561,41 @@ function setStatus(text){
 }
 
 
-/* =========================================
-   SOUND SYSTEM
-========================================= */
+function showMessage(text) {
 
-let audioContext=null;
+    const message =
+        document.getElementById(
+            "message"
+        );
 
 
-function startAudio(){
+    message.textContent =
+        text;
 
-    if(!audioContext){
+
+    setTimeout(
+        () => {
+
+            message.textContent =
+                "";
+
+        },
+        1800
+    );
+
+}
+
+
+/* ==================================================
+   SIMPLE SOUNDS
+================================================== */
+
+let audioContext = null;
+
+
+function audio() {
+
+    if (!audioContext) {
 
         audioContext =
             new (
@@ -1584,10 +1611,10 @@ function startAudio(){
 function beep(
     frequency,
     duration,
-    volume=.08
-){
+    volume = .07
+) {
 
-    startAudio();
+    audio();
 
 
     const oscillator =
@@ -1612,7 +1639,6 @@ function beep(
         gain
     );
 
-
     gain.connect(
         audioContext.destination
     );
@@ -1622,14 +1648,14 @@ function beep(
 
 
     oscillator.stop(
-        audioContext.currentTime+
+        audioContext.currentTime +
         duration
     );
 
 }
 
 
-function soundShot(){
+function soundShot() {
 
     beep(
         180,
@@ -1640,7 +1666,7 @@ function soundShot(){
 }
 
 
-function soundKill(){
+function soundKill() {
 
     beep(
         600,
@@ -1665,7 +1691,7 @@ function soundKill(){
 }
 
 
-function soundDeath(){
+function soundDeath() {
 
     beep(
         90,
@@ -1676,7 +1702,7 @@ function soundDeath(){
 }
 
 
-function soundWin(){
+function soundWin() {
 
     beep(
         500,
@@ -1704,29 +1730,30 @@ function soundWin(){
 }
 
 
-/* =========================================
-   RANDOM POSITION
-========================================= */
+function soundLevel() {
 
-function randomX(){
+    beep(
+        700,
+        .1
+    );
 
-    return Math.random()*1000;
+
+    setTimeout(
+        () => beep(
+            1000,
+            .15
+        ),
+        100
+    );
 
 }
 
 
-function randomY(){
+/* ==================================================
+   RENDER LOOP
+================================================== */
 
-    return Math.random()*650;
-
-}
-
-
-/* =========================================
-   RENDER
-========================================= */
-
-function render(){
+function render() {
 
     ctx.clearRect(
         0,
@@ -1744,9 +1771,9 @@ function render(){
     ).forEach(
         player => {
 
-            if(
+            if (
                 player.alive
-            ){
+            ) {
 
                 drawPlayer(
                     player
@@ -1769,11 +1796,6 @@ function render(){
 
 
 render();
-
-
-/* =========================================
-   START
-========================================= */
 
 connectServer();
 
