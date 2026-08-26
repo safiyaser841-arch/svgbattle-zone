@@ -11,253 +11,829 @@ const PORT = process.env.PORT || 10000;
 
 app.use(express.static(path.join(__dirname)));
 
+const MAP = {
+    width: 1200,
+    height: 700
+};
+
 const rooms = {};
 
 const weapons = [
-    { name: "Pistole", damage: 12, speed: 12, color: "#fff" },
-    { name: "SMG", damage: 8, speed: 15, color: "#22d3ee" },
-    { name: "Gewehr", damage: 20, speed: 13, color: "#facc15" },
-    { name: "Schrotflinte", damage: 30, speed: 10, color: "#fb923c" },
-    { name: "Bogen", damage: 35, speed: 9, color: "#a78bfa" },
-    { name: "Schwert", damage: 45, speed: 0, color: "#f8fafc", melee: true }
+    {
+        name: "Pistole",
+        damage: 12,
+        speed: 14,
+        cooldown: 20,
+        range: 700,
+        color: "#ffffff"
+    },
+    {
+        name: "SMG",
+        damage: 6,
+        speed: 17,
+        cooldown: 7,
+        range: 550,
+        color: "#22d3ee"
+    },
+    {
+        name: "Gewehr",
+        damage: 18,
+        speed: 18,
+        cooldown: 30,
+        range: 850,
+        color: "#facc15"
+    },
+    {
+        name: "Schrotflinte",
+        damage: 8,
+        speed: 13,
+        cooldown: 55,
+        range: 350,
+        pellets: 5,
+        color: "#fb923c"
+    },
+    {
+        name: "Bogen",
+        damage: 28,
+        speed: 11,
+        cooldown: 50,
+        range: 900,
+        color: "#a78bfa"
+    },
+    {
+        name: "Schwert",
+        damage: 25,
+        speed: 0,
+        cooldown: 35,
+        range: 80,
+        melee: true,
+        color: "#ffffff"
+    }
 ];
 
-function code() {
-    return Math.random()
-        .toString(36)
-        .substring(2, 6)
-        .toUpperCase();
+const skins = [
+    "standard",
+
+    "rare1",
+    "rare2",
+    "rare3",
+    "rare4",
+    "rare5",
+
+    "super1",
+    "super2",
+    "super3",
+    "super4",
+    "super5",
+
+    "epic1",
+    "epic2",
+    "epic3",
+    "epic4",
+    "epic5",
+
+    "mythic1",
+    "mythic2",
+    "mythic3",
+    "mythic4",
+    "mythic5",
+
+    "legend1",
+    "legend2",
+    "legend3"
+];
+
+const tutorial = [
+    {
+        title: "Willkommen!",
+        text: "Willkommen bei Battle Zone!"
+    },
+    {
+        title: "Bewegen",
+        text: "PC/Laptop: Benutze die Pfeiltasten."
+    },
+    {
+        title: "Handy & iPad",
+        text: "Benutze den Joystick unten links."
+    },
+    {
+        title: "Schießen",
+        text: "Benutze den roten Knopf unten rechts."
+    },
+    {
+        title: "Waffen",
+        text: "Du bekommst eine zufällige Waffe."
+    },
+    {
+        title: "Wände",
+        text: "Wände blockieren Spieler und Schüsse."
+    },
+    {
+        title: "Bots",
+        text: "Du kannst 0 bis 5 Bots auswählen."
+    },
+    {
+        title: "Skins",
+        text: "Sammle Kills und schalte Skins frei."
+    },
+    {
+        title: "Lobbys",
+        text: "Erstelle eine Lobby und teile den Code."
+    }
+];
+
+function createCode() {
+
+    let code;
+
+    do {
+        code = Math.random()
+            .toString(36)
+            .substring(2, 6)
+            .toUpperCase();
+    } while (rooms[code]);
+
+    return code;
 }
 
 function randomWeapon() {
-    return weapons[Math.floor(Math.random() * weapons.length)];
+
+    return weapons[
+        Math.floor(
+            Math.random() * weapons.length
+        )
+    ];
 }
 
 function distance(a, b) {
-    return Math.hypot(a.x - b.x, a.y - b.y);
+
+    return Math.hypot(
+        a.x - b.x,
+        a.y - b.y
+    );
 }
 
-function broadcastRoom(roomCode) {
-    const room = rooms[roomCode];
+function clamp(value, min, max) {
 
-    if (!room) return;
-
-    io.to(roomCode).emit("state", {
-        players: room.players,
-        bots: room.bots
-    });
+    return Math.max(
+        min,
+        Math.min(max, value)
+    );
 }
 
 function createBots(room) {
+
     room.bots = [];
 
-    for (let i = 0; i < room.botCount; i++) {
+    for (
+        let i = 0;
+        i < room.botCount;
+        i++
+    ) {
+
+        const weapon =
+            randomWeapon();
 
         room.bots.push({
-            id: "bot-" + i + "-" + Math.random(),
-            name: "BOT " + (i + 1),
-            x: 150 + Math.random() * 900,
-            y: 100 + Math.random() * 500,
+
+            id:
+                "bot-" +
+                i +
+                "-" +
+                Math.random(),
+
+            name:
+                "BOT " +
+                (i + 1),
+
+            x:
+                150 +
+                Math.random() * 900,
+
+            y:
+                100 +
+                Math.random() * 500,
+
             hp: 100,
-            skin: i % 2 === 0 ? "botBlue" : "botRed",
-            weapon: randomWeapon().name,
-            target: null,
+
+            maxHp: 100,
+
             alive: true,
-            cooldown: 0
+
+            skin:
+                i % 2 === 0
+                    ? "rare1"
+                    : "rare3",
+
+            weapon:
+                weapon.name,
+
+            cooldown: 0,
+
+            kills: 0
         });
     }
 }
 
+function sendState(roomCode) {
+
+    const room =
+        rooms[roomCode];
+
+    if (!room)
+        return;
+
+    io.to(roomCode).emit(
+        "state",
+        {
+            players:
+                room.players,
+
+            bots:
+                room.bots
+        }
+    );
+}
+
 io.on("connection", socket => {
 
-    console.log("Connected:", socket.id);
+    console.log(
+        "Spieler verbunden:",
+        socket.id
+    );
 
-    socket.on("createRoom", data => {
+    socket.emit(
+        "tutorial",
+        tutorial
+    );
 
-        let roomCode = code();
+    /*
+    CREATE ROOM
+    */
 
-        while (rooms[roomCode]) {
-            roomCode = code();
-        }
+    socket.on(
+        "createRoom",
+        data => {
 
-        rooms[roomCode] = {
-            players: {},
-            bots: [],
-            botCount: Math.max(
-                0,
-                Math.min(5, Number(data.bots) || 0)
-            )
-        };
+            const roomCode =
+                createCode();
 
-        const weapon = randomWeapon();
+            const botCount =
+                clamp(
+                    Number(data?.bots) || 0,
+                    0,
+                    5
+                );
 
-        rooms[roomCode].players[socket.id] = {
-            id: socket.id,
-            name: data.name || "Player",
-            x: 300,
-            y: 300,
-            hp: 100,
-            alive: true,
-            skin: data.skin || "standard",
-            weapon: weapon.name,
-            cooldown: 0
-        };
+            rooms[roomCode] = {
 
-        createBots(rooms[roomCode]);
+                players: {},
 
-        socket.join(roomCode);
-        socket.room = roomCode;
+                bots: [],
 
-        socket.emit("roomCreated", {
-            code: roomCode
-        });
+                botCount
+            };
 
-        broadcastRoom(roomCode);
-    });
+            const weapon =
+                randomWeapon();
 
-    socket.on("joinRoom", data => {
+            rooms[
+                roomCode
+            ].players[
+                socket.id
+            ] = {
 
-        const roomCode =
-            String(data.code || "").toUpperCase();
+                id:
+                    socket.id,
 
-        const room = rooms[roomCode];
+                name:
+                    data?.name ||
+                    "Player",
 
-        if (!room) {
-            socket.emit(
-                "errorMessage",
-                "Raum nicht gefunden."
+                x: 250,
+
+                y: 350,
+
+                hp: 100,
+
+                maxHp: 100,
+
+                alive: true,
+
+                skin:
+                    data?.skin ||
+                    "standard",
+
+                weapon:
+                    weapon.name,
+
+                cooldown: 0,
+
+                kills: 0
+            };
+
+            createBots(
+                rooms[roomCode]
             );
-            return;
+
+            socket.join(
+                roomCode
+            );
+
+            socket.room =
+                roomCode;
+
+            socket.emit(
+                "roomCreated",
+                {
+                    code:
+                        roomCode
+                }
+            );
+
+            sendState(
+                roomCode
+            );
         }
+    );
 
-        const weapon = randomWeapon();
+    /*
+    JOIN ROOM
+    */
 
-        room.players[socket.id] = {
-            id: socket.id,
-            name: data.name || "Player",
-            x: 700,
-            y: 300,
-            hp: 100,
-            alive: true,
-            skin: data.skin || "standard",
-            weapon: weapon.name,
-            cooldown: 0
-        };
+    socket.on(
+        "joinRoom",
+        data => {
 
-        socket.join(roomCode);
-        socket.room = roomCode;
+            const roomCode =
+                String(
+                    data?.code || ""
+                )
+                .trim()
+                .toUpperCase();
 
-        socket.emit("joinedRoom", {
-            code: roomCode
-        });
+            const room =
+                rooms[roomCode];
 
-        broadcastRoom(roomCode);
-    });
+            if (!room) {
 
-    socket.on("move", data => {
+                socket.emit(
+                    "errorMessage",
+                    "Diese Lobby existiert nicht."
+                );
 
-        const roomCode = socket.room;
-        const room = rooms[roomCode];
+                return;
+            }
 
-        if (!room) return;
+            const weapon =
+                randomWeapon();
 
-        const p = room.players[socket.id];
+            room.players[
+                socket.id
+            ] = {
 
-        if (!p || !p.alive) return;
+                id:
+                    socket.id,
 
-        p.x = Number(data.x);
-        p.y = Number(data.y);
+                name:
+                    data?.name ||
+                    "Player",
 
-        broadcastRoom(roomCode);
-    });
+                x: 850,
 
-    socket.on("shoot", data => {
+                y: 350,
 
-        const roomCode = socket.room;
-        const room = rooms[roomCode];
+                hp: 100,
 
-        if (!room) return;
+                maxHp: 100,
 
-        const shooter = room.players[socket.id];
+                alive: true,
 
-        if (!shooter || !shooter.alive) return;
+                skin:
+                    data?.skin ||
+                    "standard",
 
-        const weapon =
-            weapons.find(w => w.name === shooter.weapon);
+                weapon:
+                    weapon.name,
 
-        if (!weapon) return;
+                cooldown: 0,
 
-        io.to(roomCode).emit("bullet", {
-            owner: socket.id,
-            x: shooter.x,
-            y: shooter.y,
-            dx: Number(data.dx),
-            dy: Number(data.dy),
-            damage: weapon.damage,
-            color: weapon.color
-        });
-    });
+                kills: 0
+            };
 
-    socket.on("kill", data => {
+            socket.join(
+                roomCode
+            );
 
-        const roomCode = socket.room;
-        const room = rooms[roomCode];
+            socket.room =
+                roomCode;
 
-        if (!room) return;
+            socket.emit(
+                "joinedRoom",
+                {
+                    code:
+                        roomCode
+                }
+            );
 
-        const victim =
-            room.players[data.victim];
-
-        const killer =
-            room.players[socket.id];
-
-        if (!victim || !killer) return;
-
-        victim.alive = false;
-        victim.hp = 0;
-
-        io.to(roomCode).emit("elimination", {
-            killer: killer.name,
-            victim: victim.name
-        });
-
-        broadcastRoom(roomCode);
-    });
-
-    socket.on("disconnect", () => {
-
-        const roomCode = socket.room;
-
-        if (!room || !rooms[roomCode]) return;
-
-        delete rooms[roomCode].players[socket.id];
-
-        if (
-            Object.keys(
-                rooms[roomCode].players
-            ).length === 0
-        ) {
-            delete rooms[roomCode];
-        } else {
-            broadcastRoom(roomCode);
+            sendState(
+                roomCode
+            );
         }
+    );
 
-        console.log("Disconnected:", socket.id);
-    });
+    /*
+    MOVE
+    */
+
+    socket.on(
+        "move",
+        data => {
+
+            const room =
+                rooms[socket.room];
+
+            if (!room)
+                return;
+
+            const player =
+                room.players[
+                    socket.id
+                ];
+
+            if (!player)
+                return;
+
+            if (!player.alive)
+                return;
+
+            const x =
+                Number(data?.x);
+
+            const y =
+                Number(data?.y);
+
+            if (
+                !Number.isFinite(x) ||
+                !Number.isFinite(y)
+            )
+                return;
+
+            player.x =
+                clamp(
+                    x,
+                    30,
+                    MAP.width - 30
+                );
+
+            player.y =
+                clamp(
+                    y,
+                    30,
+                    MAP.height - 30
+                );
+
+            sendState(
+                socket.room
+            );
+        }
+    );
+
+    /*
+    SHOOT
+    */
+
+    socket.on(
+        "shoot",
+        data => {
+
+            const room =
+                rooms[socket.room];
+
+            if (!room)
+                return;
+
+            const shooter =
+                room.players[
+                    socket.id
+                ];
+
+            if (!shooter)
+                return;
+
+            if (!shooter.alive)
+                return;
+
+            const weapon =
+                weapons.find(
+                    w =>
+                        w.name ===
+                        shooter.weapon
+                );
+
+            if (!weapon)
+                return;
+
+            if (
+                shooter.cooldown > 0
+            )
+                return;
+
+            shooter.cooldown =
+                weapon.cooldown;
+
+            let dx =
+                Number(data?.dx);
+
+            let dy =
+                Number(data?.dy);
+
+            const length =
+                Math.hypot(
+                    dx,
+                    dy
+                );
+
+            if (!length)
+                return;
+
+            dx /= length;
+            dy /= length;
+
+            /*
+            MELEE
+            */
+
+            if (weapon.melee) {
+
+                const targets = [
+                    ...Object.values(
+                        room.players
+                    ),
+                    ...room.bots
+                ];
+
+                for (
+                    const target
+                    of targets
+                ) {
+
+                    if (
+                        !target.alive ||
+                        target.id ===
+                        shooter.id
+                    )
+                        continue;
+
+                    if (
+                        distance(
+                            shooter,
+                            target
+                        ) <=
+                        weapon.range
+                    ) {
+
+                        target.hp -=
+                            weapon.damage;
+
+                        if (
+                            target.hp <= 0
+                        ) {
+
+                            target.hp = 0;
+
+                            target.alive =
+                                false;
+
+                            shooter.kills++;
+
+                            io.to(
+                                socket.room
+                            ).emit(
+                                "elimination",
+                                {
+                                    killer:
+                                        shooter.name,
+
+                                    victim:
+                                        target.name
+                                }
+                            );
+                        }
+                    }
+                }
+
+                io.to(
+                    socket.room
+                ).emit(
+                    "meleeEffect",
+                    {
+                        owner:
+                            shooter.id,
+
+                        x:
+                            shooter.x,
+
+                        y:
+                            shooter.y
+                    }
+                );
+
+                sendState(
+                    socket.room
+                );
+
+                return;
+            }
+
+            /*
+            BULLET
+            */
+
+            io.to(
+                socket.room
+            ).emit(
+                "bullet",
+                {
+                    owner:
+                        shooter.id,
+
+                    x:
+                        shooter.x,
+
+                    y:
+                        shooter.y,
+
+                    dx,
+
+                    dy,
+
+                    speed:
+                        weapon.speed,
+
+                    damage:
+                        weapon.damage,
+
+                    color:
+                        weapon.color
+                }
+            );
+        }
+    );
+
+    /*
+    SKIN
+    */
+
+    socket.on(
+        "changeSkin",
+        skin => {
+
+            if (
+                !skins.includes(skin)
+            )
+                return;
+
+            const room =
+                rooms[socket.room];
+
+            if (!room)
+                return;
+
+            const player =
+                room.players[
+                    socket.id
+                ];
+
+            if (!player)
+                return;
+
+            player.skin =
+                skin;
+
+            sendState(
+                socket.room
+            );
+        }
+    );
+
+    /*
+    TUTORIAL
+    */
+
+    socket.on(
+        "tutorialComplete",
+        () => {
+
+            socket.emit(
+                "tutorialFinished"
+            );
+        }
+    );
+
+    /*
+    DISCONNECT
+    */
+
+    socket.on(
+        "disconnect",
+        () => {
+
+            const roomCode =
+                socket.room;
+
+            if (
+                !roomCode ||
+                !rooms[roomCode]
+            )
+                return;
+
+            delete rooms[
+                roomCode
+            ].players[
+                socket.id
+            ];
+
+            if (
+                Object.keys(
+                    rooms[
+                        roomCode
+                    ].players
+                ).length === 0
+            ) {
+
+                delete rooms[
+                    roomCode
+                ];
+
+            } else {
+
+                sendState(
+                    roomCode
+                );
+            }
+        }
+    );
 });
+
+/*
+BOT AI
+*/
 
 setInterval(() => {
 
-    for (const roomCode in rooms) {
+    for (
+        const roomCode
+        in rooms
+    ) {
 
-        const room = rooms[roomCode];
+        const room =
+            rooms[
+                roomCode
+            ];
 
-        for (const bot of room.bots) {
+        /*
+        Player cooldowns
+        */
 
-            if (!bot.alive) continue;
+        for (
+            const player
+            of Object.values(
+                room.players
+            )
+        ) {
 
-            let targets = [
-                ...Object.values(room.players),
+            if (
+                player.cooldown > 0
+            ) {
+
+                player.cooldown--;
+            }
+        }
+
+        /*
+        BOT AI
+        */
+
+        for (
+            const bot
+            of room.bots
+        ) {
+
+            if (!bot.alive)
+                continue;
+
+            if (
+                bot.cooldown > 0
+            ) {
+
+                bot.cooldown--;
+            }
+
+            const targets = [
+                ...Object.values(
+                    room.players
+                ),
                 ...room.bots
             ].filter(
                 p =>
@@ -265,70 +841,162 @@ setInterval(() => {
                     p.id !== bot.id
             );
 
-            if (!targets.length) continue;
+            if (
+                targets.length === 0
+            )
+                continue;
 
             targets.sort(
                 (a, b) =>
-                    distance(bot, a) -
-                    distance(bot, b)
+                    distance(
+                        bot,
+                        a
+                    ) -
+                    distance(
+                        bot,
+                        b
+                    )
             );
 
-            const target = targets[0];
+            const target =
+                targets[0];
 
-            bot.target = target.id;
+            const dx =
+                target.x -
+                bot.x;
 
-            const dx = target.x - bot.x;
-            const dy = target.y - bot.y;
+            const dy =
+                target.y -
+                bot.y;
 
-            const d = Math.hypot(dx, dy) || 1;
+            const d =
+                Math.hypot(
+                    dx,
+                    dy
+                ) || 1;
 
-            bot.x += dx / d * 1.5;
-            bot.y += dy / d * 1.5;
+            /*
+            Bewegung
+            */
 
-            bot.cooldown--;
+            if (
+                d > 120
+            ) {
+
+                bot.x +=
+                    dx /
+                    d *
+                    1.4;
+
+                bot.y +=
+                    dy /
+                    d *
+                    1.4;
+            }
+
+            /*
+            Angriff
+            */
+
+            const weapon =
+                weapons.find(
+                    w =>
+                        w.name ===
+                        bot.weapon
+                );
+
+            if (!weapon)
+                continue;
 
             if (
                 bot.cooldown <= 0 &&
-                d < 500
+                d <= weapon.range
             ) {
 
-                const weapon =
-                    weapons.find(
-                        w =>
-                            w.name === bot.weapon
-                    );
+                bot.cooldown =
+                    weapon.cooldown;
 
                 if (
-                    weapon &&
-                    !weapon.melee
+                    weapon.melee
                 ) {
 
-                    io.to(roomCode).emit(
+                    target.hp -=
+                        weapon.damage;
+
+                    if (
+                        target.hp <= 0
+                    ) {
+
+                        target.hp = 0;
+
+                        target.alive =
+                            false;
+
+                        io.to(
+                            roomCode
+                        ).emit(
+                            "elimination",
+                            {
+                                killer:
+                                    bot.name,
+
+                                victim:
+                                    target.name
+                            }
+                        );
+                    }
+
+                } else {
+
+                    io.to(
+                        roomCode
+                    ).emit(
                         "bullet",
                         {
-                            owner: bot.id,
-                            x: bot.x,
-                            y: bot.y,
-                            dx: dx / d * weapon.speed,
-                            dy: dy / d * weapon.speed,
-                            damage: weapon.damage,
-                            color: weapon.color
+                            owner:
+                                bot.id,
+
+                            x:
+                                bot.x,
+
+                            y:
+                                bot.y,
+
+                            dx:
+                                dx / d,
+
+                            dy:
+                                dy / d,
+
+                            speed:
+                                weapon.speed,
+
+                            damage:
+                                weapon.damage,
+
+                            color:
+                                weapon.color
                         }
                     );
-
-                    bot.cooldown =
-                        30 + Math.random() * 30;
                 }
             }
         }
 
-        broadcastRoom(roomCode);
+        sendState(
+            roomCode
+        );
     }
 
 }, 1000 / 30);
 
-server.listen(PORT, "0.0.0.0", () => {
-    console.log(
-        "Battle Zone Server läuft auf Port " + PORT
-    );
-});
+server.listen(
+    PORT,
+    "0.0.0.0",
+    () => {
+
+        console.log(
+            "Battle Zone Server läuft auf Port " +
+            PORT
+        );
+    }
+);
