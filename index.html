@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="de">
-
 <head>
-
 <meta charset="UTF-8">
 
 <meta
@@ -10,12 +8,9 @@
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
 >
 
-<title>SVG Battle Zone</title>
-
-<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+<title>Battle Zone</title>
 
 <style>
-
 * {
     box-sizing: border-box;
     margin: 0;
@@ -27,115 +22,104 @@ body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    font-family: Arial, sans-serif;
+
     background:
         radial-gradient(
             circle at center,
-            #263852,
-            #090d15
+            #1d344d,
+            #050911
         );
+
     color: white;
+
+    font-family: Arial, sans-serif;
+
     touch-action: none;
 }
 
+button,
+input,
+select {
+    font: inherit;
+}
+
 button {
-    border: none;
+    border: 0;
     cursor: pointer;
-    font-weight: bold;
 }
 
 /* =========================
-   MENÜ
+   MENU
 ========================= */
 
 #menu {
-
     position: fixed;
-
     inset: 0;
 
     display: flex;
-
-    align-items: center;
-
     justify-content: center;
-
-    background:
-        radial-gradient(
-            circle,
-            rgba(40,80,130,.8),
-            #05070c
-        );
+    align-items: center;
 
     z-index: 100;
 }
 
-.menuBox {
+.menu-box {
+    width: min(520px, 92vw);
 
-    width: min(500px, 92vw);
+    padding: 28px;
 
-    padding: 30px;
-
-    border-radius: 25px;
+    border-radius: 24px;
 
     background:
-        rgba(15,20,30,.92);
+        rgba(8, 15, 25, .96);
 
     box-shadow:
-        0 20px 80px
-        rgba(0,0,0,.6);
+        0 25px 90px
+        rgba(0,0,0,.7);
 
     text-align: center;
 }
 
 .logo {
-
-    font-size: 42px;
-
+    font-size: 44px;
     font-weight: 900;
 
-    margin-bottom: 10px;
+    color: #38bdf8;
 
     text-shadow:
-        0 0 20px #38bdf8;
+        0 0 25px #38bdf8;
+
+    margin-bottom: 5px;
 }
 
-.subtitle {
-
+.sub {
     color: #94a3b8;
-
-    margin-bottom: 25px;
+    margin-bottom: 15px;
 }
 
-input,
-select {
+.input,
+.select {
+    width: 100%;
 
+    padding: 13px;
+    margin: 5px 0;
+
+    border-radius: 10px;
+    border: 1px solid #334155;
+
+    background: #0f172a;
+    color: white;
+}
+
+.btn {
     width: 100%;
 
     padding: 14px;
+    margin-top: 7px;
 
-    margin: 7px 0;
-
-    border-radius: 12px;
-
-    border: 1px solid #334155;
-
-    background: #111827;
+    border-radius: 11px;
 
     color: white;
-
-    font-size: 16px;
-}
-
-.mainButton {
-
-    width: 100%;
-
-    padding: 15px;
-
-    margin-top: 10px;
-
-    border-radius: 12px;
 
     background:
         linear-gradient(
@@ -144,114 +128,173 @@ select {
             #2563eb
         );
 
-    color: white;
-
-    font-size: 17px;
-
-    transition: .2s;
+    font-weight: bold;
 }
 
-.mainButton:hover {
-
-    transform:
-        translateY(-2px);
-
-    filter:
-        brightness(1.15);
+.btn.dark {
+    background: #1e293b;
 }
 
-.secondary {
+.profile {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 6px;
+
+    margin: 12px 0;
+}
+
+.profile-box {
+    padding: 8px;
+
+    border-radius: 9px;
 
     background:
-        #1e293b;
+        #0b1220;
+
+    font-size: 13px;
 }
 
 /* =========================
-   SKIN MENU
+   SKINS
 ========================= */
 
-#skinMenu {
-
+#skins {
     position: fixed;
-
     inset: 0;
 
     display: none;
 
-    z-index: 110;
+    z-index: 120;
 
     background:
-        rgba(3,7,18,.96);
-
-    padding: 20px;
+        #060b12;
 
     overflow: auto;
+
+    padding: 16px;
 }
 
-.skinGrid {
+.skin-header {
+    width: min(1050px, 96vw);
+    margin: auto;
+
+    display: flex;
+
+    justify-content:
+        space-between;
+
+    align-items: center;
+}
+
+.skin-grid {
+    width: min(1050px, 96vw);
+    margin: 18px auto;
 
     display: grid;
 
     grid-template-columns:
         repeat(
             auto-fit,
-            minmax(110px,1fr)
+            minmax(155px, 1fr)
         );
 
     gap: 12px;
-
-    max-width: 900px;
-
-    margin: 20px auto;
 }
 
-.skinCard {
-
-    min-height: 130px;
-
+.skin-card {
     padding: 10px;
 
     border-radius: 16px;
 
     background:
-        #111827;
+        #101827;
 
     border:
-        2px solid #334155;
-
-    text-align: center;
+        1px solid #334155;
 }
 
-.skinCharacter {
+.skin-preview {
+    height: 115px;
 
-    width: 55px;
+    border-radius: 12px;
 
-    height: 70px;
+    display: flex;
 
-    margin: auto;
-
-    border-radius:
-        25px 25px 15px 15px;
+    align-items: center;
+    justify-content: center;
 
     background:
-        linear-gradient(
-            145deg,
-            #38bdf8,
-            #1d4ed8
+        radial-gradient(
+            circle,
+            #29405c,
+            #0b111b
         );
+}
+
+.avatar-preview {
+    position: relative;
+
+    width: 55px;
+    height: 72px;
+
+    border-radius:
+        22px 22px 14px 14px;
 
     box-shadow:
-        inset -8px -8px 15px
+        inset -12px -12px 17px
         rgba(0,0,0,.35);
 }
 
-.skinCard button {
+.avatar-head {
+    position: absolute;
+
+    width: 38px;
+    height: 38px;
+
+    left: 8px;
+    top: -15px;
+
+    border-radius: 50%;
+
+    background: #f0c6a5;
+}
+
+.rarity {
+    color: #cbd5e1;
+    font-size: 13px;
+
+    margin-top: 5px;
+}
+
+.weapon-text {
+    margin-top: 4px;
+
+    color: #cbd5e1;
+}
+
+.price {
+    margin-top: 5px;
+
+    color: #facc15;
+}
+
+.super-text {
+    margin-top: 4px;
+
+    color: #c4b5fd;
+
+    font-size: 12px;
+}
+
+.skin-card button {
+    width: 100%;
 
     margin-top: 8px;
 
-    padding: 8px;
-
-    width: 100%;
+    padding: 9px;
 
     border-radius: 8px;
 
@@ -265,55 +308,184 @@ select {
 ========================= */
 
 #tutorial {
-
     position: fixed;
-
     inset: 0;
 
     display: none;
 
-    align-items: center;
-
     justify-content: center;
+    align-items: center;
 
     z-index: 200;
 
     background:
-        rgba(0,0,0,.75);
+        rgba(0,0,0,.78);
 }
 
-.tutorialBox {
+.tutorial-box {
+    width: min(500px, 92vw);
 
-    width: min(500px, 90vw);
+    padding: 28px;
 
-    padding: 30px;
+    border-radius: 20px;
 
-    border-radius: 22px;
-
-    background:
-        #111827;
+    background: #111827;
 
     text-align: center;
-
-    box-shadow:
-        0 20px 80px
-        rgba(0,0,0,.8);
 }
 
-.tutorialBox h2 {
-
-    margin-bottom: 15px;
-
-    font-size: 28px;
-}
-
-.tutorialBox p {
-
+.tutorial-box p {
     color: #cbd5e1;
 
     line-height: 1.6;
 
-    margin-bottom: 20px;
+    margin:
+        18px 0;
+}
+
+/* =========================
+   LOBBY
+========================= */
+
+#lobby {
+    position: fixed;
+    inset: 0;
+
+    display: none;
+
+    z-index: 110;
+
+    justify-content: center;
+    align-items: center;
+
+    background:
+        radial-gradient(
+            circle,
+            #173450,
+            #03070c
+        );
+}
+
+.lobby {
+    width: min(1000px, 95vw);
+
+    min-height: 570px;
+
+    padding: 18px;
+
+    display:
+        grid;
+
+    grid-template-columns:
+        1.2fr .8fr;
+
+    gap: 20px;
+
+    border-radius: 22px;
+
+    background:
+        rgba(10,17,28,.94);
+}
+
+.lobby-preview {
+    min-height: 520px;
+
+    border-radius: 18px;
+
+    background:
+        radial-gradient(
+            circle,
+            #2b4564,
+            #0a1019
+        );
+
+    position: relative;
+
+    overflow: hidden;
+}
+
+.lobby-character {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    transform:
+        translate(-50%, -50%);
+
+    width: 120px;
+    height: 160px;
+
+    border-radius:
+        45px 45px 25px 25px;
+
+    box-shadow:
+        inset -24px -25px 40px
+        rgba(0,0,0,.45),
+
+        0 25px 50px
+        rgba(0,0,0,.4);
+}
+
+.lobby-head {
+    position: absolute;
+
+    width: 78px;
+    height: 78px;
+
+    top: -30px;
+    left: 21px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle at 35% 30%,
+            #ffe4c7,
+            #b97957
+        );
+}
+
+.lobby-weapon {
+    position: absolute;
+
+    width: 85px;
+    height: 12px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #111827,
+            #e5e7eb
+        );
+
+    right: -60px;
+    top: 70px;
+
+    border-radius: 10px;
+}
+
+.lobby-info {
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    justify-content:
+        center;
+
+    gap: 10px;
+}
+
+.room-code {
+    font-size: 42px;
+
+    font-weight: 900;
+
+    letter-spacing: 8px;
+
+    color: #38bdf8;
 }
 
 /* =========================
@@ -321,24 +493,20 @@ select {
 ========================= */
 
 #game {
-
     position: fixed;
-
     inset: 0;
 
     display: none;
 
     background:
-        #101820;
+        #111923;
 }
 
 #canvas {
+    display: block;
 
     width: 100%;
-
     height: 100%;
-
-    display: block;
 }
 
 /* =========================
@@ -346,63 +514,133 @@ select {
 ========================= */
 
 #hud {
-
     position: fixed;
 
-    top: 12px;
+    left: 10px;
+    top: 10px;
 
-    left: 12px;
+    right: 10px;
 
-    right: 12px;
+    z-index: 20;
 
-    display: flex;
+    display:
+        flex;
 
     justify-content:
         space-between;
 
-    pointer-events: none;
-
-    z-index: 20;
+    gap: 6px;
 }
 
-.hudBox {
+.hud-box {
+    padding: 9px 12px;
 
-    padding: 10px 14px;
-
-    border-radius: 12px;
+    border-radius: 9px;
 
     background:
-        rgba(10,15,25,.75);
-
-    backdrop-filter:
-        blur(8px);
+        rgba(3,8,15,.78);
 
     border:
         1px solid #334155;
+
+    backdrop-filter:
+        blur(6px);
 }
 
-#weaponDisplay {
-
+#roomTop {
+    color: #38bdf8;
     font-weight: bold;
-
-    color: #facc15;
 }
 
 /* =========================
-   JOYSTICK
+   SUPER
+========================= */
+
+#super-bar {
+    position: fixed;
+
+    left: 50%;
+    bottom: 15px;
+
+    transform:
+        translateX(-50%);
+
+    width: 240px;
+    height: 11px;
+
+    border-radius: 10px;
+
+    background: #0b1220;
+
+    z-index: 25;
+
+    overflow: hidden;
+}
+
+#super-fill {
+    width: 0;
+    height: 100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            #7c3aed,
+            #ec4899
+        );
+}
+
+#super-button {
+    position: fixed;
+
+    left: 50%;
+    bottom: 38px;
+
+    transform:
+        translateX(-50%);
+
+    z-index: 26;
+
+    width: 95px;
+
+    padding: 9px;
+
+    border-radius: 10px;
+
+    background:
+        #334155;
+
+    color: white;
+
+    font-weight: bold;
+}
+
+#super-button.ready {
+    background:
+        linear-gradient(
+            135deg,
+            #7c3aed,
+            #ec4899
+        );
+
+    box-shadow:
+        0 0 25px
+        rgba(236,72,153,.7);
+}
+
+/* =========================
+   MOBILE
 ========================= */
 
 #joystick {
+    display: none;
 
     position: fixed;
 
-    left: 25px;
+    left: 22px;
+    bottom: 22px;
 
-    bottom: 25px;
-
-    width: 130px;
-
-    height: 130px;
+    width: 135px;
+    height: 135px;
 
     border-radius: 50%;
 
@@ -413,51 +651,39 @@ select {
         2px solid
         rgba(255,255,255,.25);
 
-    display: none;
-
-    z-index: 50;
+    z-index: 40;
 }
 
 #stick {
-
     position: absolute;
 
+    left: 38px;
+    top: 38px;
+
     width: 58px;
-
     height: 58px;
-
-    left: 36px;
-
-    top: 36px;
 
     border-radius: 50%;
 
     background:
-        rgba(255,255,255,.45);
-
+        rgba(255,255,255,.5);
 }
 
-/* =========================
-   SCHUSSTASTE
-========================= */
-
-#shootButton {
+#shoot {
+    display: none;
 
     position: fixed;
 
-    right: 30px;
-
+    right: 25px;
     bottom: 35px;
 
-    width: 90px;
-
-    height: 90px;
+    width: 95px;
+    height: 95px;
 
     border-radius: 50%;
 
-    display: none;
-
-    z-index: 50;
+    border:
+        4px solid white;
 
     background:
         radial-gradient(
@@ -466,238 +692,156 @@ select {
             #991b1b
         );
 
-    border:
-        4px solid
-        rgba(255,255,255,.4);
-
     color: white;
 
-    font-size: 30px;
+    z-index: 40;
 
-    box-shadow:
-        0 0 25px
-        rgba(239,68,68,.6);
+    font-size: 29px;
 }
 
-/* =========================
-   LOBBY
-========================= */
-
-#lobby {
+#aim {
+    display: none;
 
     position: fixed;
 
-    inset: 0;
+    top: 0;
+    right: 0;
 
-    display: none;
+    width: 55%;
+    height: 100%;
 
-    align-items: center;
-
-    justify-content: center;
-
-    z-index: 150;
-
-    background:
-        rgba(3,7,18,.96);
+    z-index: 30;
 }
 
-.lobbyBox {
-
-    width: min(450px,92vw);
-
-    padding: 30px;
-
-    background: #111827;
-
-    border-radius: 22px;
-
-    text-align: center;
-}
-
-.roomCode {
-
-    font-size: 42px;
-
-    font-weight: 900;
-
-    letter-spacing: 8px;
-
-    margin: 20px 0;
-
-    color: #38bdf8;
-}
-
-/* =========================
-   DEATH
-========================= */
-
-#death {
-
-    position: fixed;
-
-    inset: 0;
-
-    display: none;
-
-    align-items: center;
-
-    justify-content: center;
-
-    background:
-        rgba(80,0,0,.55);
-
-    z-index: 80;
-}
-
-.deathText {
-
-    font-size: 55px;
-
-    font-weight: 900;
-
-    text-shadow:
-        0 0 30px red;
-}
-
-/* =========================
-   MOBILE
-========================= */
-
-@media
-(pointer: coarse) {
-
-    #joystick {
-
+@media(pointer: coarse) {
+    #joystick,
+    #shoot,
+    #aim {
         display: block;
     }
 
-    #shootButton {
+    .lobby {
+        grid-template-columns: 1fr;
+    }
 
-        display: block;
+    .lobby-preview {
+        min-height: 280px;
     }
 }
 
 </style>
-
 </head>
 
 <body>
 
 <!-- =========================
-     MENU
+     START MENU
 ========================= -->
 
 <div id="menu">
-
-    <div class="menuBox">
+    <div class="menu-box">
 
         <div class="logo">
             ⚡ BATTLE ZONE
         </div>
 
-        <div class="subtitle">
+        <div class="sub">
             Multiplayer Arena
         </div>
 
+        <div class="profile">
+
+            <div class="profile-box">
+                🏆<br>
+                Trophäen
+                <b id="menuTrophies">0</b>
+            </div>
+
+            <div class="profile-box">
+                💀<br>
+                Kills
+                <b id="menuKills">0</b>
+            </div>
+
+            <div class="profile-box">
+                👤<br>
+                Skin
+                <b id="menuSkin">Rookie</b>
+            </div>
+
+        </div>
+
         <input
-            id="nameInput"
-            placeholder="Dein Name"
+            class="input"
+            id="name"
             maxlength="15"
+            placeholder="Dein Name"
         >
 
         <button
-            class="mainButton"
+            class="btn"
             onclick="createRoom()"
         >
-            🎮 Raum erstellen
+            🎮 Lobby erstellen
         </button>
 
         <input
-            id="roomInput"
-            placeholder="Raumcode"
+            class="input"
+            id="joinCode"
             maxlength="4"
+            placeholder="Raumcode"
         >
 
         <button
-            class="mainButton secondary"
+            class="btn dark"
             onclick="joinRoom()"
         >
-            🚪 Raum beitreten
+            👥 Lobby beitreten
         </button>
 
         <button
-            class="mainButton secondary"
+            class="btn dark"
             onclick="openSkins()"
         >
-            👤 Skins
+            👤 Skin-Menü
         </button>
 
         <button
-            class="mainButton secondary"
-            onclick="startTutorial()"
+            class="btn dark"
+            onclick="openTutorial()"
         >
             📖 Tutorial
         </button>
 
     </div>
-
 </div>
 
 <!-- =========================
-     SKINS
+     SKIN MENU
 ========================= -->
 
-<div id="skinMenu">
+<div id="skins">
 
-    <h1>
-        👤 Skins
-    </h1>
+    <div class="skin-header">
 
-    <p>
-        Standard + 5 seltene + 5 superseltene +
-        5 epische + 5 mythische + 3 legendäre
-    </p>
-
-    <div
-        id="skinGrid"
-        class="skinGrid"
-    ></div>
-
-    <button
-        class="mainButton"
-        onclick="closeSkins()"
-    >
-        Zurück
-    </button>
-
-</div>
-
-<!-- =========================
-     TUTORIAL
-========================= -->
-
-<div id="tutorial">
-
-    <div class="tutorialBox">
-
-        <h2 id="tutorialTitle">
-            Tutorial
-        </h2>
-
-        <p id="tutorialText">
-        </p>
-
-        <div id="tutorialCounter">
-        </div>
+        <h1>
+            👤 Skin-Menü
+        </h1>
 
         <button
-            class="mainButton"
-            onclick="nextTutorial()"
+            class="btn dark"
+            style="width:auto;padding:10px 18px"
+            onclick="closeSkins()"
         >
-            Weiter
+            Zurück
         </button>
 
     </div>
+
+    <div
+        id="skinGrid"
+        class="skin-grid"
+    ></div>
 
 </div>
 
@@ -707,35 +851,140 @@ select {
 
 <div id="lobby">
 
-    <div class="lobbyBox">
-
-        <h1>
-            🎮 Lobby
-        </h1>
-
-        <p>
-            Teile diesen Code mit deinen Freunden:
-        </p>
+    <div class="lobby">
 
         <div
-            id="roomCode"
-            class="roomCode"
+            id="lobbyPreview"
+            class="lobby-preview"
         >
-            ----
+
+            <div
+                id="lobbyCharacter"
+                class="lobby-character"
+            >
+
+                <div
+                    class="lobby-head"
+                ></div>
+
+                <div
+                    class="lobby-weapon"
+                ></div>
+
+            </div>
+
+        </div>
+
+        <div class="lobby-info">
+
+            <h1
+                id="lobbyName"
+            >
+                Rookie
+            </h1>
+
+            <div>
+                Seltenheit:
+                <b id="lobbyRarity">
+                    Standard
+                </b>
+            </div>
+
+            <div>
+                🔫 Waffe:
+                <b id="lobbyWeapon">
+                    Pistole
+                </b>
+            </div>
+
+            <div>
+                💥 Schaden:
+                <b id="lobbyDamage">
+                    +0%
+                </b>
+            </div>
+
+            <div>
+                ⚡ Super:
+                <b id="lobbySuper">
+                    -
+                </b>
+            </div>
+
+            <div>
+                🏆 Trophäen:
+                <b id="lobbyTrophies">
+                    0
+                </b>
+            </div>
+
+            <div>
+                💀 Skin-Kills:
+                <b id="lobbySkinKills">
+                    0
+                </b>
+            </div>
+
+            <div>
+                🏠 Raumcode:
+            </div>
+
+            <div
+                id="roomCode"
+                class="room-code"
+            >
+                ----
+            </div>
+
+            <button
+                class="btn"
+                onclick="copyRoom()"
+            >
+                📋 Code kopieren
+            </button>
+
+            <button
+                class="btn"
+                onclick="startGame()"
+            >
+                ▶ SPIELEN
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =========================
+     TUTORIAL
+========================= -->
+
+<div id="tutorial">
+
+    <div class="tutorial-box">
+
+        <h2
+            id="tutorialTitle"
+        >
+            Tutorial
+        </h2>
+
+        <p
+            id="tutorialText"
+        ></p>
+
+        <div
+            id="tutorialCount"
+        >
+            1 / 9
         </div>
 
         <button
-            class="mainButton"
-            onclick="copyRoomCode()"
+            class="btn"
+            onclick="nextTutorial()"
         >
-            📋 Code kopieren
-        </button>
-
-        <button
-            class="mainButton"
-            onclick="startGame()"
-        >
-            ▶ Spielen
+            Weiter
         </button>
 
     </div>
@@ -752,66 +1001,206 @@ select {
 
     <div id="hud">
 
-        <div class="hudBox">
-            ❤️ <span id="hp">100</span>
+        <div class="hud-box">
+            🏠
+            <span id="roomTop">
+                ----
+            </span>
         </div>
 
-        <div class="hudBox">
+        <div class="hud-box">
+            ❤️
+            <span id="hp">
+                100
+            </span>
+        </div>
+
+        <div class="hud-box">
             🔫
-            <span id="weaponDisplay">
+            <span id="weaponName">
                 -
             </span>
         </div>
 
-        <div class="hudBox">
-            💀 <span id="kills">0</span>
+        <div class="hud-box">
+            💀
+            <span id="gameKills">
+                0
+            </span>
         </div>
 
     </div>
+
+    <div id="super-bar">
+        <div
+            id="super-fill"
+        ></div>
+    </div>
+
+    <button
+        id="super-button"
+        onclick="useSuper()"
+    >
+        ⚡ SUPER
+    </button>
+
+    <div id="aim"></div>
 
     <div id="joystick">
 
-        <div id="stick">
-        </div>
+        <div
+            id="stick"
+        ></div>
 
     </div>
 
-    <button id="shootButton">
+    <button id="shoot">
         🔥
     </button>
 
 </div>
 
-<!-- =========================
-     DEATH
-========================= -->
-
-<div id="death">
-
-    <div class="deathText">
-        DU BIST AUSGESCHIEDEN
-    </div>
-
-</div>
-
 <script>
 
-/*
-==================================================
-SOCKET
-==================================================
-*/
+/* =====================================================
+   CONNECTION
+===================================================== */
 
-const socket =
-    io(
-        "https://svgbattle-server.onrender.com"
+const SERVER =
+    "wss://svgbattle-server.onrender.com";
+
+let socket = null;
+
+function connect() {
+
+    socket =
+        new WebSocket(
+            SERVER
+        );
+
+    socket.onopen =
+        () => {
+
+            console.log(
+                "Battle Zone verbunden"
+            );
+        };
+
+    socket.onclose =
+        () => {
+
+            console.log(
+                "Server getrennt"
+            );
+        };
+
+    socket.onerror =
+        () => {
+
+            console.log(
+                "Verbindungsfehler"
+            );
+        };
+
+    socket.onmessage =
+        event => {
+
+            try {
+
+                handleServerMessage(
+                    JSON.parse(
+                        event.data
+                    )
+                );
+
+            } catch(error) {
+
+                console.error(
+                    error
+                );
+            }
+        };
+}
+
+function send(data) {
+
+    if (
+        socket &&
+        socket.readyState ===
+            WebSocket.OPEN
+    ) {
+        socket.send(
+            JSON.stringify(
+                data
+            )
+        );
+    }
+}
+
+connect();
+
+/* =====================================================
+   DATA
+===================================================== */
+
+let myId = null;
+let roomCode = "";
+
+let players = {};
+let bots = [];
+let bullets = [];
+let effects = [];
+
+let tutorial = [];
+let tutorialIndex = 0;
+
+let selectedSkin =
+    localStorage.getItem(
+        "battleSkin"
+    ) ||
+    "standard";
+
+let kills =
+    Number(
+        localStorage.getItem(
+            "battleKills"
+        ) ||
+        "0"
     );
 
-/*
-==================================================
-VARIABLEN
-==================================================
-*/
+let trophies =
+    Number(
+        localStorage.getItem(
+            "battleTrophies"
+        ) ||
+        "0"
+    );
+
+let trophyRewardTaken =
+    localStorage.getItem(
+        "trophy100Reward"
+    ) === "yes";
+
+let skinCatalog = {};
+
+let botDamage = 0;
+let superNeed = 0;
+
+let keyboard = {
+    up: false,
+    down: false,
+    left: false,
+    right: false
+};
+
+let joyX = 0;
+let joyY = 0;
+
+let aimX =
+    window.innerWidth * .75;
+
+let aimY =
+    window.innerHeight * .5;
 
 const canvas =
     document.getElementById(
@@ -823,101 +1212,53 @@ const ctx =
         "2d"
     );
 
-let players = {};
+/* =====================================================
+   PROFILE UI
+===================================================== */
 
-let bots = [];
+function updateProfileUI() {
 
-let bullets = [];
+    document.getElementById(
+        "menuTrophies"
+    ).textContent =
+        trophies;
 
-let effects = [];
+    document.getElementById(
+        "menuKills"
+    ).textContent =
+        kills;
 
-let myId = null;
+    const skin =
+        skinCatalog[
+            selectedSkin
+        ];
 
-let roomCode = null;
-
-let mySkin = "standard";
-
-let myKills = 0;
-
-let myWeapon = "-";
-
-let tutorialSteps = [];
-
-let tutorialIndex = 0;
-
-let keys = {};
-
-let joystickX = 0;
-
-let joystickY = 0;
-
-let shooting = false;
-
-let lastTime = performance.now();
-
-/*
-==================================================
-CANVAS
-==================================================
-*/
-
-function resizeCanvas() {
-
-    canvas.width =
-        window.innerWidth *
-        devicePixelRatio;
-
-    canvas.height =
-        window.innerHeight *
-        devicePixelRatio;
-
-    ctx.setTransform(
-        devicePixelRatio,
-        0,
-        0,
-        devicePixelRatio,
-        0,
-        0
-    );
+    document.getElementById(
+        "menuSkin"
+    ).textContent =
+        skin
+            ? skin.name
+            : "Rookie";
 }
 
-window.addEventListener(
-    "resize",
-    resizeCanvas
-);
+updateProfileUI();
 
-resizeCanvas();
+/* =====================================================
+   TUTORIAL
+===================================================== */
 
-/*
-==================================================
-TUTORIAL
-==================================================
-*/
-
-socket.on(
-    "tutorial",
-    steps => {
-
-        tutorialSteps =
-            steps;
-
-        if (
-            !localStorage.getItem(
-                "battleTutorialDone"
-            )
-        ) {
-
-            startTutorial();
-        }
-    }
-);
-
-function startTutorial() {
+function openTutorial() {
 
     if (
-        tutorialSteps.length === 0
-    )
+        tutorial.length === 0
+    ) {
+
+        alert(
+            "Tutorial wird vom Server geladen."
+        );
+
         return;
+    }
 
     tutorialIndex = 0;
 
@@ -926,15 +1267,20 @@ function startTutorial() {
     ).style.display =
         "flex";
 
-    updateTutorial();
+    showTutorial();
 }
 
-function updateTutorial() {
+function showTutorial() {
 
     const step =
-        tutorialSteps[
+        tutorial[
             tutorialIndex
         ];
+
+    if (!step) {
+        closeTutorial();
+        return;
+    }
 
     document.getElementById(
         "tutorialTitle"
@@ -947,9 +1293,9 @@ function updateTutorial() {
         step.text;
 
     document.getElementById(
-        "tutorialCounter"
+        "tutorialCount"
     ).textContent =
-        `${tutorialIndex + 1} / ${tutorialSteps.length}`;
+        `${tutorialIndex + 1} / ${tutorial.length}`;
 }
 
 function nextTutorial() {
@@ -958,361 +1304,470 @@ function nextTutorial() {
 
     if (
         tutorialIndex >=
-        tutorialSteps.length
+        tutorial.length
     ) {
 
-        document.getElementById(
-            "tutorial"
-        ).style.display =
-            "none";
+        closeTutorial();
 
         localStorage.setItem(
-            "battleTutorialDone",
+            "tutorialDone",
             "yes"
-        );
-
-        socket.emit(
-            "tutorialComplete"
         );
 
         return;
     }
 
-    updateTutorial();
+    showTutorial();
 }
 
-/*
-==================================================
-SKINS
-==================================================
-*/
-
-const skinNames = [
-
-    ["standard", "Standard"],
-
-    ["rare1", "Blue"],
-    ["rare2", "Green"],
-    ["rare3", "Red"],
-    ["rare4", "Purple"],
-    ["rare5", "Orange"],
-
-    ["super1", "Cyber"],
-    ["super2", "Shadow"],
-    ["super3", "Ice"],
-    ["super4", "Fire"],
-    ["super5", "Toxic"],
-
-    ["epic1", "Galaxy"],
-    ["epic2", "Neon"],
-    ["epic3", "Storm"],
-    ["epic4", "Inferno"],
-    ["epic5", "Void"],
-
-    ["mythic1", "Dragon"],
-    ["mythic2", "Demon"],
-    ["mythic3", "Titan"],
-    ["mythic4", "Phoenix"],
-    ["mythic5", "Cosmic"],
-
-    ["legend1", "Legend"],
-    ["legend2", "King"],
-    ["legend3", "Battle God"]
-];
-
-function openSkins() {
+function closeTutorial() {
 
     document.getElementById(
-        "skinMenu"
+        "tutorial"
     ).style.display =
-        "block";
+        "none";
+}
 
-    const grid =
-        document.getElementById(
-            "skinGrid"
+/* =====================================================
+   SERVER MESSAGE
+===================================================== */
+
+function handleServerMessage(
+    data
+) {
+
+    if (
+        data.type ===
+        "tutorial"
+    ) {
+
+        tutorial =
+            data.tutorial ||
+            [];
+
+        skinCatalog =
+            {};
+
+        (
+            data.skins ||
+            []
+        ).forEach(
+            skin => {
+
+                skinCatalog[
+                    skin.id
+                ] = skin;
+            }
         );
 
-    grid.innerHTML = "";
+        renderSkins();
 
-    skinNames.forEach(
-        skin => {
+        updateProfileUI();
 
-            const card =
-                document.createElement(
-                    "div"
-                );
+        if (
+            !localStorage.getItem(
+                "tutorialDone"
+            )
+        ) {
 
-            card.className =
-                "skinCard";
-
-            const character =
-                document.createElement(
-                    "div"
-                );
-
-            character.className =
-                "skinCharacter";
-
-            character.style.filter =
-                skinFilter(
-                    skin[0]
-                );
-
-            const title =
-                document.createElement(
-                    "div"
-                );
-
-            title.textContent =
-                skin[1];
-
-            const button =
-                document.createElement(
-                    "button"
-                );
-
-            button.textContent =
-                "Auswählen";
-
-            button.onclick =
-                () => {
-
-                    mySkin =
-                        skin[0];
-
-                    socket.emit(
-                        "changeSkin",
-                        mySkin
-                    );
-
-                    closeSkins();
-                };
-
-            card.appendChild(
-                character
-            );
-
-            card.appendChild(
-                title
-            );
-
-            card.appendChild(
-                button
-            );
-
-            grid.appendChild(
-                card
-            );
+            openTutorial();
         }
-    );
+    }
+
+    if (
+        data.type ===
+        "roomCreated"
+    ) {
+
+        roomCode =
+            data.code;
+
+        showLobby();
+    }
+
+    if (
+        data.type ===
+        "joinedRoom"
+    ) {
+
+        roomCode =
+            data.code;
+
+        showLobby();
+    }
+
+    if (
+        data.type ===
+        "errorMessage"
+    ) {
+
+        alert(
+            data.message
+        );
+    }
+
+    if (
+        data.type ===
+        "state"
+    ) {
+
+        players = {};
+
+        (
+            data.players ||
+            []
+        ).forEach(
+            player => {
+
+                players[
+                    player.id
+                ] =
+                    player;
+            }
+        );
+
+        bots =
+            data.bots ||
+            [];
+
+        const me =
+            players[
+                myId
+            ];
+
+        if (me) {
+
+            botDamage =
+                me.botDamage ||
+                0;
+
+            const skin =
+                skinCatalog[
+                    me.skin
+                ];
+
+            if (skin) {
+
+                superNeed =
+                    skin.superNeed ||
+                    0;
+            }
+
+            document.getElementById(
+                "hp"
+            ).textContent =
+                Math.max(
+                    0,
+                    Math.round(
+                        me.hp
+                    )
+                );
+
+            document.getElementById(
+                "weaponName"
+            ).textContent =
+                me.weapon;
+
+            document.getElementById(
+                "gameKills"
+            ).textContent =
+                me.kills;
+
+            updateSuper();
+
+            /*
+            Falls Server bereits
+            einen Skin übernommen hat.
+            */
+
+            if (
+                selectedSkin !==
+                me.skin
+            ) {
+
+                selectedSkin =
+                    me.skin;
+
+                localStorage.setItem(
+                    "battleSkin",
+                    selectedSkin
+                );
+
+                updateProfileUI();
+            }
+        }
+    }
+
+    if (
+        data.type ===
+        "bulletSpawn"
+    ) {
+
+        bullets.push({
+
+            x:
+                data.x,
+
+            y:
+                data.y,
+
+            dx:
+                data.dx,
+
+            dy:
+                data.dy,
+
+            speed:
+                data.speed,
+
+            color:
+                data.color,
+
+            life:
+                Math.ceil(
+                    data.speed
+                        ? 100
+                        : 1
+                )
+        });
+    }
+
+    if (
+        data.type ===
+        "bulletImpact"
+    ) {
+
+        effects.push({
+
+            type:
+                "impact",
+
+            x:
+                data.x,
+
+            y:
+                data.y,
+
+            life:
+                14
+        });
+    }
+
+    if (
+        data.type ===
+        "bulletHit"
+    ) {
+
+        effects.push({
+
+            type:
+                "hit",
+
+            x:
+                data.x,
+
+            y:
+                data.y,
+
+            life:
+                18,
+
+            damage:
+                data.damage
+        });
+    }
+
+    if (
+        data.type ===
+        "meleeEffect"
+    ) {
+
+        effects.push({
+
+            type:
+                "slash",
+
+            x:
+                data.x,
+
+            y:
+                data.y,
+
+            life:
+                18
+        });
+    }
+
+    if (
+        data.type ===
+        "superEffect"
+    ) {
+
+        effects.push({
+
+            type:
+                "super",
+
+            x:
+                data.x,
+
+            y:
+                data.y,
+
+            life:
+                35
+        });
+    }
+
+    if (
+        data.type ===
+        "elimination"
+    ) {
+
+        if (
+            data.killer ===
+            myId
+        ) {
+
+            kills++;
+
+            localStorage.setItem(
+                "battleKills",
+                kills
+            );
+
+            document.getElementById(
+                "gameKills"
+            ).textContent =
+                kills;
+
+            /*
+            100 Trophäen =
+            einmalig +50 Skin-Kills
+            */
+
+            if (
+                trophies >= 100 &&
+                !trophyRewardTaken
+            ) {
+
+                trophyRewardTaken =
+                    true;
+
+                kills += 50;
+
+                localStorage.setItem(
+                    "battleKills",
+                    kills
+                );
+
+                localStorage.setItem(
+                    "trophy100Reward",
+                    "yes"
+                );
+
+                alert(
+                    "🏆 100 Trophäen! +50 Skin-Kills!"
+                );
+
+                updateProfileUI();
+            }
+        }
+    }
 }
 
-function skinFilter(id) {
-
-    const filters = {
-
-        standard:
-            "none",
-
-        rare1:
-            "hue-rotate(0deg)",
-
-        rare2:
-            "hue-rotate(70deg)",
-
-        rare3:
-            "hue-rotate(130deg)",
-
-        rare4:
-            "hue-rotate(220deg)",
-
-        rare5:
-            "hue-rotate(290deg)",
-
-        super1:
-            "saturate(2)",
-
-        super2:
-            "brightness(.5)",
-
-        super3:
-            "hue-rotate(180deg)",
-
-        super4:
-            "saturate(3)",
-
-        super5:
-            "hue-rotate(80deg)",
-
-        epic1:
-            "brightness(1.5)",
-
-        epic2:
-            "contrast(2)",
-
-        epic3:
-            "hue-rotate(200deg)",
-
-        epic4:
-            "saturate(4)",
-
-        epic5:
-            "invert(.8)",
-
-        mythic1:
-            "hue-rotate(40deg) saturate(4)",
-
-        mythic2:
-            "brightness(.4) saturate(5)",
-
-        mythic3:
-            "contrast(2) saturate(4)",
-
-        mythic4:
-            "hue-rotate(330deg) saturate(4)",
-
-        mythic5:
-            "invert(.6) saturate(3)",
-
-        legend1:
-            "brightness(1.7) saturate(3)",
-
-        legend2:
-            "contrast(2.5)",
-
-        legend3:
-            "brightness(1.8) contrast(2)"
-    };
-
-    return filters[id] ||
-        "none";
-}
-
-function closeSkins() {
-
-    document.getElementById(
-        "skinMenu"
-    ).style.display =
-        "none";
-}
-
-/*
-==================================================
-CREATE ROOM
-==================================================
-*/
+/* =====================================================
+   ROOM
+===================================================== */
 
 function createRoom() {
 
     const name =
         document.getElementById(
-            "nameInput"
-        ).value ||
+            "name"
+        ).value.trim() ||
         "Player";
 
-    const bots =
+    let botCount =
         Number(
             prompt(
-                "Wie viele Bots? 0 bis 5",
+                "Wie viele Bots? 0–5",
                 "3"
             )
         );
 
-    socket.emit(
-        "createRoom",
-        {
-            name,
-            bots:
-                Number.isFinite(
-                    bots
-                )
-                    ? Math.max(
-                        0,
-                        Math.min(
-                            5,
-                            bots
-                        )
-                    )
-                    : 0,
+    if (
+        !Number.isFinite(
+            botCount
+        )
+    ) {
 
-            skin:
-                mySkin
-        }
-    );
-}
-
-socket.on(
-    "roomCreated",
-    data => {
-
-        roomCode =
-            data.code;
-
-        showLobby();
+        botCount = 0;
     }
-);
 
-/*
-==================================================
-JOIN ROOM
-==================================================
-*/
+    botCount =
+        Math.max(
+            0,
+            Math.min(
+                5,
+                botCount
+            )
+        );
+
+    send({
+
+        type:
+            "createRoom",
+
+        name,
+
+        bots:
+            botCount,
+
+        skin:
+            selectedSkin
+    });
+}
 
 function joinRoom() {
 
     const name =
         document.getElementById(
-            "nameInput"
-        ).value ||
+            "name"
+        ).value.trim() ||
         "Player";
 
     const code =
         document.getElementById(
-            "roomInput"
-        ).value
-        .trim()
+            "joinCode"
+        ).value.trim()
         .toUpperCase();
 
     if (
-        code.length !== 4
+        code.length !==
+        4
     ) {
 
         alert(
-            "Bitte einen 4-stelligen Raumcode eingeben."
+            "Der Raumcode muss 4 Zeichen haben."
         );
 
         return;
     }
 
-    socket.emit(
-        "joinRoom",
-        {
-            name,
-            code,
-            skin:
-                mySkin
-        }
-    );
+    send({
+
+        type:
+            "joinRoom",
+
+        name,
+
+        code,
+
+        skin:
+            selectedSkin
+    });
 }
-
-socket.on(
-    "joinedRoom",
-    data => {
-
-        roomCode =
-            data.code;
-
-        showLobby();
-    }
-);
-
-socket.on(
-    "errorMessage",
-    message => {
-
-        alert(message);
-    }
-);
 
 function showLobby() {
 
@@ -1330,18 +1785,29 @@ function showLobby() {
         "roomCode"
     ).textContent =
         roomCode;
+
+    document.getElementById(
+        "roomTop"
+    ).textContent =
+        roomCode;
+
+    updateLobby();
 }
 
-function copyRoomCode() {
+function copyRoom() {
 
-    navigator.clipboard.writeText(
-        roomCode
-    );
+    if (
+        navigator.clipboard
+    ) {
 
-    alert(
-        "Raumcode kopiert: " +
-        roomCode
-    );
+        navigator.clipboard.writeText(
+            roomCode
+        );
+
+        alert(
+            "Code kopiert!"
+        );
+    }
 }
 
 function startGame() {
@@ -1357,118 +1823,415 @@ function startGame() {
         "block";
 }
 
-/*
-==================================================
-STATE
-==================================================
-*/
+/* =====================================================
+   SKINS
+===================================================== */
 
-socket.on(
-    "connect",
-    () => {
+function openSkins() {
 
-        myId =
-            socket.id;
-    }
-);
+    document.getElementById(
+        "skins"
+    ).style.display =
+        "block";
 
-socket.on(
-    "state",
-    data => {
+    renderSkins();
+}
 
-        players =
-            data.players || {};
+function closeSkins() {
 
-        bots =
-            data.bots || [];
+    document.getElementById(
+        "skins"
+    ).style.display =
+        "none";
+}
 
-        if (
-            players[myId]
-        ) {
+function renderSkins() {
 
-            const me =
-                players[myId];
+    const grid =
+        document.getElementById(
+            "skinGrid"
+        );
 
-            document.getElementById(
-                "hp"
-            ).textContent =
-                Math.max(
-                    0,
-                    Math.round(
-                        me.hp
-                    )
+    grid.innerHTML =
+        "";
+
+    Object.values(
+        skinCatalog
+    ).forEach(
+        skin => {
+
+            const card =
+                document.createElement(
+                    "div"
                 );
 
-            document.getElementById(
-                "weaponDisplay"
-            ).textContent =
-                me.weapon;
+            card.className =
+                "skin-card";
 
-            document.getElementById(
-                "kills"
-            ).textContent =
-                me.kills;
+            const preview =
+                document.createElement(
+                    "div"
+                );
 
-            myWeapon =
-                me.weapon;
+            preview.className =
+                "skin-preview";
 
-            myKills =
-                me.kills;
+            const avatar =
+                document.createElement(
+                    "div"
+                );
+
+            avatar.className =
+                "avatar-preview";
+
+            avatar.style.background =
+                `linear-gradient(
+                    145deg,
+                    ${skin.color},
+                    #111827
+                )`;
+
+            const head =
+                document.createElement(
+                    "div"
+                );
+
+            head.className =
+                "avatar-head";
+
+            avatar.appendChild(
+                head
+            );
+
+            preview.appendChild(
+                avatar
+            );
+
+            const title =
+                document.createElement(
+                    "h3"
+                );
+
+            title.textContent =
+                skin.name;
+
+            const rarity =
+                document.createElement(
+                    "div"
+                );
+
+            rarity.className =
+                "rarity";
+
+            rarity.textContent =
+                skin.rarity;
+
+            const weapon =
+                document.createElement(
+                    "div"
+                );
+
+            weapon.className =
+                "weapon-text";
+
+            weapon.textContent =
+                "🔫 " +
+                skin.weapon;
+
+            const damage =
+                document.createElement(
+                    "div"
+                );
+
+            damage.className =
+                "rarity";
+
+            damage.textContent =
+                `Schaden +${skin.damageBonus}%`;
+
+            const superText =
+                document.createElement(
+                    "div"
+                );
+
+            superText.className =
+                "super-text";
+
+            superText.textContent =
+                skin.superNeed > 0
+                    ? `⚡ ${skin.super} – ${skin.superNeed} Bot-Schaden`
+                    : "⚡ Kein Super";
+
+            const price =
+                document.createElement(
+                    "div"
+                );
+
+            price.className =
+                "price";
+
+            price.textContent =
+                skin.price === 0
+                    ? "Kostenlos"
+                    : `Preis: ${skin.price} Kills`;
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+            const unlocked =
+                kills >=
+                skin.price;
+
+            const selected =
+                selectedSkin ===
+                skin.id;
 
             if (
-                !me.alive
+                selected
             ) {
 
-                document.getElementById(
-                    "death"
-                ).style.display =
-                    "flex";
-            }
-        }
-    }
-);
+                button.textContent =
+                    "✓ Ausgewählt";
 
-/*
-==================================================
-KEYBOARD
-==================================================
-*/
+            } else if (
+                unlocked
+            ) {
+
+                button.textContent =
+                    "Auswählen";
+
+            } else {
+
+                button.textContent =
+                    `🔒 ${skin.price} Kills`;
+            }
+
+            button.onclick =
+                () => {
+
+                    if (
+                        !unlocked
+                    ) {
+
+                        alert(
+                            `Du brauchst ${skin.price} Kills.`
+                        );
+
+                        return;
+                    }
+
+                    selectedSkin =
+                        skin.id;
+
+                    localStorage.setItem(
+                        "battleSkin",
+                        selectedSkin
+                    );
+
+                    updateProfileUI();
+
+                    send({
+
+                        type:
+                            "changeSkin",
+
+                        skin:
+                            selectedSkin
+                    });
+
+                    renderSkins();
+
+                    updateLobby();
+                };
+
+            card.appendChild(
+                preview
+            );
+
+            card.appendChild(
+                title
+            );
+
+            card.appendChild(
+                rarity
+            );
+
+            card.appendChild(
+                weapon
+            );
+
+            card.appendChild(
+                damage
+            );
+
+            card.appendChild(
+                superText
+            );
+
+            card.appendChild(
+                price
+            );
+
+            card.appendChild(
+                button
+            );
+
+            grid.appendChild(
+                card
+            );
+        }
+    );
+}
+
+/* =====================================================
+   LOBBY
+===================================================== */
+
+function updateLobby() {
+
+    const skin =
+        skinCatalog[
+            selectedSkin
+        ];
+
+    if (!skin) return;
+
+    document.getElementById(
+        "lobbyName"
+    ).textContent =
+        skin.name;
+
+    document.getElementById(
+        "lobbyRarity"
+    ).textContent =
+        skin.rarity;
+
+    document.getElementById(
+        "lobbyWeapon"
+    ).textContent =
+        skin.weapon;
+
+    document.getElementById(
+        "lobbyDamage"
+    ).textContent =
+        `+${skin.damageBonus}%`;
+
+    document.getElementById(
+        "lobbySuper"
+    ).textContent =
+        skin.super;
+
+    document.getElementById(
+        "lobbyTrophies"
+    ).textContent =
+        trophies;
+
+    document.getElementById(
+        "lobbySkinKills"
+    ).textContent =
+        kills;
+
+    document.getElementById(
+        "lobbyCharacter"
+    ).style.background =
+        `linear-gradient(
+            145deg,
+            ${skin.color},
+            #111827
+        )`;
+}
+
+/* =====================================================
+   INPUT
+===================================================== */
 
 window.addEventListener(
     "keydown",
-    e => {
+    event => {
 
         if (
-            [
-                "ArrowUp",
-                "ArrowDown",
-                "ArrowLeft",
+            event.key ===
+                "ArrowUp" ||
+            event.key ===
+                "ArrowDown" ||
+            event.key ===
+                "ArrowLeft" ||
+            event.key ===
                 "ArrowRight"
-            ].includes(e.key)
         ) {
 
-            e.preventDefault();
+            event.preventDefault();
+        }
 
-            keys[e.key] =
-                true;
+        if (
+            event.key ===
+            "ArrowUp"
+        ) {
+            keyboard.up = true;
+        }
+
+        if (
+            event.key ===
+            "ArrowDown"
+        ) {
+            keyboard.down = true;
+        }
+
+        if (
+            event.key ===
+            "ArrowLeft"
+        ) {
+            keyboard.left = true;
+        }
+
+        if (
+            event.key ===
+            "ArrowRight"
+        ) {
+            keyboard.right = true;
         }
     }
 );
 
 window.addEventListener(
     "keyup",
-    e => {
+    event => {
 
-        keys[e.key] =
-            false;
+        if (
+            event.key ===
+            "ArrowUp"
+        ) {
+            keyboard.up = false;
+        }
+
+        if (
+            event.key ===
+            "ArrowDown"
+        ) {
+            keyboard.down = false;
+        }
+
+        if (
+            event.key ===
+            "ArrowLeft"
+        ) {
+            keyboard.left = false;
+        }
+
+        if (
+            event.key ===
+            "ArrowRight"
+        ) {
+            keyboard.right = false;
+        }
     }
 );
 
-/*
-==================================================
-JOYSTICK
-==================================================
-*/
+/* =====================================================
+   MOBILE JOYSTICK
+===================================================== */
 
 const joystick =
     document.getElementById(
@@ -1480,10 +2243,61 @@ const stick =
         "stick"
     );
 
-let joystickActive =
+let joyActive =
     false;
 
-function updateJoystick(
+joystick.addEventListener(
+    "pointerdown",
+    event => {
+
+        joyActive =
+            true;
+
+        joystick.setPointerCapture(
+            event.pointerId
+        );
+
+        moveJoystick(
+            event.clientX,
+            event.clientY
+        );
+    }
+);
+
+joystick.addEventListener(
+    "pointermove",
+    event => {
+
+        if (
+            !joyActive
+        ) return;
+
+        moveJoystick(
+            event.clientX,
+            event.clientY
+        );
+    }
+);
+
+joystick.addEventListener(
+    "pointerup",
+    () => {
+
+        joyActive =
+            false;
+
+        joyX = 0;
+        joyY = 0;
+
+        stick.style.left =
+            "38px";
+
+        stick.style.top =
+            "38px";
+    }
+);
+
+function moveJoystick(
     x,
     y
 ) {
@@ -1508,7 +2322,7 @@ function updateJoystick(
         centerY;
 
     const max =
-        42;
+        43;
 
     const d =
         Math.hypot(
@@ -1517,558 +2331,332 @@ function updateJoystick(
         );
 
     if (
-        d > max
+        d >
+        max
     ) {
 
         dx =
-            dx /
-            d *
+            dx / d *
             max;
 
         dy =
-            dy /
-            d *
+            dy / d *
             max;
     }
 
+    joyX =
+        dx / max;
+
+    joyY =
+        dy / max;
+
     stick.style.left =
-        36 +
+        38 +
         dx +
         "px";
 
     stick.style.top =
-        36 +
+        38 +
         dy +
         "px";
-
-    joystickX =
-        dx / max;
-
-    joystickY =
-        dy / max;
 }
 
-joystick.addEventListener(
+/* =====================================================
+   AIM
+===================================================== */
+
+const aim =
+    document.getElementById(
+        "aim"
+    );
+
+aim.addEventListener(
     "pointerdown",
-    e => {
+    event => {
 
-        joystickActive =
-            true;
-
-        joystick.setPointerCapture(
-            e.pointerId
+        aim.setPointerCapture(
+            event.pointerId
         );
 
-        updateJoystick(
-            e.clientX,
-            e.clientY
-        );
+        aimX =
+            event.clientX;
+
+        aimY =
+            event.clientY;
     }
 );
 
-joystick.addEventListener(
+aim.addEventListener(
     "pointermove",
-    e => {
+    event => {
 
-        if (
-            joystickActive
-        ) {
+        aimX =
+            event.clientX;
 
-            updateJoystick(
-                e.clientX,
-                e.clientY
-            );
-        }
+        aimY =
+            event.clientY;
     }
 );
 
-joystick.addEventListener(
-    "pointerup",
-    () => {
+window.addEventListener(
+    "mousemove",
+    event => {
 
-        joystickActive =
-            false;
+        aimX =
+            event.clientX;
 
-        joystickX = 0;
-
-        joystickY = 0;
-
-        stick.style.left =
-            "36px";
-
-        stick.style.top =
-            "36px";
+        aimY =
+            event.clientY;
     }
 );
 
-/*
-==================================================
-MOVEMENT
-==================================================
-*/
+/* =====================================================
+   MOVE
+===================================================== */
 
 setInterval(
     () => {
 
-        const me =
-            players[myId];
-
-        if (!me)
+        if (
+            document.getElementById(
+                "game"
+            ).style.display !==
+            "block"
+        ) {
             return;
+        }
 
-        if (!me.alive)
-            return;
-
-        let x =
-            me.x;
-
-        let y =
-            me.y;
+        let dx = 0;
+        let dy = 0;
 
         if (
-            keys.ArrowUp
-        )
-            y -= 5;
+            keyboard.up
+        ) dy--;
 
         if (
-            keys.ArrowDown
-        )
-            y += 5;
+            keyboard.down
+        ) dy++;
 
         if (
-            keys.ArrowLeft
-        )
-            x -= 5;
+            keyboard.left
+        ) dx--;
 
         if (
-            keys.ArrowRight
-        )
-            x += 5;
+            keyboard.right
+        ) dx++;
 
-        x +=
-            joystickX * 5;
-
-        y +=
-            joystickY * 5;
+        dx += joyX;
+        dy += joyY;
 
         if (
-            x !== me.x ||
-            y !== me.y
+            dx ||
+            dy
         ) {
 
-            socket.emit(
-                "move",
-                {
-                    x,
-                    y
-                }
-            );
+            send({
+
+                type:
+                    "moveIntent",
+
+                dx,
+                dy
+            });
         }
 
     },
     1000 / 30
 );
 
-/*
-==================================================
-SHOOT BUTTON
-==================================================
-*/
+/* =====================================================
+   SHOOT
+===================================================== */
 
-const shootButton =
-    document.getElementById(
-        "shootButton"
+document
+    .getElementById(
+        "shoot"
+    )
+    .addEventListener(
+        "pointerdown",
+        event => {
+
+            event.preventDefault();
+
+            shoot();
+        }
     );
 
-shootButton.addEventListener(
-    "pointerdown",
-    () => {
+window.addEventListener(
+    "mousedown",
+    event => {
 
-        shooting = true;
+        if (
+            event.button === 0 &&
+            document.getElementById(
+                "game"
+            ).style.display ===
+                "block"
+        ) {
 
-        shoot();
+            shoot();
+        }
     }
 );
-
-shootButton.addEventListener(
-    "pointerup",
-    () => {
-
-        shooting = false;
-    }
-);
-
-/*
-==================================================
-SHOOT
-==================================================
-*/
 
 function shoot() {
 
     const me =
-        players[myId];
+        players[
+            myId
+        ];
 
-    if (!me)
-        return;
+    if (!me) return;
 
-    let dx = 1;
+    const centerX =
+        window.innerWidth / 2;
 
-    let dy = 0;
+    const centerY =
+        window.innerHeight / 2;
 
-    /*
-    Joystick gibt Richtung vor.
-    */
+    let dx =
+        aimX -
+        centerX;
+
+    let dy =
+        aimY -
+        centerY;
 
     if (
-        Math.abs(
-            joystickX
-        ) +
-        Math.abs(
-            joystickY
-        ) > .2
+        Math.hypot(
+            dx,
+            dy
+        ) < 8
     ) {
 
         dx =
-            joystickX;
+            joyX ||
+            1;
 
         dy =
-            joystickY;
+            joyY;
     }
 
-    /*
-    PC:
-    In Richtung des nächsten Gegners.
-    */
+    send({
 
-    else {
+        type:
+            "shoot",
 
-        const targets = [
-            ...Object.values(
-                players
-            ),
-            ...bots
-        ].filter(
-            p =>
-                p.alive &&
-                p.id !== myId
+        dx,
+        dy
+    });
+}
+
+function useSuper() {
+
+    send({
+        type:
+            "useSuper"
+    });
+}
+
+function updateSuper() {
+
+    const fill =
+        document.getElementById(
+            "super-fill"
         );
 
-        if (
-            targets.length
-        ) {
+    const button =
+        document.getElementById(
+            "super-button"
+        );
 
-            targets.sort(
-                (a,b) =>
-                    Math.hypot(
-                        me.x-a.x,
-                        me.y-a.y
-                    ) -
-                    Math.hypot(
-                        me.x-b.x,
-                        me.y-b.y
-                    )
-            );
+    const percent =
+        superNeed > 0
+            ? Math.min(
+                100,
+                (
+                    botDamage /
+                    superNeed
+                ) *
+                100
+            )
+            : 0;
 
-            const target =
-                targets[0];
+    fill.style.width =
+        percent +
+        "%";
 
-            dx =
-                target.x -
-                me.x;
+    if (
+        superNeed > 0 &&
+        botDamage >=
+            superNeed
+    ) {
 
-            dy =
-                target.y -
-                me.y;
-        }
+        button.classList.add(
+            "ready"
+        );
+
+    } else {
+
+        button.classList.remove(
+            "ready"
+        );
     }
+}
 
-    socket.emit(
-        "shoot",
-        {
-            dx,
-            dy
-        }
+/* =====================================================
+   EFFECTS
+===================================================== */
+
+function addEffect(
+    type,
+    x,
+    y
+) {
+
+    effects.push({
+        type,
+        x,
+        y,
+        life: 16
+    });
+}
+
+/* =====================================================
+   DRAW
+===================================================== */
+
+const walls = [
+    { x:100, y:100, w:300, h:45 },
+    { x:520, y:100, w:260, h:45 },
+    { x:900, y:100, w:300, h:45 },
+    { x:1320, y:100, w:200, h:45 },
+
+    { x:180, y:300, w:260, h:45 },
+    { x:620, y:270, w:350, h:45 },
+    { x:1130, y:300, w:280, h:45 },
+
+    { x:700, y:420, w:220, h:55 },
+
+    { x:100, y:700, w:320, h:45 },
+    { x:520, y:720, w:270, h:45 },
+    { x:920, y:690, w:300, h:45 },
+    { x:1320, y:720, w:200, h:45 }
+];
+
+function sx(x) {
+    return (
+        x /
+        1600 *
+        canvas.width
     );
 }
 
-/*
-==================================================
-PROJECTILE
-==================================================
-*/
-
-socket.on(
-    "bullet",
-    bullet => {
-
-        bullets.push({
-            x:
-                bullet.x,
-
-            y:
-                bullet.y,
-
-            dx:
-                bullet.dx,
-
-            dy:
-                bullet.dy,
-
-            speed:
-                bullet.speed,
-
-            color:
-                bullet.color,
-
-            life:
-                70
-        });
-
-        effects.push({
-            x:
-                bullet.x,
-
-            y:
-                bullet.y,
-
-            life:
-                10,
-
-            type:
-                "muzzle"
-        });
-    }
-);
-
-socket.on(
-    "meleeEffect",
-    data => {
-
-        effects.push({
-            x:
-                data.x,
-
-            y:
-                data.y,
-
-            life:
-                15,
-
-            type:
-                "slash"
-        });
-    }
-);
-
-/*
-==================================================
-ELIMINATION
-==================================================
-*/
-
-socket.on(
-    "elimination",
-    data => {
-
-        effects.push({
-            text:
-                data.killer +
-                " eliminiert " +
-                data.victim,
-
-            life:
-                100
-        });
-    }
-);
-
-/*
-==================================================
-DRAW PLAYER
-==================================================
-*/
-
-function drawCharacter(
-    p
-) {
-
-    const scale =
-        1;
-
-    const x =
-        p.x;
-
-    const y =
-        p.y;
-
-    /*
-    Schatten
-    */
-
-    ctx.beginPath();
-
-    ctx.ellipse(
-        x,
-        y + 22,
-        20,
-        8,
-        0,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fillStyle =
-        "rgba(0,0,0,.35)";
-
-    ctx.fill();
-
-    /*
-    Körper
-    */
-
-    const gradient =
-        ctx.createLinearGradient(
-            x - 18,
-            y - 30,
-            x + 18,
-            y + 25
-        );
-
-    gradient.addColorStop(
-        0,
-        "#60a5fa"
-    );
-
-    gradient.addColorStop(
-        1,
-        "#1e3a8a"
-    );
-
-    ctx.fillStyle =
-        gradient;
-
-    ctx.beginPath();
-
-    ctx.roundRect(
-        x - 15,
-        y - 8,
-        30,
-        32,
-        8
-    );
-
-    ctx.fill();
-
-    /*
-    Kopf
-    */
-
-    ctx.beginPath();
-
-    ctx.arc(
-        x,
-        y - 18,
-        13,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fillStyle =
-        "#f2c7a5";
-
-    ctx.fill();
-
-    /*
-    Haare / Helm
-    */
-
-    ctx.beginPath();
-
-    ctx.arc(
-        x,
-        y - 22,
-        13,
-        Math.PI,
-        0
-    );
-
-    ctx.fillStyle =
-        skinColor(
-            p.skin
-        );
-
-    ctx.fill();
-
-    /*
-    Waffe
-    */
-
-    ctx.strokeStyle =
-        "#e5e7eb";
-
-    ctx.lineWidth =
-        5;
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        x + 8,
-        y
-    );
-
-    ctx.lineTo(
-        x + 28,
-        y
-    );
-
-    ctx.stroke();
-
-    /*
-    Name
-    */
-
-    ctx.font =
-        "bold 12px Arial";
-
-    ctx.textAlign =
-        "center";
-
-    ctx.fillStyle =
-        "white";
-
-    ctx.fillText(
-        p.name,
-        x,
-        y - 42
-    );
-
-    /*
-    HP
-    */
-
-    ctx.fillStyle =
-        "#450a0a";
-
-    ctx.fillRect(
-        x - 20,
-        y - 37,
-        40,
-        5
-    );
-
-    ctx.fillStyle =
-        "#22c55e";
-
-    ctx.fillRect(
-        x - 20,
-        y - 37,
-        40 *
-        Math.max(
-            0,
-            p.hp / 100
-        ),
-        5
+function sy(y) {
+    return (
+        y /
+        900 *
+        canvas.height
     );
 }
 
@@ -2076,125 +2664,53 @@ function skinColor(
     id
 ) {
 
-    const colors = {
+    const skin =
+        skinCatalog[
+            id
+        ];
 
-        standard:
-            "#38bdf8",
-
-        rare1:
-            "#2563eb",
-
-        rare2:
-            "#22c55e",
-
-        rare3:
-            "#ef4444",
-
-        rare4:
-            "#a855f7",
-
-        rare5:
-            "#f97316",
-
-        super1:
-            "#06b6d4",
-
-        super2:
-            "#020617",
-
-        super3:
-            "#bae6fd",
-
-        super4:
-            "#f97316",
-
-        super5:
-            "#84cc16",
-
-        epic1:
-            "#8b5cf6",
-
-        epic2:
-            "#ec4899",
-
-        epic3:
-            "#38bdf8",
-
-        epic4:
-            "#dc2626",
-
-        epic5:
-            "#312e81",
-
-        mythic1:
-            "#f59e0b",
-
-        mythic2:
-            "#7f1d1d",
-
-        mythic3:
-            "#64748b",
-
-        mythic4:
-            "#f97316",
-
-        mythic5:
-            "#6366f1",
-
-        legend1:
-            "#facc15",
-
-        legend2:
-            "#fde68a",
-
-        legend3:
-            "#ffffff"
-    };
-
-    return (
-        colors[id] ||
-        "#38bdf8"
-    );
+    return skin
+        ? skin.color
+        : "#38bdf8";
 }
-
-/*
-==================================================
-ARENA
-==================================================
-*/
 
 function drawArena() {
 
-    const width =
-        window.innerWidth;
+    const bg =
+        ctx.createLinearGradient(
+            0,
+            0,
+            0,
+            canvas.height
+        );
 
-    const height =
-        window.innerHeight;
+    bg.addColorStop(
+        0,
+        "#1f3349"
+    );
+
+    bg.addColorStop(
+        1,
+        "#0b131c"
+    );
 
     ctx.fillStyle =
-        "#17212b";
+        bg;
 
     ctx.fillRect(
         0,
         0,
-        width,
-        height
+        canvas.width,
+        canvas.height
     );
 
-    /*
-    Raster
-    */
-
     ctx.strokeStyle =
-        "rgba(255,255,255,.04)";
-
-    ctx.lineWidth =
-        1;
+        "rgba(255,255,255,.035)";
 
     for (
         let x = 0;
-        x < width;
-        x += 40
+        x < canvas.width;
+        x += 45
     ) {
 
         ctx.beginPath();
@@ -2206,7 +2722,7 @@ function drawArena() {
 
         ctx.lineTo(
             x,
-            height
+            canvas.height
         );
 
         ctx.stroke();
@@ -2214,8 +2730,8 @@ function drawArena() {
 
     for (
         let y = 0;
-        y < height;
-        y += 40
+        y < canvas.height;
+        y += 45
     ) {
 
         ctx.beginPath();
@@ -2226,131 +2742,302 @@ function drawArena() {
         );
 
         ctx.lineTo(
-            width,
+            canvas.width,
             y
         );
 
         ctx.stroke();
     }
 
-    /*
-    Wände
-    */
-
-    const walls = [
-
-        {
-            x: 100,
-            y: 120,
-            w: 300,
-            h: 35
-        },
-
-        {
-            x: 600,
-            y: 100,
-            w: 350,
-            h: 35
-        },
-
-        {
-            x: 300,
-            y: 300,
-            w: 250,
-            h: 35
-        },
-
-        {
-            x: 700,
-            y: 330,
-            w: 250,
-            h: 35
-        },
-
-        {
-            x: 150,
-            y: 520,
-            w: 350,
-            h: 35
-        },
-
-        {
-            x: 700,
-            y: 520,
-            w: 300,
-            h: 35
-        }
-    ];
-
     walls.forEach(
         wall => {
 
-            const g =
-                ctx.createLinearGradient(
-                    wall.x,
-                    wall.y,
-                    wall.x,
-                    wall.y +
-                    wall.h
-                );
+            const x =
+                sx(wall.x);
 
-            g.addColorStop(
-                0,
-                "#64748b"
+            const y =
+                sy(wall.y);
+
+            const w =
+                sx(wall.w);
+
+            const h =
+                sy(wall.h);
+
+            ctx.fillStyle =
+                "rgba(0,0,0,.35)";
+
+            ctx.fillRect(
+                x + 7,
+                y + 9,
+                w,
+                h
             );
 
-            g.addColorStop(
+            const grad =
+                ctx.createLinearGradient(
+                    x,
+                    y,
+                    x,
+                    y + h
+                );
+
+            grad.addColorStop(
+                0,
+                "#7c8da1"
+            );
+
+            grad.addColorStop(
+                0.5,
+                "#475569"
+            );
+
+            grad.addColorStop(
                 1,
                 "#1e293b"
             );
 
             ctx.fillStyle =
-                g;
+                grad;
 
             ctx.fillRect(
-                wall.x,
-                wall.y,
-                wall.w,
-                wall.h
+                x,
+                y,
+                w,
+                h
             );
 
             ctx.strokeStyle =
-                "#94a3b8";
+                "#b4c0ce";
 
             ctx.strokeRect(
-                wall.x,
-                wall.y,
-                wall.w,
-                wall.h
+                x,
+                y,
+                w,
+                h
             );
         }
     );
 }
 
-/*
-==================================================
-GAME LOOP
-==================================================
-*/
-
-function gameLoop(
-    time
+function drawCharacter(
+    p
 ) {
 
-    const dt =
-        Math.min(
-            32,
-            time - lastTime
+    const x =
+        sx(p.x);
+
+    const y =
+        sy(p.y);
+
+    const color =
+        skinColor(
+            p.skin
         );
 
-    lastTime =
-        time;
+    /* shadow */
 
-    drawArena();
+    ctx.beginPath();
 
-    /*
-    Bullets
-    */
+    ctx.ellipse(
+        x,
+        y + 20,
+        23,
+        9,
+        0,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fillStyle =
+        "rgba(0,0,0,.35)";
+
+    ctx.fill();
+
+    /* body */
+
+    const body =
+        ctx.createRadialGradient(
+            x - 8,
+            y - 8,
+            2,
+            x + 14,
+            y + 18,
+            34
+        );
+
+    body.addColorStop(
+        0,
+        "#ffffff"
+    );
+
+    body.addColorStop(
+        0.18,
+        color
+    );
+
+    body.addColorStop(
+        1,
+        "#0f172a"
+    );
+
+    ctx.fillStyle =
+        body;
+
+    ctx.beginPath();
+
+    ctx.roundRect(
+        x - 17,
+        y - 8,
+        34,
+        36,
+        10
+    );
+
+    ctx.fill();
+
+    /* head */
+
+    const head =
+        ctx.createRadialGradient(
+            x - 5,
+            y - 24,
+            2,
+            x + 7,
+            y - 11,
+            20
+        );
+
+    head.addColorStop(
+        0,
+        "#ffe5cc"
+    );
+
+    head.addColorStop(
+        1,
+        "#9b664a"
+    );
+
+    ctx.fillStyle =
+        head;
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x,
+        y - 20,
+        14,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+    /* weapon */
+
+    ctx.strokeStyle =
+        "#e5e7eb";
+
+    ctx.lineWidth =
+        6;
+
+    ctx.lineCap =
+        "round";
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        x + 9,
+        y - 1
+    );
+
+    ctx.lineTo(
+        x + 34,
+        y - 7
+    );
+
+    ctx.stroke();
+
+    /* name */
+
+    ctx.font =
+        "bold 12px Arial";
+
+    ctx.textAlign =
+        "center";
+
+    ctx.fillStyle =
+        "white";
+
+    ctx.shadowBlur =
+        5;
+
+    ctx.shadowColor =
+        "black";
+
+    ctx.fillText(
+        p.name ||
+            "BOT",
+        x,
+        y - 43
+    );
+
+    ctx.shadowBlur =
+        0;
+
+    /* HP */
+
+    ctx.fillStyle =
+        "#450a0a";
+
+    ctx.fillRect(
+        x - 24,
+        y - 36,
+        48,
+        5
+    );
+
+    ctx.fillStyle =
+        "#22c55e";
+
+    ctx.fillRect(
+        x - 24,
+        y - 36,
+        48 *
+        Math.max(
+            0,
+            p.hp / 100
+        ),
+        5
+    );
+
+    /* shield */
+
+    if (
+        p.shield > 0
+    ) {
+
+        ctx.strokeStyle =
+            "#38bdf8";
+
+        ctx.lineWidth =
+            2;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            y,
+            29,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.stroke();
+    }
+}
+
+function renderBullets() {
 
     bullets =
         bullets.filter(
@@ -2358,19 +3045,31 @@ function gameLoop(
 
                 bullet.x +=
                     bullet.dx *
-                    bullet.speed;
+                    bullet.speed /
+                    3;
 
                 bullet.y +=
                     bullet.dy *
-                    bullet.speed;
+                    bullet.speed /
+                    3;
 
                 bullet.life--;
+
+                const x =
+                    sx(
+                        bullet.x
+                    );
+
+                const y =
+                    sy(
+                        bullet.y
+                    );
 
                 ctx.beginPath();
 
                 ctx.arc(
-                    bullet.x,
-                    bullet.y,
+                    x,
+                    y,
                     5,
                     0,
                     Math.PI * 2
@@ -2380,7 +3079,7 @@ function gameLoop(
                     bullet.color;
 
                 ctx.shadowBlur =
-                    15;
+                    18;
 
                 ctx.shadowColor =
                     bullet.color;
@@ -2391,52 +3090,14 @@ function gameLoop(
                     0;
 
                 return (
-                    bullet.life > 0
+                    bullet.life >
+                    0
                 );
             }
         );
+}
 
-    /*
-    Players
-    */
-
-    Object.values(
-        players
-    ).forEach(
-        p => {
-
-            if (
-                p.alive
-            ) {
-
-                drawCharacter(
-                    p
-                );
-            }
-        }
-    );
-
-    /*
-    Bots
-    */
-
-    bots.forEach(
-        bot => {
-
-            if (
-                bot.alive
-            ) {
-
-                drawCharacter(
-                    bot
-                );
-            }
-        }
-    );
-
-    /*
-    Effects
-    */
+function renderEffects() {
 
     effects =
         effects.filter(
@@ -2444,19 +3105,32 @@ function gameLoop(
 
                 effect.life--;
 
+                const x =
+                    sx(
+                        effect.x
+                    );
+
+                const y =
+                    sy(
+                        effect.y
+                    );
+
                 if (
                     effect.type ===
-                    "muzzle"
+                    "impact"
                 ) {
 
                     ctx.beginPath();
 
                     ctx.arc(
-                        effect.x,
-                        effect.y,
-                        12 +
-                        (10 -
-                        effect.life),
+                        x,
+                        y,
+                        8 +
+                        (
+                            16 -
+                            effect.life
+                        ) *
+                        2,
                         0,
                         Math.PI * 2
                     );
@@ -2472,21 +3146,50 @@ function gameLoop(
 
                 if (
                     effect.type ===
+                    "hit"
+                ) {
+
+                    ctx.beginPath();
+
+                    ctx.arc(
+                        x,
+                        y,
+                        10 +
+                        (
+                            18 -
+                            effect.life
+                        ) *
+                        2,
+                        0,
+                        Math.PI * 2
+                    );
+
+                    ctx.strokeStyle =
+                        "#ef4444";
+
+                    ctx.lineWidth =
+                        4;
+
+                    ctx.stroke();
+                }
+
+                if (
+                    effect.type ===
                     "slash"
                 ) {
 
                     ctx.beginPath();
 
                     ctx.arc(
-                        effect.x,
-                        effect.y,
+                        x,
+                        y,
                         50,
-                        -.8,
-                        .8
+                        -0.9,
+                        0.9
                     );
 
                     ctx.strokeStyle =
-                        "#fff";
+                        "#ffffff";
 
                     ctx.lineWidth =
                         8;
@@ -2495,36 +3198,116 @@ function gameLoop(
                 }
 
                 if (
-                    effect.text
+                    effect.type ===
+                    "super"
                 ) {
 
-                    ctx.font =
-                        "bold 18px Arial";
+                    ctx.beginPath();
 
-                    ctx.fillStyle =
-                        "#facc15";
-
-                    ctx.fillText(
-                        effect.text,
-                        30,
-                        120
+                    ctx.arc(
+                        x,
+                        y,
+                        25 +
+                        (
+                            35 -
+                            effect.life
+                        ) *
+                        6,
+                        0,
+                        Math.PI * 2
                     );
+
+                    ctx.strokeStyle =
+                        "#ec4899";
+
+                    ctx.lineWidth =
+                        8;
+
+                    ctx.stroke();
                 }
 
                 return (
-                    effect.life > 0
+                    effect.life >
+                    0
                 );
             }
         );
-
-    requestAnimationFrame(
-        gameLoop
-    );
 }
 
-requestAnimationFrame(
-    gameLoop
-);
+function draw() {
+
+    requestAnimationFrame(
+        draw
+    );
+
+    if (
+        document.getElementById(
+            "game"
+        ).style.display !==
+        "block"
+    ) {
+        return;
+    }
+
+    drawArena();
+
+    Object.values(
+        players
+    ).forEach(
+        player => {
+
+            if (
+                player.alive
+            ) {
+
+                drawCharacter(
+                    player
+                );
+            }
+        }
+    );
+
+    bots.forEach(
+        bot => {
+
+            if (
+                bot.alive
+            ) {
+
+                drawCharacter(
+                    bot
+                );
+            }
+        }
+    );
+
+    renderBullets();
+
+    renderEffects();
+}
+
+draw();
+
+/* =====================================================
+   CONNECT ID
+===================================================== */
+
+const originalOpen =
+    socket.onopen;
+
+socket.onopen =
+    event => {
+
+        myId =
+            socket.id ||
+            null;
+
+        if (originalOpen) {
+            originalOpen(
+                event
+            );
+        }
+    };
 
 </script>
 
