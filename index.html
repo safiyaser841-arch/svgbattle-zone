@@ -1,20 +1,28 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
+
 <meta charset="UTF-8">
 
 <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    content="width=device-width,
+    initial-scale=1.0,
+    maximum-scale=1.0,
+    user-scalable=no"
 >
 
 <title>Battle Zone</title>
 
 <style>
+
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 html,
@@ -23,12 +31,7 @@ body {
     height: 100%;
     overflow: hidden;
 
-    background:
-        radial-gradient(
-            circle at center,
-            #1d344d,
-            #050911
-        );
+    background: #0b111a;
 
     color: white;
 
@@ -37,89 +40,103 @@ body {
     touch-action: none;
 }
 
-button,
-input,
-select {
-    font: inherit;
-}
-
-button {
-    border: 0;
-    cursor: pointer;
-}
-
-/* =========================
+/* =========================================
    MENU
-========================= */
+========================================= */
 
 #menu {
     position: fixed;
     inset: 0;
 
+    z-index: 100;
+
     display: flex;
+
     justify-content: center;
     align-items: center;
 
-    z-index: 100;
+    background:
+        radial-gradient(
+            circle at center,
+            #254b70 0%,
+            #080d15 75%
+        );
 }
 
-.menu-box {
-    width: min(520px, 92vw);
+.menuBox {
 
-    padding: 28px;
+    width: min(500px, 92vw);
+
+    padding: 30px;
 
     border-radius: 24px;
 
     background:
-        rgba(8, 15, 25, .96);
+        rgba(10,16,27,.96);
 
     box-shadow:
-        0 25px 90px
-        rgba(0,0,0,.7);
+        0 25px 80px
+        rgba(0,0,0,.65);
 
     text-align: center;
 }
 
 .logo {
-    font-size: 44px;
+
+    font-size: 48px;
+
     font-weight: 900;
 
     color: #38bdf8;
 
     text-shadow:
-        0 0 25px #38bdf8;
+        0 0 20px #38bdf8;
 
     margin-bottom: 5px;
 }
 
-.sub {
+.subtitle {
+
     color: #94a3b8;
-    margin-bottom: 15px;
+
+    margin-bottom: 20px;
 }
 
 .input,
 .select {
-    width: 100%;
 
-    padding: 13px;
-    margin: 5px 0;
-
-    border-radius: 10px;
-    border: 1px solid #334155;
-
-    background: #0f172a;
-    color: white;
-}
-
-.btn {
     width: 100%;
 
     padding: 14px;
-    margin-top: 7px;
 
-    border-radius: 11px;
+    margin: 6px 0;
+
+    border-radius: 10px;
+
+    border: 1px solid #334155;
+
+    background: #111827;
 
     color: white;
+
+    font-size: 16px;
+}
+
+.button {
+
+    width: 100%;
+
+    padding: 14px;
+
+    margin-top: 7px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    color: white;
+
+    font-weight: bold;
 
     background:
         linear-gradient(
@@ -127,330 +144,164 @@ button {
             #38bdf8,
             #2563eb
         );
-
-    font-weight: bold;
 }
 
-.btn.dark {
-    background: #1e293b;
+.darkButton {
+
+    background:
+        #1e293b;
 }
 
 .profile {
+
     display: grid;
 
     grid-template-columns:
-        repeat(3, 1fr);
+        repeat(3,1fr);
 
     gap: 6px;
 
-    margin: 12px 0;
+    margin-bottom: 12px;
 }
 
-.profile-box {
-    padding: 8px;
-
-    border-radius: 9px;
-
-    background:
-        #0b1220;
-
-    font-size: 13px;
-}
-
-/* =========================
-   SKINS
-========================= */
-
-#skins {
-    position: fixed;
-    inset: 0;
-
-    display: none;
-
-    z-index: 120;
-
-    background:
-        #060b12;
-
-    overflow: auto;
-
-    padding: 16px;
-}
-
-.skin-header {
-    width: min(1050px, 96vw);
-    margin: auto;
-
-    display: flex;
-
-    justify-content:
-        space-between;
-
-    align-items: center;
-}
-
-.skin-grid {
-    width: min(1050px, 96vw);
-    margin: 18px auto;
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(
-            auto-fit,
-            minmax(155px, 1fr)
-        );
-
-    gap: 12px;
-}
-
-.skin-card {
-    padding: 10px;
-
-    border-radius: 16px;
-
-    background:
-        #101827;
-
-    border:
-        1px solid #334155;
-}
-
-.skin-preview {
-    height: 115px;
-
-    border-radius: 12px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    background:
-        radial-gradient(
-            circle,
-            #29405c,
-            #0b111b
-        );
-}
-
-.avatar-preview {
-    position: relative;
-
-    width: 55px;
-    height: 72px;
-
-    border-radius:
-        22px 22px 14px 14px;
-
-    box-shadow:
-        inset -12px -12px 17px
-        rgba(0,0,0,.35);
-}
-
-.avatar-head {
-    position: absolute;
-
-    width: 38px;
-    height: 38px;
-
-    left: 8px;
-    top: -15px;
-
-    border-radius: 50%;
-
-    background: #f0c6a5;
-}
-
-.rarity {
-    color: #cbd5e1;
-    font-size: 13px;
-
-    margin-top: 5px;
-}
-
-.weapon-text {
-    margin-top: 4px;
-
-    color: #cbd5e1;
-}
-
-.price {
-    margin-top: 5px;
-
-    color: #facc15;
-}
-
-.super-text {
-    margin-top: 4px;
-
-    color: #c4b5fd;
-
-    font-size: 12px;
-}
-
-.skin-card button {
-    width: 100%;
-
-    margin-top: 8px;
+.profileBox {
 
     padding: 9px;
 
     border-radius: 8px;
 
-    background: #2563eb;
+    background: #0b1220;
 
-    color: white;
+    font-size: 13px;
 }
 
-/* =========================
-   TUTORIAL
-========================= */
-
-#tutorial {
-    position: fixed;
-    inset: 0;
-
-    display: none;
-
-    justify-content: center;
-    align-items: center;
-
-    z-index: 200;
-
-    background:
-        rgba(0,0,0,.78);
-}
-
-.tutorial-box {
-    width: min(500px, 92vw);
-
-    padding: 28px;
-
-    border-radius: 20px;
-
-    background: #111827;
-
-    text-align: center;
-}
-
-.tutorial-box p {
-    color: #cbd5e1;
-
-    line-height: 1.6;
-
-    margin:
-        18px 0;
-}
-
-/* =========================
+/* =========================================
    LOBBY
-========================= */
+========================================= */
 
 #lobby {
+
     position: fixed;
+
     inset: 0;
+
+    z-index: 80;
 
     display: none;
 
-    z-index: 110;
-
     justify-content: center;
+
     align-items: center;
 
     background:
         radial-gradient(
             circle,
-            #173450,
-            #03070c
+            #1b4161,
+            #03070d
         );
 }
 
-.lobby {
-    width: min(1000px, 95vw);
+.lobbyBox {
 
-    min-height: 570px;
+    width: min(900px,94vw);
 
-    padding: 18px;
-
-    display:
-        grid;
+    display: grid;
 
     grid-template-columns:
-        1.2fr .8fr;
+        1fr 1fr;
 
     gap: 20px;
+
+    padding: 20px;
 
     border-radius: 22px;
 
     background:
-        rgba(10,17,28,.94);
+        rgba(9,15,25,.95);
 }
 
-.lobby-preview {
-    min-height: 520px;
+.characterPreview {
+
+    min-height: 450px;
 
     border-radius: 18px;
-
-    background:
-        radial-gradient(
-            circle,
-            #2b4564,
-            #0a1019
-        );
 
     position: relative;
 
     overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle,
+            #304b69,
+            #0a111a
+        );
 }
 
-.lobby-character {
+.bigCharacter {
+
     position: absolute;
 
     left: 50%;
+
     top: 50%;
 
     transform:
-        translate(-50%, -50%);
+        translate(-50%,-50%);
 
     width: 120px;
-    height: 160px;
+
+    height: 155px;
 
     border-radius:
-        45px 45px 25px 25px;
+        45px
+        45px
+        28px
+        28px;
 
     box-shadow:
-        inset -24px -25px 40px
+        inset -20px -25px 35px
         rgba(0,0,0,.45),
 
-        0 25px 50px
-        rgba(0,0,0,.4);
+        0 20px 40px
+        rgba(0,0,0,.45);
 }
 
-.lobby-head {
+.characterHead {
+
     position: absolute;
 
-    width: 78px;
-    height: 78px;
+    width: 76px;
 
-    top: -30px;
-    left: 21px;
+    height: 76px;
+
+    left: 22px;
+
+    top: -33px;
 
     border-radius: 50%;
 
     background:
         radial-gradient(
             circle at 35% 30%,
-            #ffe4c7,
-            #b97957
+            #ffe6cf,
+            #a86e50
         );
 }
 
-.lobby-weapon {
+.characterWeapon {
+
     position: absolute;
 
     width: 85px;
-    height: 12px;
+
+    height: 10px;
+
+    right: -55px;
+
+    top: 70px;
+
+    border-radius: 10px;
 
     background:
         linear-gradient(
@@ -458,28 +309,22 @@ button {
             #111827,
             #e5e7eb
         );
-
-    right: -60px;
-    top: 70px;
-
-    border-radius: 10px;
 }
 
-.lobby-info {
-    display:
-        flex;
+.lobbyInfo {
 
-    flex-direction:
-        column;
+    display: flex;
 
-    justify-content:
-        center;
+    flex-direction: column;
+
+    justify-content: center;
 
     gap: 10px;
 }
 
-.room-code {
-    font-size: 42px;
+.roomCode {
+
+    font-size: 44px;
 
     font-weight: 900;
 
@@ -488,52 +333,60 @@ button {
     color: #38bdf8;
 }
 
-/* =========================
+/* =========================================
    GAME
-========================= */
+========================================= */
 
 #game {
+
     position: fixed;
+
     inset: 0;
 
     display: none;
 
-    background:
-        #111923;
+    background: #17222d;
 }
 
 #canvas {
-    display: block;
 
     width: 100%;
+
     height: 100%;
+
+    display: block;
 }
 
-/* =========================
+/* =========================================
    HUD
-========================= */
+========================================= */
 
 #hud {
+
     position: fixed;
-
-    left: 10px;
-    top: 10px;
-
-    right: 10px;
 
     z-index: 20;
 
-    display:
-        flex;
+    top: 10px;
+
+    left: 10px;
+
+    right: 10px;
+
+    display: flex;
 
     justify-content:
         space-between;
 
     gap: 6px;
+
+    pointer-events:
+        none;
 }
 
-.hud-box {
-    padding: 9px 12px;
+.hudBox {
+
+    padding: 8px 11px;
 
     border-radius: 9px;
 
@@ -548,37 +401,44 @@ button {
 }
 
 #roomTop {
+
     color: #38bdf8;
+
     font-weight: bold;
 }
 
-/* =========================
+/* =========================================
    SUPER
-========================= */
+========================================= */
 
-#super-bar {
+#superBar {
+
     position: fixed;
 
     left: 50%;
+
     bottom: 15px;
 
     transform:
         translateX(-50%);
 
-    width: 240px;
-    height: 11px;
+    width: 220px;
+
+    height: 10px;
 
     border-radius: 10px;
 
-    background: #0b1220;
+    background: #111827;
 
-    z-index: 25;
+    z-index: 30;
 
     overflow: hidden;
 }
 
-#super-fill {
+#superFill {
+
     width: 0;
+
     height: 100%;
 
     background:
@@ -589,57 +449,50 @@ button {
         );
 }
 
-#super-button {
+#superButton {
+
     position: fixed;
 
     left: 50%;
-    bottom: 38px;
+
+    bottom: 35px;
 
     transform:
         translateX(-50%);
 
-    z-index: 26;
+    z-index: 31;
 
     width: 95px;
 
     padding: 9px;
 
+    border: none;
+
     border-radius: 10px;
 
-    background:
-        #334155;
+    background: #334155;
 
     color: white;
 
     font-weight: bold;
 }
 
-#super-button.ready {
-    background:
-        linear-gradient(
-            135deg,
-            #7c3aed,
-            #ec4899
-        );
-
-    box-shadow:
-        0 0 25px
-        rgba(236,72,153,.7);
-}
-
-/* =========================
-   MOBILE
-========================= */
+/* =========================================
+   MOBILE JOYSTICK
+========================================= */
 
 #joystick {
-    display: none;
 
     position: fixed;
 
+    display: none;
+
     left: 22px;
+
     bottom: 22px;
 
     width: 135px;
+
     height: 135px;
 
     border-radius: 50%;
@@ -649,18 +502,21 @@ button {
 
     border:
         2px solid
-        rgba(255,255,255,.25);
+        rgba(255,255,255,.27);
 
     z-index: 40;
 }
 
 #stick {
+
     position: absolute;
 
     left: 38px;
+
     top: 38px;
 
     width: 58px;
+
     height: 58px;
 
     border-radius: 50%;
@@ -669,15 +525,43 @@ button {
         rgba(255,255,255,.5);
 }
 
-#shoot {
-    display: none;
+/* =========================================
+   MOBILE AIM
+========================================= */
+
+#aimArea {
 
     position: fixed;
 
+    display: none;
+
+    right: 0;
+
+    top: 0;
+
+    width: 55%;
+
+    height: 100%;
+
+    z-index: 35;
+}
+
+/* =========================================
+   SHOOT BUTTON
+========================================= */
+
+#shootButton {
+
+    position: fixed;
+
+    display: none;
+
     right: 25px;
+
     bottom: 35px;
 
     width: 95px;
+
     height: 95px;
 
     border-radius: 50%;
@@ -694,220 +578,164 @@ button {
 
     color: white;
 
-    z-index: 40;
+    font-size: 30px;
 
-    font-size: 29px;
+    z-index: 45;
 }
 
-#aim {
-    display: none;
-
-    position: fixed;
-
-    top: 0;
-    right: 0;
-
-    width: 55%;
-    height: 100%;
-
-    z-index: 30;
-}
+/* =========================================
+   TOUCH DEVICES
+========================================= */
 
 @media(pointer: coarse) {
+
     #joystick,
-    #shoot,
-    #aim {
+    #aimArea,
+    #shootButton {
+
         display: block;
     }
 
-    .lobby {
-        grid-template-columns: 1fr;
+    .lobbyBox {
+
+        grid-template-columns:
+            1fr;
     }
 
-    .lobby-preview {
-        min-height: 280px;
+    .characterPreview {
+
+        min-height: 300px;
     }
 }
 
 </style>
+
 </head>
 
 <body>
 
-<!-- =========================
-     START MENU
-========================= -->
+<!-- =========================================
+     MENU
+========================================= -->
 
 <div id="menu">
-    <div class="menu-box">
+
+    <div class="menuBox">
 
         <div class="logo">
             ⚡ BATTLE ZONE
         </div>
 
-        <div class="sub">
-            Multiplayer Arena
+        <div class="subtitle">
+            2D Multiplayer Arena
         </div>
 
         <div class="profile">
 
-            <div class="profile-box">
+            <div class="profileBox">
                 🏆<br>
                 Trophäen
-                <b id="menuTrophies">0</b>
+                <b id="trophies">
+                    0
+                </b>
             </div>
 
-            <div class="profile-box">
+            <div class="profileBox">
                 💀<br>
                 Kills
-                <b id="menuKills">0</b>
+                <b id="kills">
+                    0
+                </b>
             </div>
 
-            <div class="profile-box">
+            <div class="profileBox">
                 👤<br>
                 Skin
-                <b id="menuSkin">Rookie</b>
+                <b id="currentSkin">
+                    Rookie
+                </b>
             </div>
 
         </div>
 
         <input
-            class="input"
             id="name"
+            class="input"
             maxlength="15"
             placeholder="Dein Name"
         >
 
         <button
-            class="btn"
+            class="button"
             onclick="createRoom()"
         >
-            🎮 Lobby erstellen
+            🎮 Neue Lobby
         </button>
 
         <input
-            class="input"
             id="joinCode"
+            class="input"
             maxlength="4"
-            placeholder="Raumcode"
+            placeholder="4-stelliger Raumcode"
         >
 
         <button
-            class="btn dark"
+            class="button darkButton"
             onclick="joinRoom()"
         >
             👥 Lobby beitreten
         </button>
 
         <button
-            class="btn dark"
-            onclick="openSkins()"
-        >
-            👤 Skin-Menü
-        </button>
-
-        <button
-            class="btn dark"
-            onclick="openTutorial()"
+            class="button darkButton"
+            onclick="showTutorial()"
         >
             📖 Tutorial
         </button>
 
     </div>
-</div>
-
-<!-- =========================
-     SKIN MENU
-========================= -->
-
-<div id="skins">
-
-    <div class="skin-header">
-
-        <h1>
-            👤 Skin-Menü
-        </h1>
-
-        <button
-            class="btn dark"
-            style="width:auto;padding:10px 18px"
-            onclick="closeSkins()"
-        >
-            Zurück
-        </button>
-
-    </div>
-
-    <div
-        id="skinGrid"
-        class="skin-grid"
-    ></div>
 
 </div>
 
-<!-- =========================
+<!-- =========================================
      LOBBY
-========================= -->
+========================================= -->
 
 <div id="lobby">
 
-    <div class="lobby">
+    <div class="lobbyBox">
 
-        <div
-            id="lobbyPreview"
-            class="lobby-preview"
-        >
+        <div class="characterPreview">
 
             <div
                 id="lobbyCharacter"
-                class="lobby-character"
+                class="bigCharacter"
             >
 
                 <div
-                    class="lobby-head"
+                    class="characterHead"
                 ></div>
 
                 <div
-                    class="lobby-weapon"
+                    class="characterWeapon"
                 ></div>
 
             </div>
 
         </div>
 
-        <div class="lobby-info">
+        <div class="lobbyInfo">
 
             <h1
-                id="lobbyName"
+                id="lobbySkinName"
             >
                 Rookie
             </h1>
 
             <div>
-                Seltenheit:
-                <b id="lobbyRarity">
-                    Standard
-                </b>
-            </div>
-
-            <div>
                 🔫 Waffe:
                 <b id="lobbyWeapon">
                     Pistole
-                </b>
-            </div>
-
-            <div>
-                💥 Schaden:
-                <b id="lobbyDamage">
-                    +0%
-                </b>
-            </div>
-
-            <div>
-                ⚡ Super:
-                <b id="lobbySuper">
-                    -
                 </b>
             </div>
 
@@ -919,8 +747,8 @@ button {
             </div>
 
             <div>
-                💀 Skin-Kills:
-                <b id="lobbySkinKills">
+                💀 Kills:
+                <b id="lobbyKills">
                     0
                 </b>
             </div>
@@ -931,23 +759,30 @@ button {
 
             <div
                 id="roomCode"
-                class="room-code"
+                class="roomCode"
             >
                 ----
             </div>
 
             <button
-                class="btn"
-                onclick="copyRoom()"
+                class="button"
+                onclick="copyRoomCode()"
             >
                 📋 Code kopieren
             </button>
 
             <button
-                class="btn"
+                class="button"
                 onclick="startGame()"
             >
-                ▶ SPIELEN
+                ▶ SPIEL STARTEN
+            </button>
+
+            <button
+                class="button darkButton"
+                onclick="backToMenu()"
+            >
+                Zurück
             </button>
 
         </div>
@@ -956,13 +791,32 @@ button {
 
 </div>
 
-<!-- =========================
+<!-- =========================================
      TUTORIAL
-========================= -->
+========================================= -->
 
-<div id="tutorial">
+<div
+    id="tutorialBox"
+    style="
+        display:none;
+        position:fixed;
+        inset:0;
+        z-index:200;
+        align-items:center;
+        justify-content:center;
+        background:rgba(0,0,0,.8);
+    "
+>
 
-    <div class="tutorial-box">
+    <div
+        style="
+            width:min(500px,92vw);
+            padding:28px;
+            border-radius:20px;
+            background:#111827;
+            text-align:center;
+        "
+    >
 
         <h2
             id="tutorialTitle"
@@ -972,16 +826,19 @@ button {
 
         <p
             id="tutorialText"
+            style="
+                margin:18px 0;
+                color:#cbd5e1;
+                line-height:1.6;
+            "
         ></p>
 
         <div
-            id="tutorialCount"
-        >
-            1 / 9
-        </div>
+            id="tutorialCounter"
+        ></div>
 
         <button
-            class="btn"
+            class="button"
             onclick="nextTutorial()"
         >
             Weiter
@@ -991,9 +848,9 @@ button {
 
 </div>
 
-<!-- =========================
+<!-- =========================================
      GAME
-========================= -->
+========================================= -->
 
 <div id="game">
 
@@ -1001,28 +858,35 @@ button {
 
     <div id="hud">
 
-        <div class="hud-box">
+        <div class="hudBox">
             🏠
             <span id="roomTop">
                 ----
             </span>
         </div>
 
-        <div class="hud-box">
+        <div class="hudBox">
             ❤️
             <span id="hp">
                 100
             </span>
         </div>
 
-        <div class="hud-box">
+        <div class="hudBox">
+            🛡️
+            <span id="shield">
+                50
+            </span>
+        </div>
+
+        <div class="hudBox">
             🔫
-            <span id="weaponName">
+            <span id="weapon">
                 -
             </span>
         </div>
 
-        <div class="hud-box">
+        <div class="hudBox">
             💀
             <span id="gameKills">
                 0
@@ -1031,22 +895,29 @@ button {
 
     </div>
 
-    <div id="super-bar">
+    <div
+        id="superBar"
+    >
+
         <div
-            id="super-fill"
+            id="superFill"
         ></div>
+
     </div>
 
     <button
-        id="super-button"
-        onclick="useSuper()"
+        id="superButton"
     >
         ⚡ SUPER
     </button>
 
-    <div id="aim"></div>
+    <div
+        id="aimArea"
+    ></div>
 
-    <div id="joystick">
+    <div
+        id="joystick"
+    >
 
         <div
             id="stick"
@@ -1054,7 +925,9 @@ button {
 
     </div>
 
-    <button id="shoot">
+    <button
+        id="shootButton"
+    >
         🔥
     </button>
 
@@ -1062,145 +935,80 @@ button {
 
 <script>
 
-/* =====================================================
-   CONNECTION
-===================================================== */
+/* =========================================
+   SERVER
+========================================= */
 
-const SERVER =
+const SERVER_URL =
     "wss://svgbattle-server.onrender.com";
 
 let socket = null;
 
-function connect() {
+let connected = false;
 
-    socket =
-        new WebSocket(
-            SERVER
-        );
-
-    socket.onopen =
-        () => {
-
-            console.log(
-                "Battle Zone verbunden"
-            );
-        };
-
-    socket.onclose =
-        () => {
-
-            console.log(
-                "Server getrennt"
-            );
-        };
-
-    socket.onerror =
-        () => {
-
-            console.log(
-                "Verbindungsfehler"
-            );
-        };
-
-    socket.onmessage =
-        event => {
-
-            try {
-
-                handleServerMessage(
-                    JSON.parse(
-                        event.data
-                    )
-                );
-
-            } catch(error) {
-
-                console.error(
-                    error
-                );
-            }
-        };
-}
-
-function send(data) {
-
-    if (
-        socket &&
-        socket.readyState ===
-            WebSocket.OPEN
-    ) {
-        socket.send(
-            JSON.stringify(
-                data
-            )
-        );
-    }
-}
-
-connect();
-
-/* =====================================================
-   DATA
-===================================================== */
+/* =========================================
+   GAME DATA
+========================================= */
 
 let myId = null;
+
 let roomCode = "";
 
 let players = {};
+
 let bots = [];
+
 let bullets = [];
+
 let effects = [];
 
-let tutorial = [];
+let walls = [];
+
+let mapWidth = 1600;
+
+let mapHeight = 900;
+
+let tutorialSteps = [];
+
 let tutorialIndex = 0;
-
-let selectedSkin =
-    localStorage.getItem(
-        "battleSkin"
-    ) ||
-    "standard";
-
-let kills =
-    Number(
-        localStorage.getItem(
-            "battleKills"
-        ) ||
-        "0"
-    );
-
-let trophies =
-    Number(
-        localStorage.getItem(
-            "battleTrophies"
-        ) ||
-        "0"
-    );
-
-let trophyRewardTaken =
-    localStorage.getItem(
-        "trophy100Reward"
-    ) === "yes";
-
-let skinCatalog = {};
-
-let botDamage = 0;
-let superNeed = 0;
-
-let keyboard = {
-    up: false,
-    down: false,
-    left: false,
-    right: false
-};
-
-let joyX = 0;
-let joyY = 0;
 
 let aimX =
     window.innerWidth * .75;
 
 let aimY =
     window.innerHeight * .5;
+
+let joystickX = 0;
+
+let joystickY = 0;
+
+let mouseShooting = false;
+
+let myKills =
+    Number(
+        localStorage.getItem(
+            "battleKills"
+        ) ||
+        0
+    );
+
+let myTrophies =
+    Number(
+        localStorage.getItem(
+            "battleTrophies"
+        ) ||
+        0
+    );
+
+let mySkin =
+    localStorage.getItem(
+        "battleSkin"
+    ) ||
+    "standard";
+
+/* =========================================
+   CANVAS
+========================================= */
 
 const canvas =
     document.getElementById(
@@ -1212,166 +1020,132 @@ const ctx =
         "2d"
     );
 
-/* =====================================================
-   PROFILE UI
-===================================================== */
+function resize() {
 
-function updateProfileUI() {
+    canvas.width =
+        window.innerWidth;
 
-    document.getElementById(
-        "menuTrophies"
-    ).textContent =
-        trophies;
-
-    document.getElementById(
-        "menuKills"
-    ).textContent =
-        kills;
-
-    const skin =
-        skinCatalog[
-            selectedSkin
-        ];
-
-    document.getElementById(
-        "menuSkin"
-    ).textContent =
-        skin
-            ? skin.name
-            : "Rookie";
+    canvas.height =
+        window.innerHeight;
 }
 
-updateProfileUI();
+window.addEventListener(
+    "resize",
+    resize
+);
 
-/* =====================================================
-   TUTORIAL
-===================================================== */
+resize();
 
-function openTutorial() {
+/* =========================================
+   CONNECT
+========================================= */
 
-    if (
-        tutorial.length === 0
-    ) {
+function connect() {
 
-        alert(
-            "Tutorial wird vom Server geladen."
+    socket =
+        new WebSocket(
+            SERVER_URL
         );
 
-        return;
-    }
+    socket.onopen =
+        () => {
 
-    tutorialIndex = 0;
+            connected = true;
 
-    document.getElementById(
-        "tutorial"
-    ).style.display =
-        "flex";
+            console.log(
+                "Battle Zone verbunden"
+            );
+        };
 
-    showTutorial();
+    socket.onclose =
+        () => {
+
+            connected = false;
+
+            console.log(
+                "Battle Zone getrennt"
+            );
+        };
+
+    socket.onerror =
+        error => {
+
+            console.error(
+                "Serverfehler",
+                error
+            );
+        };
+
+    socket.onmessage =
+        event => {
+
+            let data;
+
+            try {
+
+                data =
+                    JSON.parse(
+                        event.data
+                    );
+
+            } catch {
+
+                return;
+            }
+
+            handleMessage(
+                data
+            );
+        };
 }
 
-function showTutorial() {
-
-    const step =
-        tutorial[
-            tutorialIndex
-        ];
-
-    if (!step) {
-        closeTutorial();
-        return;
-    }
-
-    document.getElementById(
-        "tutorialTitle"
-    ).textContent =
-        step.title;
-
-    document.getElementById(
-        "tutorialText"
-    ).textContent =
-        step.text;
-
-    document.getElementById(
-        "tutorialCount"
-    ).textContent =
-        `${tutorialIndex + 1} / ${tutorial.length}`;
-}
-
-function nextTutorial() {
-
-    tutorialIndex++;
+function send(data) {
 
     if (
-        tutorialIndex >=
-        tutorial.length
+        socket &&
+        socket.readyState ===
+            WebSocket.OPEN
     ) {
 
-        closeTutorial();
-
-        localStorage.setItem(
-            "tutorialDone",
-            "yes"
+        socket.send(
+            JSON.stringify(
+                data
+            )
         );
-
-        return;
     }
-
-    showTutorial();
 }
 
-function closeTutorial() {
+connect();
 
-    document.getElementById(
-        "tutorial"
-    ).style.display =
-        "none";
-}
+/* =========================================
+   MESSAGES
+========================================= */
 
-/* =====================================================
-   SERVER MESSAGE
-===================================================== */
-
-function handleServerMessage(
-    data
-) {
+function handleMessage(data) {
 
     if (
         data.type ===
-        "tutorial"
+        "connected"
     ) {
 
-        tutorial =
+        myId =
+            data.id;
+
+        tutorialSteps =
             data.tutorial ||
             [];
 
-        skinCatalog =
-            {};
+        walls =
+            data.walls ||
+            [];
 
-        (
-            data.skins ||
-            []
-        ).forEach(
-            skin => {
+        mapWidth =
+            data.map?.width ||
+            1600;
 
-                skinCatalog[
-                    skin.id
-                ] = skin;
-            }
-        );
-
-        renderSkins();
-
-        updateProfileUI();
-
-        if (
-            !localStorage.getItem(
-                "tutorialDone"
-            )
-        ) {
-
-            openTutorial();
-        }
+        mapHeight =
+            data.map?.height ||
+            900;
     }
 
     if (
@@ -1417,12 +1191,11 @@ function handleServerMessage(
             data.players ||
             []
         ).forEach(
-            player => {
+            p => {
 
                 players[
-                    player.id
-                ] =
-                    player;
+                    p.id
+                ] = p;
             }
         );
 
@@ -1430,72 +1203,19 @@ function handleServerMessage(
             data.bots ||
             [];
 
-        const me =
-            players[
-                myId
-            ];
+        walls =
+            data.walls ||
+            walls;
 
-        if (me) {
+        mapWidth =
+            data.map?.width ||
+            mapWidth;
 
-            botDamage =
-                me.botDamage ||
-                0;
+        mapHeight =
+            data.map?.height ||
+            mapHeight;
 
-            const skin =
-                skinCatalog[
-                    me.skin
-                ];
-
-            if (skin) {
-
-                superNeed =
-                    skin.superNeed ||
-                    0;
-            }
-
-            document.getElementById(
-                "hp"
-            ).textContent =
-                Math.max(
-                    0,
-                    Math.round(
-                        me.hp
-                    )
-                );
-
-            document.getElementById(
-                "weaponName"
-            ).textContent =
-                me.weapon;
-
-            document.getElementById(
-                "gameKills"
-            ).textContent =
-                me.kills;
-
-            updateSuper();
-
-            /*
-            Falls Server bereits
-            einen Skin übernommen hat.
-            */
-
-            if (
-                selectedSkin !==
-                me.skin
-            ) {
-
-                selectedSkin =
-                    me.skin;
-
-                localStorage.setItem(
-                    "battleSkin",
-                    selectedSkin
-                );
-
-                updateProfileUI();
-            }
-        }
+        updateHUD();
     }
 
     if (
@@ -1521,14 +1241,32 @@ function handleServerMessage(
                 data.speed,
 
             color:
-                data.color,
+                data.color ||
+                "#facc15",
 
             life:
                 Math.ceil(
-                    data.speed
-                        ? 100
-                        : 1
+                    1000 /
+                    Math.max(
+                        1,
+                        data.speed
+                    )
                 )
+        });
+
+        effects.push({
+
+            type:
+                "muzzle",
+
+            x:
+                data.x,
+
+            y:
+                data.y,
+
+            life:
+                8
         });
     }
 
@@ -1549,7 +1287,7 @@ function handleServerMessage(
                 data.y,
 
             life:
-                14
+                15
         });
     }
 
@@ -1570,10 +1308,7 @@ function handleServerMessage(
                 data.y,
 
             life:
-                18,
-
-            damage:
-                data.damage
+                18
         });
     }
 
@@ -1600,23 +1335,29 @@ function handleServerMessage(
 
     if (
         data.type ===
-        "superEffect"
+        "hitEffect"
     ) {
 
-        effects.push({
+        if (
+            data.target ===
+            myId
+        ) {
 
-            type:
-                "super",
+            effects.push({
 
-            x:
-                data.x,
+                type:
+                    "damage",
 
-            y:
-                data.y,
+                x:
+                    800,
 
-            life:
-                35
-        });
+                y:
+                    450,
+
+                life:
+                    10
+            });
+        }
     }
 
     if (
@@ -1629,88 +1370,80 @@ function handleServerMessage(
             myId
         ) {
 
-            kills++;
+            myKills++;
 
             localStorage.setItem(
                 "battleKills",
-                kills
+                myKills
             );
+
+            document.getElementById(
+                "kills"
+            ).textContent =
+                myKills;
 
             document.getElementById(
                 "gameKills"
             ).textContent =
-                kills;
+                myKills;
 
-            /*
-            100 Trophäen =
-            einmalig +50 Skin-Kills
-            */
+            myTrophies++;
 
-            if (
-                trophies >= 100 &&
-                !trophyRewardTaken
-            ) {
-
-                trophyRewardTaken =
-                    true;
-
-                kills += 50;
-
-                localStorage.setItem(
-                    "battleKills",
-                    kills
-                );
-
-                localStorage.setItem(
-                    "trophy100Reward",
-                    "yes"
-                );
-
-                alert(
-                    "🏆 100 Trophäen! +50 Skin-Kills!"
-                );
-
-                updateProfileUI();
-            }
+            localStorage.setItem(
+                "battleTrophies",
+                myTrophies
+            );
         }
     }
 }
 
-/* =====================================================
-   ROOM
-===================================================== */
+/* =========================================
+   ROOMS
+========================================= */
 
 function createRoom() {
+
+    if (!connected) {
+
+        alert(
+            "Server ist noch nicht verbunden."
+        );
+
+        return;
+    }
 
     const name =
         document.getElementById(
             "name"
-        ).value.trim() ||
+        ).value
+        .trim() ||
         "Player";
 
-    let botCount =
+    const botsChoice =
+        prompt(
+            "Wie viele Bots? 0 bis 5",
+            "3"
+        );
+
+    let count =
         Number(
-            prompt(
-                "Wie viele Bots? 0–5",
-                "3"
-            )
+            botsChoice
         );
 
     if (
         !Number.isFinite(
-            botCount
+            count
         )
     ) {
-
-        botCount = 0;
+        count = 0;
     }
 
-    botCount =
+    count =
         Math.max(
             0,
             Math.min(
                 5,
-                botCount
+                count
             )
         );
 
@@ -1722,25 +1455,36 @@ function createRoom() {
         name,
 
         bots:
-            botCount,
+            count,
 
         skin:
-            selectedSkin
+            mySkin
     });
 }
 
 function joinRoom() {
 
+    if (!connected) {
+
+        alert(
+            "Server ist noch nicht verbunden."
+        );
+
+        return;
+    }
+
     const name =
         document.getElementById(
             "name"
-        ).value.trim() ||
+        ).value
+        .trim() ||
         "Player";
 
     const code =
         document.getElementById(
             "joinCode"
-        ).value.trim()
+        ).value
+        .trim()
         .toUpperCase();
 
     if (
@@ -1749,7 +1493,7 @@ function joinRoom() {
     ) {
 
         alert(
-            "Der Raumcode muss 4 Zeichen haben."
+            "Der Raumcode muss genau 4 Zeichen haben."
         );
 
         return;
@@ -1765,7 +1509,7 @@ function joinRoom() {
         code,
 
         skin:
-            selectedSkin
+            mySkin
     });
 }
 
@@ -1794,22 +1538,6 @@ function showLobby() {
     updateLobby();
 }
 
-function copyRoom() {
-
-    if (
-        navigator.clipboard
-    ) {
-
-        navigator.clipboard.writeText(
-            roomCode
-        );
-
-        alert(
-            "Code kopiert!"
-        );
-    }
-}
-
 function startGame() {
 
     document.getElementById(
@@ -1823,329 +1551,236 @@ function startGame() {
         "block";
 }
 
-/* =====================================================
-   SKINS
-===================================================== */
-
-function openSkins() {
+function backToMenu() {
 
     document.getElementById(
-        "skins"
-    ).style.display =
-        "block";
-
-    renderSkins();
-}
-
-function closeSkins() {
-
-    document.getElementById(
-        "skins"
+        "lobby"
     ).style.display =
         "none";
+
+    document.getElementById(
+        "menu"
+    ).style.display =
+        "flex";
 }
 
-function renderSkins() {
+function copyRoomCode() {
 
-    const grid =
-        document.getElementById(
-            "skinGrid"
+    if (
+        navigator.clipboard
+    ) {
+
+        navigator.clipboard.writeText(
+            roomCode
         );
 
-    grid.innerHTML =
-        "";
-
-    Object.values(
-        skinCatalog
-    ).forEach(
-        skin => {
-
-            const card =
-                document.createElement(
-                    "div"
-                );
-
-            card.className =
-                "skin-card";
-
-            const preview =
-                document.createElement(
-                    "div"
-                );
-
-            preview.className =
-                "skin-preview";
-
-            const avatar =
-                document.createElement(
-                    "div"
-                );
-
-            avatar.className =
-                "avatar-preview";
-
-            avatar.style.background =
-                `linear-gradient(
-                    145deg,
-                    ${skin.color},
-                    #111827
-                )`;
-
-            const head =
-                document.createElement(
-                    "div"
-                );
-
-            head.className =
-                "avatar-head";
-
-            avatar.appendChild(
-                head
-            );
-
-            preview.appendChild(
-                avatar
-            );
-
-            const title =
-                document.createElement(
-                    "h3"
-                );
-
-            title.textContent =
-                skin.name;
-
-            const rarity =
-                document.createElement(
-                    "div"
-                );
-
-            rarity.className =
-                "rarity";
-
-            rarity.textContent =
-                skin.rarity;
-
-            const weapon =
-                document.createElement(
-                    "div"
-                );
-
-            weapon.className =
-                "weapon-text";
-
-            weapon.textContent =
-                "🔫 " +
-                skin.weapon;
-
-            const damage =
-                document.createElement(
-                    "div"
-                );
-
-            damage.className =
-                "rarity";
-
-            damage.textContent =
-                `Schaden +${skin.damageBonus}%`;
-
-            const superText =
-                document.createElement(
-                    "div"
-                );
-
-            superText.className =
-                "super-text";
-
-            superText.textContent =
-                skin.superNeed > 0
-                    ? `⚡ ${skin.super} – ${skin.superNeed} Bot-Schaden`
-                    : "⚡ Kein Super";
-
-            const price =
-                document.createElement(
-                    "div"
-                );
-
-            price.className =
-                "price";
-
-            price.textContent =
-                skin.price === 0
-                    ? "Kostenlos"
-                    : `Preis: ${skin.price} Kills`;
-
-            const button =
-                document.createElement(
-                    "button"
-                );
-
-            const unlocked =
-                kills >=
-                skin.price;
-
-            const selected =
-                selectedSkin ===
-                skin.id;
-
-            if (
-                selected
-            ) {
-
-                button.textContent =
-                    "✓ Ausgewählt";
-
-            } else if (
-                unlocked
-            ) {
-
-                button.textContent =
-                    "Auswählen";
-
-            } else {
-
-                button.textContent =
-                    `🔒 ${skin.price} Kills`;
-            }
-
-            button.onclick =
-                () => {
-
-                    if (
-                        !unlocked
-                    ) {
-
-                        alert(
-                            `Du brauchst ${skin.price} Kills.`
-                        );
-
-                        return;
-                    }
-
-                    selectedSkin =
-                        skin.id;
-
-                    localStorage.setItem(
-                        "battleSkin",
-                        selectedSkin
-                    );
-
-                    updateProfileUI();
-
-                    send({
-
-                        type:
-                            "changeSkin",
-
-                        skin:
-                            selectedSkin
-                    });
-
-                    renderSkins();
-
-                    updateLobby();
-                };
-
-            card.appendChild(
-                preview
-            );
-
-            card.appendChild(
-                title
-            );
-
-            card.appendChild(
-                rarity
-            );
-
-            card.appendChild(
-                weapon
-            );
-
-            card.appendChild(
-                damage
-            );
-
-            card.appendChild(
-                superText
-            );
-
-            card.appendChild(
-                price
-            );
-
-            card.appendChild(
-                button
-            );
-
-            grid.appendChild(
-                card
-            );
-        }
-    );
+        alert(
+            "Raumcode kopiert!"
+        );
+    }
 }
 
-/* =====================================================
-   LOBBY
-===================================================== */
+/* =========================================
+   PROFILE
+========================================= */
+
+function updateHUD() {
+
+    const me =
+        players[
+            myId
+        ];
+
+    document.getElementById(
+        "trophies"
+    ).textContent =
+        myTrophies;
+
+    document.getElementById(
+        "kills"
+    ).textContent =
+        myKills;
+
+    document.getElementById(
+        "currentSkin"
+    ).textContent =
+        mySkin;
+
+    if (!me) return;
+
+    document.getElementById(
+        "hp"
+    ).textContent =
+        me.hp;
+
+    document.getElementById(
+        "shield"
+    ).textContent =
+        me.shield;
+
+    document.getElementById(
+        "weapon"
+    ).textContent =
+        me.weapon;
+
+    document.getElementById(
+        "gameKills"
+    ).textContent =
+        me.kills;
+}
 
 function updateLobby() {
 
-    const skin =
-        skinCatalog[
-            selectedSkin
+    const me =
+        players[
+            myId
         ];
 
-    if (!skin) return;
+    const skinColors = {
 
-    document.getElementById(
-        "lobbyName"
-    ).textContent =
-        skin.name;
+        standard:
+            "#38bdf8",
 
-    document.getElementById(
-        "lobbyRarity"
-    ).textContent =
-        skin.rarity;
+        rare1:
+            "#2563eb",
 
-    document.getElementById(
-        "lobbyWeapon"
-    ).textContent =
-        skin.weapon;
+        rare3:
+            "#ef4444"
+    };
 
-    document.getElementById(
-        "lobbyDamage"
-    ).textContent =
-        `+${skin.damageBonus}%`;
+    const playerSkin =
+        me?.skin ||
+        mySkin;
 
-    document.getElementById(
-        "lobbySuper"
-    ).textContent =
-        skin.super;
-
-    document.getElementById(
-        "lobbyTrophies"
-    ).textContent =
-        trophies;
-
-    document.getElementById(
-        "lobbySkinKills"
-    ).textContent =
-        kills;
+    const color =
+        skinColors[
+            playerSkin
+        ] ||
+        "#a855f7";
 
     document.getElementById(
         "lobbyCharacter"
     ).style.background =
         `linear-gradient(
             145deg,
-            ${skin.color},
+            ${color},
             #111827
         )`;
+
+    document.getElementById(
+        "lobbySkinName"
+    ).textContent =
+        playerSkin;
+
+    document.getElementById(
+        "lobbyWeapon"
+    ).textContent =
+        me?.weapon ||
+        "-";
+
+    document.getElementById(
+        "lobbyTrophies"
+    ).textContent =
+        myTrophies;
+
+    document.getElementById(
+        "lobbyKills"
+    ).textContent =
+        me?.kills ||
+        myKills;
 }
 
-/* =====================================================
-   INPUT
-===================================================== */
+/* =========================================
+   TUTORIAL
+========================================= */
+
+function showTutorial() {
+
+    if (
+        !tutorialSteps.length
+    ) {
+
+        alert(
+            "Tutorial wird geladen..."
+        );
+
+        return;
+    }
+
+    tutorialIndex = 0;
+
+    document.getElementById(
+        "tutorialBox"
+    ).style.display =
+        "flex";
+
+    updateTutorial();
+}
+
+function updateTutorial() {
+
+    const step =
+        tutorialSteps[
+            tutorialIndex
+        ];
+
+    if (!step)
+        return;
+
+    document.getElementById(
+        "tutorialTitle"
+    ).textContent =
+        step.title;
+
+    document.getElementById(
+        "tutorialText"
+    ).textContent =
+        step.text;
+
+    document.getElementById(
+        "tutorialCounter"
+    ).textContent =
+        `${tutorialIndex + 1} / ${tutorialSteps.length}`;
+}
+
+function nextTutorial() {
+
+    tutorialIndex++;
+
+    if (
+        tutorialIndex >=
+        tutorialSteps.length
+    ) {
+
+        document.getElementById(
+            "tutorialBox"
+        ).style.display =
+            "none";
+
+        return;
+    }
+
+    updateTutorial();
+}
+
+/* =========================================
+   KEYBOARD
+========================================= */
+
+const keyboard = {
+
+    up:
+        false,
+
+    down:
+        false,
+
+    left:
+        false,
+
+    right:
+        false
+};
 
 window.addEventListener(
     "keydown",
@@ -2153,44 +1788,42 @@ window.addEventListener(
 
         if (
             event.key ===
-                "ArrowUp" ||
-            event.key ===
-                "ArrowDown" ||
-            event.key ===
-                "ArrowLeft" ||
-            event.key ===
-                "ArrowRight"
+            "ArrowUp"
         ) {
+            keyboard.up =
+                true;
 
             event.preventDefault();
         }
 
         if (
             event.key ===
-            "ArrowUp"
-        ) {
-            keyboard.up = true;
-        }
-
-        if (
-            event.key ===
             "ArrowDown"
         ) {
-            keyboard.down = true;
+            keyboard.down =
+                true;
+
+            event.preventDefault();
         }
 
         if (
             event.key ===
             "ArrowLeft"
         ) {
-            keyboard.left = true;
+            keyboard.left =
+                true;
+
+            event.preventDefault();
         }
 
         if (
             event.key ===
             "ArrowRight"
         ) {
-            keyboard.right = true;
+            keyboard.right =
+                true;
+
+            event.preventDefault();
         }
     }
 );
@@ -2203,35 +1836,179 @@ window.addEventListener(
             event.key ===
             "ArrowUp"
         ) {
-            keyboard.up = false;
+            keyboard.up =
+                false;
         }
 
         if (
             event.key ===
             "ArrowDown"
         ) {
-            keyboard.down = false;
+            keyboard.down =
+                false;
         }
 
         if (
             event.key ===
             "ArrowLeft"
         ) {
-            keyboard.left = false;
+            keyboard.left =
+                false;
         }
 
         if (
             event.key ===
             "ArrowRight"
         ) {
-            keyboard.right = false;
+            keyboard.right =
+                false;
         }
     }
 );
 
-/* =====================================================
+/* =========================================
+   MOVEMENT
+========================================= */
+
+setInterval(
+    () => {
+
+        if (
+            document.getElementById(
+                "game"
+            ).style.display !==
+            "block"
+        ) {
+            return;
+        }
+
+        let dx = 0;
+        let dy = 0;
+
+        if (
+            keyboard.up
+        )
+            dy--;
+
+        if (
+            keyboard.down
+        )
+            dy++;
+
+        if (
+            keyboard.left
+        )
+            dx--;
+
+        if (
+            keyboard.right
+        )
+            dx++;
+
+        /*
+        Mobile joystick
+        */
+
+        dx +=
+            joystickX;
+
+        dy +=
+            joystickY;
+
+        if (
+            dx ||
+            dy
+        ) {
+
+            send({
+
+                type:
+                    "moveIntent",
+
+                dx,
+
+                dy
+            });
+        }
+
+    },
+    1000 / 30
+);
+
+/* =========================================
+   MOUSE AIM
+========================================= */
+
+window.addEventListener(
+    "mousemove",
+    event => {
+
+        aimX =
+            event.clientX;
+
+        aimY =
+            event.clientY;
+    }
+);
+
+window.addEventListener(
+    "mousedown",
+    event => {
+
+        if (
+            event.button ===
+                0 &&
+            document.getElementById(
+                "game"
+            ).style.display ===
+                "block"
+        ) {
+
+            shoot();
+        }
+    }
+);
+
+/* =========================================
+   MOBILE AIM
+========================================= */
+
+const aimArea =
+    document.getElementById(
+        "aimArea"
+    );
+
+aimArea.addEventListener(
+    "pointerdown",
+    event => {
+
+        aimX =
+            event.clientX;
+
+        aimY =
+            event.clientY;
+
+        aimArea.setPointerCapture(
+            event.pointerId
+        );
+    }
+);
+
+aimArea.addEventListener(
+    "pointermove",
+    event => {
+
+        aimX =
+            event.clientX;
+
+        aimY =
+            event.clientY;
+    }
+);
+
+/* =========================================
    MOBILE JOYSTICK
-===================================================== */
+========================================= */
 
 const joystick =
     document.getElementById(
@@ -2243,21 +2020,21 @@ const stick =
         "stick"
     );
 
-let joyActive =
+let joystickActive =
     false;
 
 joystick.addEventListener(
     "pointerdown",
     event => {
 
-        joyActive =
+        joystickActive =
             true;
 
         joystick.setPointerCapture(
             event.pointerId
         );
 
-        moveJoystick(
+        updateJoystick(
             event.clientX,
             event.clientY
         );
@@ -2268,11 +2045,10 @@ joystick.addEventListener(
     "pointermove",
     event => {
 
-        if (
-            !joyActive
-        ) return;
+        if (!joystickActive)
+            return;
 
-        moveJoystick(
+        updateJoystick(
             event.clientX,
             event.clientY
         );
@@ -2283,11 +2059,14 @@ joystick.addEventListener(
     "pointerup",
     () => {
 
-        joyActive =
+        joystickActive =
             false;
 
-        joyX = 0;
-        joyY = 0;
+        joystickX =
+            0;
+
+        joystickY =
+            0;
 
         stick.style.left =
             "38px";
@@ -2297,7 +2076,7 @@ joystick.addEventListener(
     }
 );
 
-function moveJoystick(
+function updateJoystick(
     x,
     y
 ) {
@@ -2324,30 +2103,32 @@ function moveJoystick(
     const max =
         43;
 
-    const d =
+    const distance =
         Math.hypot(
             dx,
             dy
         );
 
     if (
-        d >
+        distance >
         max
     ) {
 
         dx =
-            dx / d *
+            dx /
+            distance *
             max;
 
         dy =
-            dy / d *
+            dy /
+            distance *
             max;
     }
 
-    joyX =
+    joystickX =
         dx / max;
 
-    joyY =
+    joystickY =
         dy / max;
 
     stick.style.left =
@@ -2361,144 +2142,22 @@ function moveJoystick(
         "px";
 }
 
-/* =====================================================
-   AIM
-===================================================== */
+/* =========================================
+   SHOOT
+========================================= */
 
-const aim =
+const shootButton =
     document.getElementById(
-        "aim"
+        "shootButton"
     );
 
-aim.addEventListener(
+shootButton.addEventListener(
     "pointerdown",
     event => {
 
-        aim.setPointerCapture(
-            event.pointerId
-        );
+        event.preventDefault();
 
-        aimX =
-            event.clientX;
-
-        aimY =
-            event.clientY;
-    }
-);
-
-aim.addEventListener(
-    "pointermove",
-    event => {
-
-        aimX =
-            event.clientX;
-
-        aimY =
-            event.clientY;
-    }
-);
-
-window.addEventListener(
-    "mousemove",
-    event => {
-
-        aimX =
-            event.clientX;
-
-        aimY =
-            event.clientY;
-    }
-);
-
-/* =====================================================
-   MOVE
-===================================================== */
-
-setInterval(
-    () => {
-
-        if (
-            document.getElementById(
-                "game"
-            ).style.display !==
-            "block"
-        ) {
-            return;
-        }
-
-        let dx = 0;
-        let dy = 0;
-
-        if (
-            keyboard.up
-        ) dy--;
-
-        if (
-            keyboard.down
-        ) dy++;
-
-        if (
-            keyboard.left
-        ) dx--;
-
-        if (
-            keyboard.right
-        ) dx++;
-
-        dx += joyX;
-        dy += joyY;
-
-        if (
-            dx ||
-            dy
-        ) {
-
-            send({
-
-                type:
-                    "moveIntent",
-
-                dx,
-                dy
-            });
-        }
-
-    },
-    1000 / 30
-);
-
-/* =====================================================
-   SHOOT
-===================================================== */
-
-document
-    .getElementById(
-        "shoot"
-    )
-    .addEventListener(
-        "pointerdown",
-        event => {
-
-            event.preventDefault();
-
-            shoot();
-        }
-    );
-
-window.addEventListener(
-    "mousedown",
-    event => {
-
-        if (
-            event.button === 0 &&
-            document.getElementById(
-                "game"
-            ).style.display ===
-                "block"
-        ) {
-
-            shoot();
-        }
+        shoot();
     }
 );
 
@@ -2509,13 +2168,21 @@ function shoot() {
             myId
         ];
 
-    if (!me) return;
+    if (!me)
+        return;
+
+    /*
+    Spieler ist immer
+    in der Mitte der Kamera.
+    */
 
     const centerX =
-        window.innerWidth / 2;
+        window.innerWidth /
+        2;
 
     const centerY =
-        window.innerHeight / 2;
+        window.innerHeight /
+        2;
 
     let dx =
         aimX -
@@ -2525,19 +2192,24 @@ function shoot() {
         aimY -
         centerY;
 
+    /*
+    Wenn kein Ziel existiert,
+    Richtung des Joysticks.
+    */
+
     if (
         Math.hypot(
             dx,
             dy
-        ) < 8
+        ) < 5
     ) {
 
         dx =
-            joyX ||
+            joystickX ||
             1;
 
         dy =
-            joyY;
+            joystickY;
     }
 
     send({
@@ -2546,156 +2218,51 @@ function shoot() {
             "shoot",
 
         dx,
+
         dy
     });
 }
 
-function useSuper() {
+/* =========================================
+   GAME CAMERA
+========================================= */
 
-    send({
-        type:
-            "useSuper"
-    });
-}
-
-function updateSuper() {
-
-    const fill =
-        document.getElementById(
-            "super-fill"
-        );
-
-    const button =
-        document.getElementById(
-            "super-button"
-        );
-
-    const percent =
-        superNeed > 0
-            ? Math.min(
-                100,
-                (
-                    botDamage /
-                    superNeed
-                ) *
-                100
-            )
-            : 0;
-
-    fill.style.width =
-        percent +
-        "%";
-
-    if (
-        superNeed > 0 &&
-        botDamage >=
-            superNeed
-    ) {
-
-        button.classList.add(
-            "ready"
-        );
-
-    } else {
-
-        button.classList.remove(
-            "ready"
-        );
-    }
-}
-
-/* =====================================================
-   EFFECTS
-===================================================== */
-
-function addEffect(
-    type,
-    x,
-    y
+function worldToScreenX(
+    worldX,
+    me
 ) {
 
-    effects.push({
-        type,
-        x,
-        y,
-        life: 16
-    });
-}
-
-/* =====================================================
-   DRAW
-===================================================== */
-
-const walls = [
-    { x:100, y:100, w:300, h:45 },
-    { x:520, y:100, w:260, h:45 },
-    { x:900, y:100, w:300, h:45 },
-    { x:1320, y:100, w:200, h:45 },
-
-    { x:180, y:300, w:260, h:45 },
-    { x:620, y:270, w:350, h:45 },
-    { x:1130, y:300, w:280, h:45 },
-
-    { x:700, y:420, w:220, h:55 },
-
-    { x:100, y:700, w:320, h:45 },
-    { x:520, y:720, w:270, h:45 },
-    { x:920, y:690, w:300, h:45 },
-    { x:1320, y:720, w:200, h:45 }
-];
-
-function sx(x) {
     return (
-        x /
-        1600 *
-        canvas.width
+        canvas.width / 2 +
+        (
+            worldX -
+            me.x
+        )
     );
 }
 
-function sy(y) {
-    return (
-        y /
-        900 *
-        canvas.height
-    );
-}
-
-function skinColor(
-    id
+function worldToScreenY(
+    worldY,
+    me
 ) {
 
-    const skin =
-        skinCatalog[
-            id
-        ];
-
-    return skin
-        ? skin.color
-        : "#38bdf8";
+    return (
+        canvas.height / 2 +
+        (
+            worldY -
+            me.y
+        )
+    );
 }
 
-function drawArena() {
+/* =========================================
+   MAP
+========================================= */
 
-    const bg =
-        ctx.createLinearGradient(
-            0,
-            0,
-            0,
-            canvas.height
-        );
-
-    bg.addColorStop(
-        0,
-        "#1f3349"
-    );
-
-    bg.addColorStop(
-        1,
-        "#0b131c"
-    );
+function drawMap(me) {
 
     ctx.fillStyle =
-        bg;
+        "#2c472f";
 
     ctx.fillRect(
         0,
@@ -2704,13 +2271,37 @@ function drawArena() {
         canvas.height
     );
 
+    /*
+    Boden
+    */
+
     ctx.strokeStyle =
-        "rgba(255,255,255,.035)";
+        "rgba(255,255,255,.04)";
+
+    const grid =
+        50;
+
+    const offsetX =
+        (
+            -me.x +
+            canvas.width /
+            2
+        ) % grid;
+
+    const offsetY =
+        (
+            -me.y +
+            canvas.height /
+            2
+        ) % grid;
 
     for (
-        let x = 0;
+        let x =
+            offsetX;
+
         x < canvas.width;
-        x += 45
+
+        x += grid
     ) {
 
         ctx.beginPath();
@@ -2729,9 +2320,12 @@ function drawArena() {
     }
 
     for (
-        let y = 0;
+        let y =
+            offsetY;
+
         y < canvas.height;
-        y += 45
+
+        y += grid
     ) {
 
         ctx.beginPath();
@@ -2749,101 +2343,212 @@ function drawArena() {
         ctx.stroke();
     }
 
+    /*
+    Wände
+    */
+
     walls.forEach(
         wall => {
 
             const x =
-                sx(wall.x);
+                worldToScreenX(
+                    wall.x,
+                    me
+                );
 
             const y =
-                sy(wall.y);
+                worldToScreenY(
+                    wall.y,
+                    me
+                );
 
-            const w =
-                sx(wall.w);
-
-            const h =
-                sy(wall.h);
+            /*
+            Schatten
+            */
 
             ctx.fillStyle =
-                "rgba(0,0,0,.35)";
+                "rgba(0,0,0,.3)";
 
             ctx.fillRect(
                 x + 7,
                 y + 9,
-                w,
-                h
+                wall.w,
+                wall.h
             );
 
-            const grad =
+            /*
+            Wand
+            */
+
+            const gradient =
                 ctx.createLinearGradient(
                     x,
                     y,
                     x,
-                    y + h
+                    y +
+                    wall.h
                 );
 
-            grad.addColorStop(
+            gradient.addColorStop(
                 0,
-                "#7c8da1"
+                "#778899"
             );
 
-            grad.addColorStop(
-                0.5,
-                "#475569"
+            gradient.addColorStop(
+                .5,
+                "#566575"
             );
 
-            grad.addColorStop(
+            gradient.addColorStop(
                 1,
-                "#1e293b"
+                "#283543"
             );
 
             ctx.fillStyle =
-                grad;
+                gradient;
 
             ctx.fillRect(
                 x,
                 y,
-                w,
-                h
+                wall.w,
+                wall.h
             );
 
             ctx.strokeStyle =
-                "#b4c0ce";
+                "#b7c3cf";
+
+            ctx.lineWidth =
+                2;
 
             ctx.strokeRect(
                 x,
                 y,
-                w,
-                h
+                wall.w,
+                wall.h
             );
         }
     );
 }
 
+/* =========================================
+   CHARACTER
+========================================= */
+
+function getSkinColor(
+    skin
+) {
+
+    const colors = {
+
+        standard:
+            "#38bdf8",
+
+        rare1:
+            "#2563eb",
+
+        rare2:
+            "#22c55e",
+
+        rare3:
+            "#ef4444",
+
+        rare4:
+            "#a855f7",
+
+        rare5:
+            "#f97316",
+
+        super1:
+            "#06b6d4",
+
+        super2:
+            "#111827",
+
+        super3:
+            "#bae6fd",
+
+        super4:
+            "#f97316",
+
+        super5:
+            "#84cc16",
+
+        epic1:
+            "#8b5cf6",
+
+        epic2:
+            "#ec4899",
+
+        epic3:
+            "#38bdf8",
+
+        epic4:
+            "#dc2626",
+
+        epic5:
+            "#312e81",
+
+        mythic1:
+            "#f59e0b",
+
+        mythic2:
+            "#7f1d1d",
+
+        mythic3:
+            "#64748b",
+
+        mythic4:
+            "#fb923c",
+
+        mythic5:
+            "#6366f1",
+
+        legend1:
+            "#facc15",
+
+        legend2:
+            "#fde68a",
+
+        legend3:
+            "#ffffff"
+    };
+
+    return (
+        colors[
+            skin
+        ] ||
+        "#38bdf8"
+    );
+}
+
 function drawCharacter(
-    p
+    entity,
+    me
 ) {
 
     const x =
-        sx(p.x);
-
-    const y =
-        sy(p.y);
-
-    const color =
-        skinColor(
-            p.skin
+        worldToScreenX(
+            entity.x,
+            me
         );
 
-    /* shadow */
+    const y =
+        worldToScreenY(
+            entity.y,
+            me
+        );
+
+    /*
+    Schatten
+    */
 
     ctx.beginPath();
 
     ctx.ellipse(
         x,
-        y + 20,
-        23,
-        9,
+        y + 23,
+        22,
+        8,
         0,
         0,
         Math.PI * 2
@@ -2854,16 +2559,23 @@ function drawCharacter(
 
     ctx.fill();
 
-    /* body */
+    /*
+    Körper
+    */
+
+    const color =
+        getSkinColor(
+            entity.skin
+        );
 
     const body =
         ctx.createRadialGradient(
             x - 8,
-            y - 8,
+            y - 10,
             2,
-            x + 14,
+            x + 15,
             y + 18,
-            34
+            35
         );
 
     body.addColorStop(
@@ -2872,13 +2584,13 @@ function drawCharacter(
     );
 
     body.addColorStop(
-        0.18,
+        .18,
         color
     );
 
     body.addColorStop(
         1,
-        "#0f172a"
+        "#101827"
     );
 
     ctx.fillStyle =
@@ -2887,35 +2599,37 @@ function drawCharacter(
     ctx.beginPath();
 
     ctx.roundRect(
-        x - 17,
+        x - 18,
         y - 8,
-        34,
         36,
+        38,
         10
     );
 
     ctx.fill();
 
-    /* head */
+    /*
+    Kopf
+    */
 
     const head =
         ctx.createRadialGradient(
             x - 5,
-            y - 24,
+            y - 26,
             2,
             x + 7,
-            y - 11,
+            y - 12,
             20
         );
 
     head.addColorStop(
         0,
-        "#ffe5cc"
+        "#ffe6cf"
     );
 
     head.addColorStop(
         1,
-        "#9b664a"
+        "#9f6a4e"
     );
 
     ctx.fillStyle =
@@ -2933,13 +2647,65 @@ function drawCharacter(
 
     ctx.fill();
 
-    /* weapon */
+    /*
+    Waffenrichtung
+    */
+
+    let targetX;
+
+    let targetY;
+
+    if (
+        entity.id === myId
+    ) {
+
+        targetX =
+            aimX;
+
+        targetY =
+            aimY;
+
+    } else {
+
+        targetX =
+            x +
+            30;
+
+        targetY =
+            y;
+    }
+
+    const angle =
+        Math.atan2(
+            targetY - y,
+            targetX - x
+        );
+
+    const gunX =
+        x +
+        Math.cos(angle) *
+            12;
+
+    const gunY =
+        y +
+        Math.sin(angle) *
+            12;
+
+    const endX =
+        x +
+        Math.cos(angle) *
+            35;
+
+    const endY =
+        y +
+        Math.sin(angle) *
+            35;
 
     ctx.strokeStyle =
         "#e5e7eb";
 
     ctx.lineWidth =
-        6;
+        7;
 
     ctx.lineCap =
         "round";
@@ -2947,18 +2713,77 @@ function drawCharacter(
     ctx.beginPath();
 
     ctx.moveTo(
-        x + 9,
-        y - 1
+        gunX,
+        gunY
     );
 
     ctx.lineTo(
-        x + 34,
-        y - 7
+        endX,
+        endY
     );
 
     ctx.stroke();
 
-    /* name */
+    /*
+    HP
+    */
+
+    ctx.fillStyle =
+        "#2b0b0b";
+
+    ctx.fillRect(
+        x - 24,
+        y - 37,
+        48,
+        5
+    );
+
+    ctx.fillStyle =
+        "#22c55e";
+
+    ctx.fillRect(
+        x - 24,
+        y - 37,
+        48 *
+        Math.max(
+            0,
+            entity.hp /
+                100
+        ),
+        5
+    );
+
+    /*
+    Schild
+    */
+
+    if (
+        entity.shield >
+        0
+    ) {
+
+        ctx.strokeStyle =
+            "#38bdf8";
+
+        ctx.lineWidth =
+            2;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            y,
+            28,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.stroke();
+    }
+
+    /*
+    Name
+    */
 
     ctx.font =
         "bold 12px Arial";
@@ -2976,68 +2801,22 @@ function drawCharacter(
         "black";
 
     ctx.fillText(
-        p.name ||
-            "BOT",
+        entity.name,
         x,
-        y - 43
+        y - 45
     );
 
     ctx.shadowBlur =
         0;
-
-    /* HP */
-
-    ctx.fillStyle =
-        "#450a0a";
-
-    ctx.fillRect(
-        x - 24,
-        y - 36,
-        48,
-        5
-    );
-
-    ctx.fillStyle =
-        "#22c55e";
-
-    ctx.fillRect(
-        x - 24,
-        y - 36,
-        48 *
-        Math.max(
-            0,
-            p.hp / 100
-        ),
-        5
-    );
-
-    /* shield */
-
-    if (
-        p.shield > 0
-    ) {
-
-        ctx.strokeStyle =
-            "#38bdf8";
-
-        ctx.lineWidth =
-            2;
-
-        ctx.beginPath();
-
-        ctx.arc(
-            x,
-            y,
-            29,
-            0,
-            Math.PI * 2
-        );
-
-        ctx.stroke();
-    }
 }
 
-function renderBullets() {
+/* =========================================
+   BULLETS
+========================================= */
+
+function drawBullets(
+    me
+) {
 
     bullets =
         bullets.filter(
@@ -3056,13 +2835,15 @@ function renderBullets() {
                 bullet.life--;
 
                 const x =
-                    sx(
-                        bullet.x
+                    worldToScreenX(
+                        bullet.x,
+                        me
                     );
 
                 const y =
-                    sy(
-                        bullet.y
+                    worldToScreenY(
+                        bullet.y,
+                        me
                     );
 
                 ctx.beginPath();
@@ -3079,7 +2860,7 @@ function renderBullets() {
                     bullet.color;
 
                 ctx.shadowBlur =
-                    18;
+                    15;
 
                 ctx.shadowColor =
                     bullet.color;
@@ -3097,7 +2878,13 @@ function renderBullets() {
         );
 }
 
-function renderEffects() {
+/* =========================================
+   EFFECTS
+========================================= */
+
+function drawEffects(
+    me
+) {
 
     effects =
         effects.filter(
@@ -3106,13 +2893,15 @@ function renderEffects() {
                 effect.life--;
 
                 const x =
-                    sx(
-                        effect.x
+                    worldToScreenX(
+                        effect.x,
+                        me
                     );
 
                 const y =
-                    sy(
-                        effect.y
+                    worldToScreenY(
+                        effect.y,
+                        me
                     );
 
                 if (
@@ -3127,7 +2916,7 @@ function renderEffects() {
                         y,
                         8 +
                         (
-                            16 -
+                            15 -
                             effect.life
                         ) *
                         2,
@@ -3165,7 +2954,7 @@ function renderEffects() {
                     );
 
                     ctx.strokeStyle =
-                        "#ef4444";
+                        "#ff6464";
 
                     ctx.lineWidth =
                         4;
@@ -3183,7 +2972,7 @@ function renderEffects() {
                     ctx.arc(
                         x,
                         y,
-                        50,
+                        45,
                         -0.9,
                         0.9
                     );
@@ -3199,7 +2988,7 @@ function renderEffects() {
 
                 if (
                     effect.type ===
-                    "super"
+                    "muzzle"
                 ) {
 
                     ctx.beginPath();
@@ -3207,23 +2996,31 @@ function renderEffects() {
                     ctx.arc(
                         x,
                         y,
-                        25 +
-                        (
-                            35 -
-                            effect.life
-                        ) *
-                        6,
+                        10,
                         0,
                         Math.PI * 2
                     );
 
-                    ctx.strokeStyle =
-                        "#ec4899";
+                    ctx.fillStyle =
+                        "#ffd43b";
 
-                    ctx.lineWidth =
-                        8;
+                    ctx.fill();
+                }
 
-                    ctx.stroke();
+                if (
+                    effect.type ===
+                    "damage"
+                ) {
+
+                    ctx.fillStyle =
+                        "rgba(255,0,0,.18)";
+
+                    ctx.fillRect(
+                        0,
+                        0,
+                        canvas.width,
+                        canvas.height
+                    );
                 }
 
                 return (
@@ -3234,34 +3031,71 @@ function renderEffects() {
         );
 }
 
-function draw() {
+/* =========================================
+   SUPER BUTTON
+========================================= */
 
-    requestAnimationFrame(
-        draw
+document
+    .getElementById(
+        "superButton"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            send({
+                type:
+                    "useSuper"
+            });
+        }
     );
 
-    if (
-        document.getElementById(
-            "game"
-        ).style.display !==
-        "block"
-    ) {
+/* =========================================
+   MAIN LOOP
+========================================= */
+
+function render() {
+
+    requestAnimationFrame(
+        render
+    );
+
+    const me =
+        players[
+            myId
+        ];
+
+    if (!me) {
+
+        ctx.fillStyle =
+            "#203142";
+
+        ctx.fillRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
         return;
     }
 
-    drawArena();
+    drawMap(
+        me
+    );
 
     Object.values(
         players
     ).forEach(
-        player => {
+        entity => {
 
             if (
-                player.alive
+                entity.alive
             ) {
 
                 drawCharacter(
-                    player
+                    entity,
+                    me
                 );
             }
         }
@@ -3275,39 +3109,23 @@ function draw() {
             ) {
 
                 drawCharacter(
-                    bot
+                    bot,
+                    me
                 );
             }
         }
     );
 
-    renderBullets();
+    drawBullets(
+        me
+    );
 
-    renderEffects();
+    drawEffects(
+        me
+    );
 }
 
-draw();
-
-/* =====================================================
-   CONNECT ID
-===================================================== */
-
-const originalOpen =
-    socket.onopen;
-
-socket.onopen =
-    event => {
-
-        myId =
-            socket.id ||
-            null;
-
-        if (originalOpen) {
-            originalOpen(
-                event
-            );
-        }
-    };
+render();
 
 </script>
 
