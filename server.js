@@ -1,2168 +1,1279 @@
-"use strict";
-
-const express = require("express");
 const http = require("http");
-const path = require("path");
+const express = require("express");
 const WebSocket = require("ws");
 
 const app = express();
-const server = http.createServer(app);
+const PORT = process.env.PORT || 10000;
 
-const PORT = Number(process.env.PORT) || 10000;
-
-/* =====================================================
-   SERVER
-===================================================== */
-
-app.use(express.static(path.join(__dirname)));
-
-app.get("/health", (req, res) => {
-    res.json({
-        ok: true,
-        game: "Battle Zone",
-        players: getTotalPlayers()
-    });
+app.get("/", (req, res) => {
+  res.send("Battle Zone Server läuft!");
 });
 
+const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-/* =====================================================
-   GAME SETTINGS
-===================================================== */
+const rooms = new Map();
 
 const MAP = {
-    width: 1600,
-    height: 900
+  width: 1600,
+  height: 900
 };
-
-const PLAYER_RADIUS = 20;
-const MAX_PLAYERS = 8;
-const MAX_BOTS = 5;
-const TICK_RATE = 30;
-
-/* =====================================================
-   WALLS
-===================================================== */
 
 const WALLS = [
-    { x: 80, y: 80, w: 300, h: 45 },
-    { x: 500, y: 80, w: 280, h: 45 },
-    { x: 860, y: 80, w: 300, h: 45 },
-    { x: 1260, y: 80, w: 250, h: 45 },
-
-    { x: 150, y: 290, w: 260, h: 45 },
-    { x: 570, y: 255, w: 360, h: 45 },
-    { x: 1090, y: 290, w: 300, h: 45 },
-
-    { x: 680, y: 405, w: 240, h: 70 },
-
-    { x: 80, y: 700, w: 300, h: 45 },
-    { x: 470, y: 725, w: 300, h: 45 },
-    { x: 900, y: 700, w: 300, h: 45 },
-    { x: 1290, y: 725, w: 230, h: 45 }
+  { x: 250, y: 180, w: 260, h: 35 },
+  { x: 700, y: 120, w: 35, h: 250 },
+  { x: 1050, y: 220, w: 300, h: 35 },
+  { x: 420, y: 550, w: 35, h: 220 },
+  { x: 800, y: 500, w: 300, h: 35 },
+  { x: 1250, y: 520, w: 35, h: 220 }
 ];
-
-/* =====================================================
-   DIFFICULTY
-===================================================== */
-
-const DIFFICULTIES = {
-    easy: {
-        name: "Leicht",
-        botSpeed: 1.8,
-        accuracy: 0.65,
-        fireChance: 0.35,
-        damageMultiplier: 0.75
-    },
-
-    medium: {
-        name: "Mittel",
-        botSpeed: 2.5,
-        accuracy: 0.82,
-        fireChance: 0.60,
-        damageMultiplier: 1
-    },
-
-    hard: {
-        name: "Schwer",
-        botSpeed: 3.2,
-        accuracy: 0.95,
-        fireChance: 0.85,
-        damageMultiplier: 1.15
-    }
-};
-
-/* =====================================================
-   WEAPONS
-===================================================== */
-
-const WEAPONS = {
-
-    Pistole: {
-        damage: 12,
-        cooldown: 10,
-        speed: 18,
-        range: 760,
-        ammo: 12,
-        reload: 45,
-        pellets: 1,
-        spread: 0,
-        melee: false
-    },
-
-    SMG: {
-        damage: 6,
-        cooldown: 4,
-        speed: 20,
-        range: 560,
-        ammo: 30,
-        reload: 50,
-        pellets: 1,
-        spread: 0.08,
-        melee: false
-    },
-
-    Gewehr: {
-        damage: 19,
-        cooldown: 16,
-        speed: 22,
-        range: 900,
-        ammo: 8,
-        reload: 55,
-        pellets: 1,
-        spread: 0.02,
-        melee: false
-    },
-
-    Schrotflinte: {
-        damage: 7,
-        cooldown: 30,
-        speed: 15,
-        range: 380,
-        ammo: 5,
-        reload: 60,
-        pellets: 6,
-        spread: 0.28,
-        melee: false
-    },
-
-    Bogen: {
-        damage: 30,
-        cooldown: 28,
-        speed: 14,
-        range: 950,
-        ammo: 6,
-        reload: 65,
-        pellets: 1,
-        spread: 0,
-        melee: false
-    },
-
-    Schwert: {
-        damage: 35,
-        cooldown: 18,
-        speed: 0,
-        range: 90,
-        ammo: 999999,
-        reload: 0,
-        pellets: 1,
-        spread: 0,
-        melee: true
-    }
-};
-
-/* =====================================================
-   SKINS
-===================================================== */
 
 const SKINS = [
-    {
-        id: "rookie",
-        name: "Rookie",
-        rarity: "Standard",
-        color: "#38bdf8",
-        weapon: "Pistole",
-        health: 100,
-        shield: 50,
-        bonusDamage: 0
-    },
-
-    {
-        id: "blaze",
-        name: "Blaze",
-        rarity: "Selten",
-        color: "#ef4444",
-        weapon: "SMG",
-        health: 110,
-        shield: 60,
-        bonusDamage: 5
-    },
-
-    {
-        id: "frost",
-        name: "Frost",
-        rarity: "Selten",
-        color: "#67e8f9",
-        weapon: "Bogen",
-        health: 110,
-        shield: 60,
-        bonusDamage: 5
-    },
-
-    {
-        id: "shadow",
-        name: "Shadow",
-        rarity: "Superselten",
-        color: "#111827",
-        weapon: "Schwert",
-        health: 145,
-        shield: 85,
-        bonusDamage: 10
-    },
-
-    {
-        id: "cyber",
-        name: "Cyber",
-        rarity: "Superselten",
-        color: "#06b6d4",
-        weapon: "SMG",
-        health: 120,
-        shield: 70,
-        bonusDamage: 10
-    },
-
-    {
-        id: "galaxy",
-        name: "Galaxy",
-        rarity: "Episch",
-        color: "#8b5cf6",
-        weapon: "Gewehr",
-        health: 130,
-        shield: 75,
-        bonusDamage: 15
-    },
-
-    {
-        id: "void",
-        name: "Void",
-        rarity: "Episch",
-        color: "#312e81",
-        weapon: "Schwert",
-        health: 155,
-        shield: 95,
-        bonusDamage: 15
-    },
-
-    {
-        id: "dragon",
-        name: "Dragon",
-        rarity: "Mythisch",
-        color: "#f59e0b",
-        weapon: "Bogen",
-        health: 140,
-        shield: 85,
-        bonusDamage: 25
-    },
-
-    {
-        id: "demon",
-        name: "Demon",
-        rarity: "Mythisch",
-        color: "#7f1d1d",
-        weapon: "Schwert",
-        health: 170,
-        shield: 105,
-        bonusDamage: 25
-    },
-
-    {
-        id: "legend",
-        name: "Legend",
-        rarity: "Legendär",
-        color: "#facc15",
-        weapon: "Gewehr",
-        health: 150,
-        shield: 95,
-        bonusDamage: 35
-    },
-
-    {
-        id: "king",
-        name: "King",
-        rarity: "Legendär",
-        color: "#fde68a",
-        weapon: "Schwert",
-        health: 190,
-        shield: 120,
-        bonusDamage: 35
-    }
+  {
+    id: "standard",
+    name: "Rookie",
+    rarity: "Standard",
+    color: "#38bdf8",
+    weapon: "Pistole",
+    damageBonus: 0,
+    healthBonus: 0,
+    shieldBonus: 0,
+    price: 0,
+    super: "Power Shot",
+    superNeed: 500
+  },
+  {
+    id: "rare1",
+    name: "Shadow",
+    rarity: "Rare",
+    color: "#64748b",
+    weapon: "SMG",
+    damageBonus: 8,
+    healthBonus: 10,
+    shieldBonus: 10,
+    price: 25,
+    super: "Shadow Burst",
+    superNeed: 700
+  },
+  {
+    id: "rare2",
+    name: "Forest",
+    rarity: "Rare",
+    color: "#22c55e",
+    weapon: "AR",
+    damageBonus: 10,
+    healthBonus: 15,
+    shieldBonus: 5,
+    price: 50,
+    super: "Nature Shot",
+    superNeed: 750
+  },
+  {
+    id: "rare3",
+    name: "Ocean",
+    rarity: "Rare",
+    color: "#06b6d4",
+    weapon: "SMG",
+    damageBonus: 7,
+    healthBonus: 10,
+    shieldBonus: 20,
+    price: 75,
+    super: "Wave Blast",
+    superNeed: 800
+  },
+  {
+    id: "rare4",
+    name: "Flame",
+    rarity: "Rare",
+    color: "#f97316",
+    weapon: "Shotgun",
+    damageBonus: 15,
+    healthBonus: 5,
+    shieldBonus: 5,
+    price: 100,
+    super: "Fire Burst",
+    superNeed: 850
+  },
+  {
+    id: "rare5",
+    name: "Frost",
+    rarity: "Rare",
+    color: "#93c5fd",
+    weapon: "AR",
+    damageBonus: 10,
+    healthBonus: 20,
+    shieldBonus: 10,
+    price: 125,
+    super: "Ice Storm",
+    superNeed: 900
+  },
+  {
+    id: "super1",
+    name: "Crimson",
+    rarity: "Super Rare",
+    color: "#ef4444",
+    weapon: "AR",
+    damageBonus: 18,
+    healthBonus: 20,
+    shieldBonus: 15,
+    price: 175,
+    super: "Crimson Strike",
+    superNeed: 1000
+  },
+  {
+    id: "super2",
+    name: "Violet",
+    rarity: "Super Rare",
+    color: "#8b5cf6",
+    weapon: "SMG",
+    damageBonus: 20,
+    healthBonus: 15,
+    shieldBonus: 20,
+    price: 225,
+    super: "Void Blast",
+    superNeed: 1050
+  },
+  {
+    id: "super3",
+    name: "Gold",
+    rarity: "Super Rare",
+    color: "#facc15",
+    weapon: "AR",
+    damageBonus: 22,
+    healthBonus: 25,
+    shieldBonus: 10,
+    price: 275,
+    super: "Golden Shot",
+    superNeed: 1100
+  },
+  {
+    id: "super4",
+    name: "Cyber",
+    rarity: "Super Rare",
+    color: "#14b8a6",
+    weapon: "SMG",
+    damageBonus: 20,
+    healthBonus: 20,
+    shieldBonus: 20,
+    price: 325,
+    super: "Cyber Beam",
+    superNeed: 1150
+  },
+  {
+    id: "super5",
+    name: "Storm",
+    rarity: "Super Rare",
+    color: "#60a5fa",
+    weapon: "AR",
+    damageBonus: 24,
+    healthBonus: 15,
+    shieldBonus: 25,
+    price: 375,
+    super: "Thunder",
+    superNeed: 1200
+  },
+  {
+    id: "epic1",
+    name: "Galaxy",
+    rarity: "Epic",
+    color: "#a855f7",
+    weapon: "AR",
+    damageBonus: 28,
+    healthBonus: 30,
+    shieldBonus: 25,
+    price: 450,
+    super: "Galaxy Explosion",
+    superNeed: 1300
+  },
+  {
+    id: "epic2",
+    name: "Inferno",
+    rarity: "Epic",
+    color: "#dc2626",
+    weapon: "Shotgun",
+    damageBonus: 32,
+    healthBonus: 25,
+    shieldBonus: 20,
+    price: 550,
+    super: "Inferno",
+    superNeed: 1400
+  },
+  {
+    id: "epic3",
+    name: "Phantom",
+    rarity: "Epic",
+    color: "#475569",
+    weapon: "SMG",
+    damageBonus: 30,
+    healthBonus: 35,
+    shieldBonus: 30,
+    price: 650,
+    super: "Phantom Dash",
+    superNeed: 1500
+  },
+  {
+    id: "epic4",
+    name: "Emerald",
+    rarity: "Epic",
+    color: "#10b981",
+    weapon: "AR",
+    damageBonus: 35,
+    healthBonus: 30,
+    shieldBonus: 25,
+    price: 750,
+    super: "Emerald Wave",
+    superNeed: 1600
+  },
+  {
+    id: "epic5",
+    name: "Solar",
+    rarity: "Epic",
+    color: "#fb923c",
+    weapon: "AR",
+    damageBonus: 36,
+    healthBonus: 35,
+    shieldBonus: 25,
+    price: 850,
+    super: "Solar Blast",
+    superNeed: 1700
+  },
+  {
+    id: "mythic1",
+    name: "Dragon",
+    rarity: "Mythical",
+    color: "#b91c1c",
+    weapon: "Shotgun",
+    damageBonus: 42,
+    healthBonus: 45,
+    shieldBonus: 35,
+    price: 1000,
+    super: "Dragon Rage",
+    superNeed: 1800
+  },
+  {
+    id: "mythic2",
+    name: "Titan",
+    rarity: "Mythical",
+    color: "#78716c",
+    weapon: "AR",
+    damageBonus: 45,
+    healthBonus: 60,
+    shieldBonus: 40,
+    price: 1200,
+    super: "Titan Smash",
+    superNeed: 1900
+  },
+  {
+    id: "mythic3",
+    name: "Neon",
+    rarity: "Mythical",
+    color: "#ec4899",
+    weapon: "SMG",
+    damageBonus: 48,
+    healthBonus: 40,
+    shieldBonus: 45,
+    price: 1400,
+    super: "Neon Storm",
+    superNeed: 2000
+  },
+  {
+    id: "mythic4",
+    name: "Shadow King",
+    rarity: "Mythical",
+    color: "#1e1b4b",
+    weapon: "AR",
+    damageBonus: 50,
+    healthBonus: 50,
+    shieldBonus: 50,
+    price: 1600,
+    super: "Darkness",
+    superNeed: 2200
+  },
+  {
+    id: "mythic5",
+    name: "Phoenix",
+    rarity: "Mythical",
+    color: "#f43f5e",
+    weapon: "Shotgun",
+    damageBonus: 52,
+    healthBonus: 55,
+    shieldBonus: 45,
+    price: 1800,
+    super: "Phoenix Fire",
+    superNeed: 2400
+  },
+  {
+    id: "legend1",
+    name: "Legend",
+    rarity: "Legendary",
+    color: "#f59e0b",
+    weapon: "AR",
+    damageBonus: 60,
+    healthBonus: 70,
+    shieldBonus: 60,
+    price: 2001,
+    super: "Legendary Strike",
+    superNeed: 2600
+  },
+  {
+    id: "legend2",
+    name: "Destroyer",
+    rarity: "Legendary",
+    color: "#7f1d1d",
+    weapon: "Shotgun",
+    damageBonus: 65,
+    healthBonus: 80,
+    shieldBonus: 65,
+    price: 2500,
+    super: "Destroyer",
+    superNeed: 2800
+  },
+  {
+    id: "legend3",
+    name: "God",
+    rarity: "Legendary",
+    color: "#fde047",
+    weapon: "AR",
+    damageBonus: 70,
+    healthBonus: 100,
+    shieldBonus: 80,
+    price: 3000,
+    super: "God Strike",
+    superNeed: 3000
+  }
 ];
 
-/* =====================================================
-   ROOMS
-===================================================== */
+const TUTORIAL = [
+  {
+    title: "🎮 Bewegung",
+    text: "PC: Benutze die Pfeiltasten. Handy: Benutze den Joystick."
+  },
+  {
+    title: "🔥 Schießen",
+    text: "PC: Halte die linke Maustaste. Handy: Benutze den roten Feuerknopf."
+  },
+  {
+    title: "💚 Heilen",
+    text: "Benutze HEILEN, wenn dein Leben nicht voll ist."
+  },
+  {
+    title: "⚡ Super",
+    text: "Verursache genug Schaden an Bots, um deine Super-Fähigkeit aufzuladen."
+  },
+  {
+    title: "🏆 Gewinnen",
+    text: "Besiege alle Gegner, um die Runde zu gewinnen."
+  }
+];
 
-const rooms = {};
+const WEAPONS = {
+  pistol: {
+    name: "Pistole",
+    damage: 18,
+    speed: 12,
+    cooldown: 350,
+    range: 700,
+    type: "ranged"
+  },
+  smg: {
+    name: "SMG",
+    damage: 10,
+    speed: 14,
+    cooldown: 120,
+    range: 650,
+    type: "ranged"
+  },
+  ar: {
+    name: "AR",
+    damage: 23,
+    speed: 15,
+    cooldown: 220,
+    range: 800,
+    type: "ranged"
+  },
+  shotgun: {
+    name: "Shotgun",
+    damage: 9,
+    speed: 13,
+    cooldown: 700,
+    range: 360,
+    type: "shotgun"
+  },
+  melee: {
+    name: "Nahkampf",
+    damage: 34,
+    speed: 0,
+    cooldown: 500,
+    range: 75,
+    type: "melee"
+  }
+};
 
-/* =====================================================
-   UTILITY
-===================================================== */
+const DIFFICULTY = {
+  easy: {
+    botSpeed: 1.35,
+    botDamage: 0.75,
+    botFire: 0.025
+  },
+  medium: {
+    botSpeed: 1.8,
+    botDamage: 1,
+    botFire: 0.045
+  },
+  hard: {
+    botSpeed: 2.35,
+    botDamage: 1.25,
+    botFire: 0.07
+  }
+};
 
-function send(ws, data) {
-    if (
-        ws &&
-        ws.readyState === WebSocket.OPEN
-    ) {
-        ws.send(JSON.stringify(data));
+function randomCode() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+  let code = "";
+
+  do {
+    code = "";
+
+    for (let i = 0; i < 4; i++) {
+      code += chars[Math.floor(Math.random() * chars.length)];
     }
+  } while (rooms.has(code));
+
+  return code;
 }
 
-function broadcast(room, data) {
-    for (
-        const player of Object.values(room.players)
-    ) {
-        send(player.ws, data);
+function randomSpawn() {
+  let p;
+
+  for (let i = 0; i < 100; i++) {
+    p = {
+      x: 100 + Math.random() * (MAP.width - 200),
+      y: 100 + Math.random() * (MAP.height - 200)
+    };
+
+    if (!wallCollision(p.x, p.y, 24)) {
+      return p;
     }
-}
+  }
 
-function clamp(value, min, max) {
-    return Math.max(
-        min,
-        Math.min(max, value)
-    );
-}
-
-function distance(a, b) {
-    return Math.hypot(
-        a.x - b.x,
-        a.y - b.y
-    );
+  return {
+    x: MAP.width / 2,
+    y: MAP.height / 2
+  };
 }
 
 function getSkin(id) {
-    return (
-        SKINS.find(s => s.id === id) ||
-        SKINS[0]
-    );
+  return SKINS.find(s => s.id === id) || SKINS[0];
 }
 
-function getWeapon(entity) {
-    return WEAPONS[entity.weapon] ||
-        WEAPONS.Pistole;
-}
+function wallCollision(x, y, radius = 20) {
+  for (const w of WALLS) {
+    const closestX = Math.max(w.x, Math.min(x, w.x + w.w));
+    const closestY = Math.max(w.y, Math.min(y, w.y + w.h));
 
-function getTotalPlayers() {
-    let total = 0;
+    const dx = x - closestX;
+    const dy = y - closestY;
 
-    for (const room of Object.values(rooms)) {
-        total += Object.keys(room.players).length;
+    if (dx * dx + dy * dy < radius * radius) {
+      return true;
     }
+  }
 
-    return total;
+  return false;
 }
 
-function createRoomCode() {
-    let code;
+function moveEntity(e, dx, dy) {
+  const len = Math.hypot(dx, dy);
 
-    do {
-        code = Math.random()
-            .toString(36)
-            .substring(2, 6)
-            .toUpperCase();
-    } while (rooms[code]);
+  if (len > 1) {
+    dx /= len;
+    dy /= len;
+  }
 
-    return code;
+  const nx = e.x + dx * e.speed;
+  const ny = e.y + dy * e.speed;
+
+  if (
+    nx > 25 &&
+    nx < MAP.width - 25 &&
+    !wallCollision(nx, e.y, 22)
+  ) {
+    e.x = nx;
+  }
+
+  if (
+    ny > 25 &&
+    ny < MAP.height - 25 &&
+    !wallCollision(e.x, ny, 22)
+  ) {
+    e.y = ny;
+  }
 }
 
-/* =====================================================
-   COLLISION
-===================================================== */
-
-function circleHitsWall(x, y, radius) {
-
-    for (const wall of WALLS) {
-
-        const closestX = clamp(
-            x,
-            wall.x,
-            wall.x + wall.w
-        );
-
-        const closestY = clamp(
-            y,
-            wall.y,
-            wall.y + wall.h
-        );
-
-        const dx = x - closestX;
-        const dy = y - closestY;
-
-        if (
-            dx * dx +
-            dy * dy <
-            radius * radius
-        ) {
-            return true;
-        }
-    }
-
-    return false;
+function send(ws, data) {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(data));
+  }
 }
 
-function lineHitsWall(x1, y1, x2, y2) {
-
-    const distanceValue =
-        Math.hypot(
-            x2 - x1,
-            y2 - y1
-        );
-
-    const steps = Math.max(
-        1,
-        Math.ceil(distanceValue / 5)
-    );
-
-    for (
-        let i = 0;
-        i <= steps;
-        i++
-    ) {
-
-        const t = i / steps;
-
-        const x =
-            x1 +
-            (x2 - x1) * t;
-
-        const y =
-            y1 +
-            (y2 - y1) * t;
-
-        for (const wall of WALLS) {
-
-            if (
-                x >= wall.x &&
-                x <= wall.x + wall.w &&
-                y >= wall.y &&
-                y <= wall.y + wall.h
-            ) {
-                return true;
-            }
-        }
-    }
-
-    return false;
+function broadcast(room, data) {
+  for (const player of room.players.values()) {
+    send(player.ws, data);
+  }
 }
 
-/* =====================================================
-   SPAWN
-===================================================== */
-
-function findSpawn(room) {
-
-    for (
-        let attempt = 0;
-        attempt < 1000;
-        attempt++
-    ) {
-
-        const x =
-            50 +
-            Math.random() *
-            (MAP.width - 100);
-
-        const y =
-            50 +
-            Math.random() *
-            (MAP.height - 100);
-
-        if (
-            circleHitsWall(
-                x,
-                y,
-                PLAYER_RADIUS
-            )
-        ) {
-            continue;
-        }
-
-        let safe = true;
-
-        const entities = [
-            ...Object.values(room.players),
-            ...room.bots
-        ];
-
-        for (const entity of entities) {
-
-            if (!entity.alive) continue;
-
-            if (
-                Math.hypot(
-                    entity.x - x,
-                    entity.y - y
-                ) < 150
-            ) {
-                safe = false;
-                break;
-            }
-        }
-
-        if (safe) {
-            return { x, y };
-        }
-    }
-
-    return {
-        x: MAP.width / 2,
-        y: MAP.height / 2
-    };
+function publicPlayer(p) {
+  return {
+    id: p.id,
+    name: p.name,
+    x: p.x,
+    y: p.y,
+    hp: Math.round(p.hp),
+    maxHp: p.maxHp,
+    shield: Math.round(p.shield),
+    weapon: p.weapon.name,
+    skin: p.skin,
+    kills: p.kills,
+    alive: p.alive,
+    facing: p.facing || 0,
+    botDamage: p.botDamage,
+    superReady: p.superReady
+  };
 }
 
-/* =====================================================
-   RESET
-===================================================== */
-
-function resetEntity(entity, room) {
-
-    const skin = getSkin(entity.skin);
-
-    entity.maxHp = skin.health;
-    entity.maxShield = skin.shield;
-
-    entity.hp = entity.maxHp;
-    entity.shield = entity.maxShield;
-
-    entity.alive = true;
-
-    entity.cooldown = 0;
-    entity.reloadTimer = 0;
-    entity.healCooldown = 0;
-
-    entity.lastDamage = Date.now();
-
-    entity.input = {
-        dx: 0,
-        dy: 0
-    };
-
-    const weapon = getWeapon(entity);
-
-    entity.ammo = weapon.melee
-        ? 999999
-        : weapon.ammo;
+function publicBot(b) {
+  return {
+    id: b.id,
+    name: b.name,
+    x: b.x,
+    y: b.y,
+    hp: Math.round(b.hp),
+    maxHp: b.maxHp,
+    shield: Math.round(b.shield),
+    weapon: b.weapon.name,
+    skin: b.skin,
+    kills: b.kills || 0,
+    alive: b.alive,
+    facing: b.facing || 0
+  };
 }
 
-/* =====================================================
-   CREATE PLAYER
-===================================================== */
+function createPlayer(ws, data) {
+  const skin = getSkin(data.skin);
+  const spawn = randomSpawn();
 
-function createPlayer(ws, room, data) {
+  const melee =
+    skin.weapon === "Shotgun"
+      ? WEAPONS.shotgun
+      : skin.weapon === "SMG"
+        ? WEAPONS.smg
+        : skin.weapon === "AR"
+          ? WEAPONS.ar
+          : WEAPONS.pistol;
 
-    const skin = getSkin(data?.skin);
-    const spawn = findSpawn(room);
-
-    const player = {
-
-        id: ws.clientId,
-
-        ws,
-
-        bot: false,
-
-        name: String(
-            data?.name || "Player"
-        ).substring(0, 16),
-
-        x: spawn.x,
-        y: spawn.y,
-
-        skin: skin.id,
-        weapon: skin.weapon,
-
-        hp: 100,
-        maxHp: 100,
-
-        shield: 50,
-        maxShield: 50,
-
-        alive: true,
-
-        kills: 0,
-
-        cooldown: 0,
-        reloadTimer: 0,
-        healCooldown: 0,
-
-        lastDamage: Date.now(),
-
-        ammo: 0,
-
-        input: {
-            dx: 0,
-            dy: 0
-        }
-    };
-
-    resetEntity(
-        player,
-        room
-    );
-
-    return player;
+  return {
+    id: "p_" + Math.random().toString(36).slice(2, 10),
+    ws,
+    name: String(data.name || "Player").slice(0, 15),
+    x: spawn.x,
+    y: spawn.y,
+    speed: 4,
+    hp: 100 + skin.healthBonus,
+    maxHp: 100 + skin.healthBonus,
+    shield: 50 + skin.shieldBonus,
+    maxShield: 50 + skin.shieldBonus,
+    skin: skin.id,
+    weapon: melee,
+    kills: 0,
+    alive: true,
+    facing: 0,
+    lastShot: 0,
+    lastHeal: 0,
+    botDamage: 0,
+    superReady: false,
+    moveX: 0,
+    moveY: 0,
+    isBot: false
+  };
 }
 
-/* =====================================================
-   CREATE BOTS
-===================================================== */
+function createBot(room, index) {
+  const skin = SKINS[index % SKINS.length];
+  const spawn = randomSpawn();
 
-function createBots(room) {
+  let weapon;
 
-    room.bots = [];
+  if (index % 4 === 0) {
+    weapon = WEAPONS.melee;
+  } else if (index % 3 === 0) {
+    weapon = WEAPONS.shotgun;
+  } else if (index % 2 === 0) {
+    weapon = WEAPONS.ar;
+  } else {
+    weapon = WEAPONS.smg;
+  }
 
-    for (
-        let i = 0;
-        i < room.botCount;
-        i++
-    ) {
-
-        const skin =
-            SKINS[
-                1 + (
-                    i % (
-                        SKINS.length - 1
-                    )
-                )
-            ];
-
-        const spawn = findSpawn(room);
-
-        const bot = {
-
-            id:
-                "bot-" +
-                Math.random()
-                    .toString(36)
-                    .substring(2, 9),
-
-            ws: null,
-
-            bot: true,
-
-            name:
-                "BOT " +
-                (i + 1),
-
-            x: spawn.x,
-            y: spawn.y,
-
-            skin: skin.id,
-            weapon: skin.weapon,
-
-            hp: 100,
-            maxHp: 100,
-
-            shield: 50,
-            maxShield: 50,
-
-            alive: true,
-
-            kills: 0,
-
-            cooldown: 0,
-            reloadTimer: 0,
-            healCooldown: 0,
-
-            lastDamage: Date.now(),
-
-            ammo: 0,
-
-            target: null,
-
-            moveSpeed:
-                DIFFICULTIES[
-                    room.difficulty
-                ].botSpeed,
-
-            input: {
-                dx: 0,
-                dy: 0
-            }
-        };
-
-        resetEntity(
-            bot,
-            room
-        );
-
-        room.bots.push(bot);
-    }
+  return {
+    id: `bot_${room.code}_${index}_${Date.now()}`,
+    name: `Bot ${index + 1}`,
+    x: spawn.x,
+    y: spawn.y,
+    speed: DIFFICULTY[room.difficulty].botSpeed,
+    hp: 100 + skin.healthBonus,
+    maxHp: 100 + skin.healthBonus,
+    shield: 50 + skin.shieldBonus,
+    maxShield: 50 + skin.shieldBonus,
+    skin: skin.id,
+    weapon,
+    kills: 0,
+    alive: true,
+    facing: 0,
+    lastShot: 0,
+    isBot: true,
+    targetId: null
+  };
 }
 
-/* =====================================================
-   MOVEMENT
-===================================================== */
+function damageTarget(room, attacker, target, amount) {
+  if (!target || !target.alive) return;
 
-function moveEntity(entity, dx, dy) {
+  let damage = amount;
 
-    const length =
-        Math.hypot(dx, dy);
+  if (target.shield > 0) {
+    const shieldDamage = Math.min(target.shield, damage);
 
-    if (length < 0.001) {
-        return;
-    }
+    target.shield -= shieldDamage;
+    damage -= shieldDamage;
+  }
 
-    dx /= length;
-    dy /= length;
+  if (damage > 0) {
+    target.hp -= damage;
+  }
 
-    const speed = entity.bot
-        ? entity.moveSpeed
-        : 5;
+  if (attacker && !attacker.isBot && target.isBot) {
+    attacker.botDamage += amount;
 
-    const nextX =
-        entity.x +
-        dx * speed;
-
-    const nextY =
-        entity.y +
-        dy * speed;
+    const skin = getSkin(attacker.skin);
 
     if (
-        !circleHitsWall(
-            nextX,
-            entity.y,
-            PLAYER_RADIUS
-        )
+      skin.superNeed &&
+      attacker.botDamage >= skin.superNeed
     ) {
-        entity.x = nextX;
+      attacker.superReady = true;
     }
+  }
 
-    if (
-        !circleHitsWall(
-            entity.x,
-            nextY,
-            PLAYER_RADIUS
-        )
-    ) {
-        entity.y = nextY;
-    }
-
-    entity.x = clamp(
-        entity.x,
-        PLAYER_RADIUS,
-        MAP.width - PLAYER_RADIUS
-    );
-
-    entity.y = clamp(
-        entity.y,
-        PLAYER_RADIUS,
-        MAP.height - PLAYER_RADIUS
-    );
-}
-
-/* =====================================================
-   RELOAD
-===================================================== */
-
-function startReload(entity) {
-
-    const weapon = getWeapon(entity);
-
-    if (
-        weapon.melee ||
-        entity.reloadTimer > 0 ||
-        entity.ammo >= weapon.ammo
-    ) {
-        return;
-    }
-
-    entity.reloadTimer =
-        weapon.reload;
-}
-
-function finishReload(entity) {
-
-    const weapon = getWeapon(entity);
-
-    if (weapon.melee) {
-        return;
-    }
-
-    entity.ammo = weapon.ammo;
-    entity.reloadTimer = 0;
-}
-
-/* =====================================================
-   DAMAGE
-===================================================== */
-
-function calculateDamage(
-    attacker,
-    room,
-    baseDamage
-) {
-
-    const skin =
-        getSkin(attacker.skin);
-
-    let damage =
-        baseDamage *
-        (
-            1 +
-            skin.bonusDamage / 100
-        );
-
-    if (attacker.bot) {
-
-        const difficulty =
-            DIFFICULTIES[
-                room.difficulty
-            ];
-
-        damage *=
-            difficulty.damageMultiplier;
-    }
-
-    return Math.max(
-        1,
-        Math.round(damage)
-    );
-}
-
-function damageEntity(
-    room,
-    target,
-    baseDamage,
-    attacker
-) {
-
-    if (
-        !target ||
-        !target.alive
-    ) {
-        return;
-    }
-
-    const damage =
-        calculateDamage(
-            attacker,
-            room,
-            baseDamage
-        );
-
-    target.lastDamage =
-        Date.now();
-
-    let remaining = damage;
-
-    if (target.shield > 0) {
-
-        const shieldDamage =
-            Math.min(
-                target.shield,
-                remaining
-            );
-
-        target.shield -=
-            shieldDamage;
-
-        remaining -=
-            shieldDamage;
-    }
-
-    if (remaining > 0) {
-        target.hp -= remaining;
-    }
-
-    broadcast(
-        room,
-        {
-            type: "hitEffect",
-            target: target.id,
-            damage
-        }
-    );
-
-    if (target.hp > 0) {
-        return;
-    }
-
+  if (target.hp <= 0) {
     target.hp = 0;
-    target.shield = 0;
     target.alive = false;
 
     if (attacker) {
-        attacker.kills++;
+      attacker.kills = (attacker.kills || 0) + 1;
     }
 
-    broadcast(
-        room,
-        {
-            type: "elimination",
-            killer: attacker
-                ? attacker.id
-                : null,
-            victim: target.id
-        }
-    );
+    broadcast(room, {
+      type: "elimination",
+      killer: attacker?.id || null,
+      victim: target.id
+    });
 
-    checkRoundEnd(room);
+    checkRound(room);
+  }
 }
 
-/* =====================================================
-   ATTACK
-===================================================== */
+function shoot(room, attacker, dx, dy) {
+  if (!attacker || !attacker.alive) return;
 
-function attack(room, attacker, angle) {
+  const now = Date.now();
 
-    if (!attacker.alive) {
-        return;
+  if (now - attacker.lastShot < attacker.weapon.cooldown) {
+    return;
+  }
+
+  attacker.lastShot = now;
+
+  const length = Math.hypot(dx, dy);
+
+  if (!length) return;
+
+  dx /= length;
+  dy /= length;
+
+  attacker.facing = Math.atan2(dy, dx);
+
+  if (attacker.weapon.type === "melee") {
+    meleeAttack(room, attacker, dx, dy);
+    return;
+  }
+
+  if (attacker.weapon.type === "shotgun") {
+    for (let i = -2; i <= 2; i++) {
+      const spread = i * 0.09;
+
+      const c = Math.cos(spread);
+      const s = Math.sin(spread);
+
+      const bx = dx * c - dy * s;
+      const by = dx * s + dy * c;
+
+      createBullet(room, attacker, bx, by);
     }
 
-    const weapon =
-        getWeapon(attacker);
+    return;
+  }
 
-    if (
-        attacker.cooldown > 0 ||
-        attacker.reloadTimer > 0
-    ) {
-        return;
-    }
-
-    if (
-        !weapon.melee &&
-        attacker.ammo <= 0
-    ) {
-
-        startReload(attacker);
-
-        return;
-    }
-
-    attacker.cooldown =
-        weapon.cooldown;
-
-    /* MELEE */
-
-    if (weapon.melee) {
-
-        const targets = [
-            ...Object.values(room.players),
-            ...room.bots
-        ];
-
-        for (const target of targets) {
-
-            if (
-                !target.alive ||
-                target.id === attacker.id
-            ) {
-                continue;
-            }
-
-            const d =
-                distance(
-                    attacker,
-                    target
-                );
-
-            if (d > weapon.range) {
-                continue;
-            }
-
-            if (
-                lineHitsWall(
-                    attacker.x,
-                    attacker.y,
-                    target.x,
-                    target.y
-                )
-            ) {
-                continue;
-            }
-
-            const targetAngle =
-                Math.atan2(
-                    target.y - attacker.y,
-                    target.x - attacker.x
-                );
-
-            let difference =
-                targetAngle - angle;
-
-            while (difference > Math.PI) {
-                difference -=
-                    Math.PI * 2;
-            }
-
-            while (difference < -Math.PI) {
-                difference +=
-                    Math.PI * 2;
-            }
-
-            if (
-                Math.abs(difference) <
-                0.9
-            ) {
-
-                damageEntity(
-                    room,
-                    target,
-                    weapon.damage,
-                    attacker
-                );
-            }
-        }
-
-        broadcast(
-            room,
-            {
-                type: "meleeEffect",
-                x: attacker.x,
-                y: attacker.y,
-                angle
-            }
-        );
-
-        return;
-    }
-
-    /* RANGED */
-
-    attacker.ammo--;
-
-    for (
-        let i = 0;
-        i < weapon.pellets;
-        i++
-    ) {
-
-        const shotAngle =
-            angle +
-            (
-                Math.random() -
-                0.5
-            ) *
-            weapon.spread;
-
-        room.bullets.push({
-
-            owner: attacker.id,
-
-            x: attacker.x,
-            y: attacker.y,
-
-            dx: Math.cos(shotAngle),
-            dy: Math.sin(shotAngle),
-
-            speed: weapon.speed,
-
-            damage: weapon.damage,
-
-            range: weapon.range,
-
-            travel: 0
-        });
-
-        broadcast(
-            room,
-            {
-                type: "bulletSpawn",
-
-                x: attacker.x,
-                y: attacker.y,
-
-                dx: Math.cos(shotAngle),
-                dy: Math.sin(shotAngle),
-
-                speed: weapon.speed,
-
-                color:
-                    getSkin(
-                        attacker.skin
-                    ).color
-            }
-        );
-    }
-
-    if (attacker.ammo <= 0) {
-        startReload(attacker);
-    }
+  createBullet(room, attacker, dx, dy);
 }
 
-/* =====================================================
-   BULLETS
-===================================================== */
+function createBullet(room, attacker, dx, dy) {
+  broadcast(room, {
+    type: "bulletSpawn",
+    x: attacker.x + dx * 30,
+    y: attacker.y + dy * 30,
+    dx,
+    dy,
+    speed: attacker.weapon.speed,
+    color: getSkin(attacker.skin).color
+  });
 
-function updateBullets(room) {
+  const maxDistance = attacker.weapon.range;
+  const step = 10;
 
-    for (
-        let i =
-            room.bullets.length - 1;
-        i >= 0;
-        i--
-    ) {
+  let x = attacker.x;
+  let y = attacker.y;
 
-        const bullet =
-            room.bullets[i];
+  for (let d = 0; d < maxDistance; d += step) {
+    x += dx * step;
+    y += dy * step;
 
-        const oldX = bullet.x;
-        const oldY = bullet.y;
+    if (wallCollision(x, y, 4)) {
+      broadcast(room, {
+        type: "bulletImpact",
+        x,
+        y
+      });
 
-        bullet.x +=
-            bullet.dx *
-            bullet.speed;
-
-        bullet.y +=
-            bullet.dy *
-            bullet.speed;
-
-        bullet.travel +=
-            bullet.speed;
-
-        /* WALL */
-
-        if (
-            lineHitsWall(
-                oldX,
-                oldY,
-                bullet.x,
-                bullet.y
-            )
-        ) {
-
-            room.bullets.splice(
-                i,
-                1
-            );
-
-            continue;
-        }
-
-        /* TARGET */
-
-        const targets = [
-            ...Object.values(room.players),
-            ...room.bots
-        ];
-
-        let hit = false;
-
-        for (const target of targets) {
-
-            if (
-                !target.alive ||
-                target.id === bullet.owner
-            ) {
-                continue;
-            }
-
-            const d =
-                Math.hypot(
-                    target.x - bullet.x,
-                    target.y - bullet.y
-                );
-
-            if (
-                d >
-                PLAYER_RADIUS + 6
-            ) {
-                continue;
-            }
-
-            const attacker =
-                findEntity(
-                    room,
-                    bullet.owner
-                );
-
-            damageEntity(
-                room,
-                target,
-                bullet.damage,
-                attacker
-            );
-
-            broadcast(
-                room,
-                {
-                    type: "bulletHit",
-                    x: target.x,
-                    y: target.y,
-                    damage: bullet.damage
-                }
-            );
-
-            room.bullets.splice(
-                i,
-                1
-            );
-
-            hit = true;
-            break;
-        }
-
-        if (hit) {
-            continue;
-        }
-
-        if (
-            bullet.travel >=
-            bullet.range
-        ) {
-
-            room.bullets.splice(
-                i,
-                1
-            );
-        }
+      return;
     }
-}
-
-/* =====================================================
-   FIND ENTITY
-===================================================== */
-
-function findEntity(room, id) {
-
-    if (room.players[id]) {
-        return room.players[id];
-    }
-
-    return (
-        room.bots.find(
-            bot => bot.id === id
-        ) || null
-    );
-}
-
-/* =====================================================
-   BOT AI
-===================================================== */
-
-function chooseTarget(room, bot) {
 
     const targets = [
-        ...Object.values(room.players),
-        ...room.bots
-    ].filter(
-        entity =>
-            entity.alive &&
-            entity.id !== bot.id
+      ...room.players.values(),
+      ...room.bots
+    ];
+
+    for (const target of targets) {
+      if (target.id === attacker.id || !target.alive) continue;
+
+      if (Math.hypot(target.x - x, target.y - y) < 25) {
+        let damage = attacker.weapon.damage;
+
+        const skin = getSkin(attacker.skin);
+
+        damage *= 1 + skin.damageBonus / 100;
+
+        if (attacker.isBot) {
+          damage *= DIFFICULTY[room.difficulty].botDamage;
+        }
+
+        damageTarget(room, attacker, target, damage);
+
+        broadcast(room, {
+          type: "bulletHit",
+          x: target.x,
+          y: target.y
+        });
+
+        return;
+      }
+    }
+  }
+}
+
+function meleeAttack(room, attacker, dx, dy) {
+  const targets = [
+    ...room.players.values(),
+    ...room.bots
+  ];
+
+  const skin = getSkin(attacker.skin);
+
+  for (const target of targets) {
+    if (target.id === attacker.id || !target.alive) continue;
+
+    const vx = target.x - attacker.x;
+    const vy = target.y - attacker.y;
+
+    const distance = Math.hypot(vx, vy);
+
+    if (distance > 85) continue;
+
+    const dot = (vx / Math.max(distance, 1)) * dx +
+      (vy / Math.max(distance, 1)) * dy;
+
+    if (dot < 0.25) continue;
+
+    let damage = attacker.weapon.damage;
+
+    damage *= 1 + skin.damageBonus / 100;
+
+    damageTarget(room, attacker, target, damage);
+
+    broadcast(room, {
+      type: "meleeEffect",
+      x: target.x,
+      y: target.y
+    });
+
+    break;
+  }
+}
+
+function heal(player, room) {
+  if (!player || !player.alive) return;
+
+  const now = Date.now();
+
+  if (now - player.lastHeal < 6000) return;
+
+  if (player.hp >= player.maxHp) return;
+
+  player.lastHeal = now;
+
+  player.hp = Math.min(
+    player.maxHp,
+    player.hp + 35
+  );
+
+  player.shield = Math.min(
+    player.maxShield,
+    player.shield + 10
+  );
+
+  broadcast(room, {
+    type: "healEffect",
+    x: player.x,
+    y: player.y
+  });
+}
+
+function useSuper(player, room) {
+  if (!player || !player.alive) return;
+
+  if (!player.superReady) return;
+
+  player.superReady = false;
+  player.botDamage = 0;
+
+  const radius = 180;
+
+  const targets = [
+    ...room.players.values(),
+    ...room.bots
+  ];
+
+  const skin = getSkin(player.skin);
+
+  for (const target of targets) {
+    if (target.id === player.id || !target.alive) continue;
+
+    const distance = Math.hypot(
+      target.x - player.x,
+      target.y - player.y
     );
 
-    if (!targets.length) {
-        return null;
+    if (distance <= radius) {
+      let damage = 65 + skin.damageBonus;
+
+      damageTarget(room, player, target, damage);
     }
+  }
 
-    let best = targets[0];
-    let bestDistance =
-        distance(bot, best);
+  broadcast(room, {
+    type: "superEffect",
+    x: player.x,
+    y: player.y
+  });
+}
 
-    for (
-        let i = 1;
-        i < targets.length;
-        i++
-    ) {
+function nearestTarget(room, bot) {
+  let best = null;
+  let bestDistance = Infinity;
 
-        const d =
-            distance(
-                bot,
-                targets[i]
-            );
+  for (const p of room.players.values()) {
+    if (!p.alive) continue;
 
-        if (d < bestDistance) {
+    const d = Math.hypot(
+      p.x - bot.x,
+      p.y - bot.y
+    );
 
-            best =
-                targets[i];
-
-            bestDistance = d;
-        }
+    if (d < bestDistance) {
+      best = p;
+      bestDistance = d;
     }
+  }
 
-    return best;
+  return best;
 }
 
 function updateBots(room) {
+  const difficulty = DIFFICULTY[room.difficulty];
 
-    const difficulty =
-        DIFFICULTIES[
-            room.difficulty
-        ] ||
-        DIFFICULTIES.medium;
+  for (const bot of room.bots) {
+    if (!bot.alive) continue;
 
-    for (const bot of room.bots) {
+    const target = nearestTarget(room, bot);
 
-        if (!bot.alive) {
-            continue;
-        }
+    if (!target) continue;
 
-        if (bot.cooldown > 0) {
-            bot.cooldown--;
-        }
+    const dx = target.x - bot.x;
+    const dy = target.y - bot.y;
 
-        if (bot.reloadTimer > 0) {
+    const distance = Math.hypot(dx, dy);
 
-            bot.reloadTimer--;
+    if (!distance) continue;
 
-            if (
-                bot.reloadTimer <= 0
-            ) {
-                finishReload(bot);
-            }
-        }
+    const nx = dx / distance;
+    const ny = dy / distance;
 
-        const target =
-            chooseTarget(
-                room,
-                bot
-            );
+    bot.facing = Math.atan2(ny, nx);
 
-        if (!target) {
-            continue;
-        }
+    if (bot.weapon.type === "melee") {
+      if (distance > 65) {
+        moveEntity(bot, nx, ny);
+      } else {
+        shoot(room, bot, nx, ny);
+      }
 
-        bot.target =
-            target.id;
-
-        const dx =
-            target.x - bot.x;
-
-        const dy =
-            target.y - bot.y;
-
-        const d =
-            Math.hypot(dx, dy) || 1;
-
-        const weapon =
-            getWeapon(bot);
-
-        const angle =
-            Math.atan2(dy, dx);
-
-        const blocked =
-            lineHitsWall(
-                bot.x,
-                bot.y,
-                target.x,
-                target.y
-            );
-
-        /* MOVEMENT */
-
-        if (
-            blocked ||
-            d > weapon.range * 0.55
-        ) {
-
-            moveEntity(
-                bot,
-                dx / d,
-                dy / d
-            );
-        }
-
-        /* ATTACK */
-
-        if (
-            !blocked &&
-            d <= weapon.range &&
-            bot.cooldown <= 0
-        ) {
-
-            if (
-                Math.random() <
-                difficulty.fireChance
-            ) {
-
-                const error =
-                    (
-                        Math.random() -
-                        0.5
-                    ) *
-                    (
-                        1 -
-                        difficulty.accuracy
-                    ) *
-                    1.2;
-
-                attack(
-                    room,
-                    bot,
-                    angle + error
-                );
-            }
-        }
+      continue;
     }
-}
 
-/* =====================================================
-   PLAYER UPDATE
-===================================================== */
+    if (distance > 300) {
+      moveEntity(bot, nx, ny);
+    } else if (distance < 170) {
+      moveEntity(bot, -nx, -ny);
+    } else {
+      const side = Math.sin(Date.now() / 700 + bot.id.length);
 
-function updatePlayers(room) {
-
-    for (
-        const player of
-        Object.values(room.players)
-    ) {
-
-        if (!player.alive) {
-            continue;
-        }
-
-        moveEntity(
-            player,
-            player.input.dx,
-            player.input.dy
-        );
-
-        if (player.cooldown > 0) {
-            player.cooldown--;
-        }
-
-        if (player.reloadTimer > 0) {
-
-            player.reloadTimer--;
-
-            if (
-                player.reloadTimer <= 0
-            ) {
-                finishReload(player);
-            }
-        }
-
-        if (player.healCooldown > 0) {
-            player.healCooldown--;
-        }
-
-        /* Passive regeneration */
-
-        if (
-            Date.now() -
-            player.lastDamage >
-            5000 &&
-            player.hp <
-            player.maxHp
-        ) {
-
-            player.hp =
-                Math.min(
-                    player.maxHp,
-                    player.hp + 0.15
-                );
-        }
+      moveEntity(
+        bot,
+        -ny * side,
+        nx * side
+      );
     }
-}
-
-/* =====================================================
-   HEAL
-===================================================== */
-
-function healPlayer(room, player) {
 
     if (
-        !player ||
-        !player.alive ||
-        player.healCooldown > 0
+      distance < bot.weapon.range &&
+      Math.random() < difficulty.botFire
     ) {
-        return;
+      shoot(room, bot, nx, ny);
     }
-
-    player.healCooldown = 180;
-
-    player.hp =
-        Math.min(
-            player.maxHp,
-            player.hp + 30
-        );
-
-    player.shield =
-        Math.min(
-            player.maxShield,
-            player.shield + 15
-        );
-
-    broadcast(
-        room,
-        {
-            type: "healEffect",
-            player: player.id,
-            x: player.x,
-            y: player.y
-        }
-    );
+  }
 }
 
-/* =====================================================
-   PUBLIC STATE
-===================================================== */
+function checkRound(room) {
+  const alivePlayers = [
+    ...room.players.values()
+  ].filter(p => p.alive);
 
-function publicEntity(entity) {
+  const aliveBots = room.bots.filter(
+    b => b.alive
+  );
 
-    return {
+  if (alivePlayers.length === 0) {
+    broadcast(room, {
+      type: "roundEnd",
+      winner: null
+    });
 
-        id: entity.id,
+    room.roundOver = true;
+    return;
+  }
 
-        name: entity.name,
+  if (aliveBots.length === 0) {
+    broadcast(room, {
+      type: "roundEnd",
+      winner: alivePlayers[0].id
+    });
 
-        x: Math.round(entity.x),
-        y: Math.round(entity.y),
+    room.roundOver = true;
+  }
+}
 
-        hp: Math.round(entity.hp),
-        maxHp: entity.maxHp,
+function resetRound(room) {
+  room.roundOver = false;
 
-        shield: Math.round(entity.shield),
-        maxShield: entity.maxShield,
+  for (const p of room.players.values()) {
+    const skin = getSkin(p.skin);
+    const spawn = randomSpawn();
 
-        alive: entity.alive,
+    p.x = spawn.x;
+    p.y = spawn.y;
+    p.hp = 100 + skin.healthBonus;
+    p.maxHp = 100 + skin.healthBonus;
+    p.shield = 50 + skin.shieldBonus;
+    p.maxShield = 50 + skin.shieldBonus;
+    p.alive = true;
+    p.botDamage = 0;
+    p.superReady = false;
+    p.lastShot = 0;
+    p.lastHeal = 0;
+  }
 
-        skin: entity.skin,
+  room.bots = [];
 
-        weapon: entity.weapon,
+  for (let i = 0; i < room.botCount; i++) {
+    room.bots.push(createBot(room, i));
+  }
 
-        kills: entity.kills,
-
-        ammo: entity.ammo,
-
-        reloadTimer:
-            entity.reloadTimer,
-
-        bot: entity.bot
-    };
+  broadcast(room, {
+    type: "newRound"
+  });
 }
 
 function sendState(room) {
-
-    broadcast(
-        room,
-        {
-            type: "state",
-
-            map: MAP,
-
-            walls: WALLS,
-
-            players:
-                Object.values(
-                    room.players
-                ).map(publicEntity),
-
-            bots:
-                room.bots.map(publicEntity)
-        }
-    );
+  broadcast(room, {
+    type: "state",
+    players: [...room.players.values()].map(publicPlayer),
+    bots: room.bots.map(publicBot),
+    walls: WALLS,
+    map: MAP,
+    difficulty: room.difficulty
+  });
 }
 
-/* =====================================================
-   ROUND
-===================================================== */
+setInterval(() => {
+  for (const room of rooms.values()) {
+    if (!room.roundOver) {
+      updateBots(room);
+      sendState(room);
+    }
+  }
+}, 1000 / 20);
 
-function checkRoundEnd(room) {
+wss.on("connection", ws => {
+  const client = {
+    ws,
+    room: null,
+    player: null
+  };
 
-    if (!room.roundActive) {
+  send(ws, {
+    type: "connected",
+    id: "pending",
+    map: MAP,
+    walls: WALLS,
+    skins: SKINS,
+    tutorial: TUTORIAL
+  });
+
+  ws.on("message", raw => {
+    let data;
+
+    try {
+      data = JSON.parse(raw.toString());
+    } catch {
+      send(ws, {
+        type: "errorMessage",
+        message: "Ungültige Nachricht."
+      });
+
+      return;
+    }
+
+    if (data.type === "createRoom") {
+      if (client.room) return;
+
+      const code = randomCode();
+
+      const room = {
+        code,
+        difficulty:
+          ["easy", "medium", "hard"].includes(data.difficulty)
+            ? data.difficulty
+            : "medium",
+        botCount: Math.max(
+          0,
+          Math.min(5, Number(data.bots) || 0)
+        ),
+        players: new Map(),
+        bots: [],
+        roundOver: false
+      };
+
+      const player = createPlayer(ws, data);
+
+      client.room = room;
+      client.player = player;
+
+      room.players.set(player.id, player);
+      rooms.set(code, room);
+
+      for (let i = 0; i < room.botCount; i++) {
+        room.bots.push(createBot(room, i));
+      }
+
+      send(ws, {
+        type: "connected",
+        id: player.id,
+        map: MAP,
+        walls: WALLS,
+        skins: SKINS,
+        tutorial: TUTORIAL
+      });
+
+      send(ws, {
+        type: "roomCreated",
+        code,
+        difficulty: room.difficulty
+      });
+
+      sendState(room);
+
+      return;
+    }
+
+    if (data.type === "joinRoom") {
+      if (client.room) return;
+
+      const code = String(data.code || "").toUpperCase();
+      const room = rooms.get(code);
+
+      if (!room) {
+        send(ws, {
+          type: "errorMessage",
+          message: "Lobby nicht gefunden."
+        });
+
         return;
+      }
+
+      const player = createPlayer(ws, data);
+
+      client.room = room;
+      client.player = player;
+
+      room.players.set(player.id, player);
+
+      send(ws, {
+        type: "connected",
+        id: player.id,
+        map: MAP,
+        walls: WALLS,
+        skins: SKINS,
+        tutorial: TUTORIAL
+      });
+
+      send(ws, {
+        type: "joinedRoom",
+        code: room.code,
+        difficulty: room.difficulty
+      });
+
+      sendState(room);
+
+      return;
     }
 
-    const alive = [
-        ...Object.values(room.players),
-        ...room.bots
-    ].filter(
-        entity => entity.alive
-    );
-
-    if (alive.length <= 1) {
-
-        room.roundActive = false;
-
-        broadcast(
-            room,
-            {
-                type: "roundEnd",
-
-                winner:
-                    alive.length
-                        ? alive[0].id
-                        : null
-            }
-        );
-    }
-}
-
-function restartRound(room) {
-
-    room.bullets = [];
-
-    room.roundActive = true;
-
-    for (
-        const player of
-        Object.values(room.players)
-    ) {
-
-        const spawn =
-            findSpawn(room);
-
-        player.x = spawn.x;
-        player.y = spawn.y;
-
-        const skin =
-            getSkin(player.skin);
-
-        player.weapon =
-            skin.weapon;
-
-        resetEntity(
-            player,
-            room
-        );
+    if (!client.room || !client.player) {
+      return;
     }
 
-    createBots(room);
+    const room = client.room;
+    const player = client.player;
 
-    broadcast(
-        room,
-        {
-            type: "newRound"
-        }
-    );
+    if (data.type === "moveIntent") {
+      if (!player.alive || room.roundOver) return;
 
-    sendState(room);
-}
+      let dx = Number(data.dx) || 0;
+      let dy = Number(data.dy) || 0;
 
-/* =====================================================
-   CONNECTION
-===================================================== */
+      dx = Math.max(-1, Math.min(1, dx));
+      dy = Math.max(-1, Math.min(1, dy));
 
-wss.on(
-    "connection",
-    ws => {
+      player.moveX = dx;
+      player.moveY = dy;
 
-        ws.clientId =
-            Math.random()
-                .toString(36)
-                .substring(2, 10);
+      moveEntity(player, dx, dy);
 
-        send(
-            ws,
-            {
-                type: "connected",
+      if (dx || dy) {
+        player.facing = Math.atan2(dy, dx);
+      }
 
-                id: ws.clientId,
-
-                map: MAP,
-
-                walls: WALLS,
-
-                skins: SKINS,
-
-                weapons: WEAPONS,
-
-                difficulties:
-                    DIFFICULTIES
-            }
-        );
-
-        ws.on(
-            "message",
-            raw => {
-
-                let data;
-
-                try {
-
-                    data =
-                        JSON.parse(
-                            raw.toString()
-                        );
-
-                } catch {
-
-                    send(
-                        ws,
-                        {
-                            type:
-                                "errorMessage",
-
-                            message:
-                                "Ungültige Nachricht."
-                        }
-                    );
-
-                    return;
-                }
-
-                /* CREATE ROOM */
-
-                if (
-                    data.type ===
-                    "createRoom"
-                ) {
-
-                    const code =
-                        createRoomCode();
-
-                    const difficulty =
-                        DIFFICULTIES[
-                            data.difficulty
-                        ]
-                            ? data.difficulty
-                            : "medium";
-
-                    const botCount =
-                        clamp(
-                            Math.floor(
-                                Number(
-                                    data.bots
-                                ) || 0
-                            ),
-                            0,
-                            MAX_BOTS
-                        );
-
-                    const room = {
-
-                        code,
-
-                        players: {},
-
-                        bots: [],
-
-                        bullets: [],
-
-                        botCount,
-
-                        difficulty,
-
-                        roundActive: true
-                    };
-
-                    rooms[code] =
-                        room;
-
-                    const player =
-                        createPlayer(
-                            ws,
-                            room,
-                            data
-                        );
-
-                    room.players[
-                        ws.clientId
-                    ] =
-                        player;
-
-                    ws.room = code;
-
-                    createBots(room);
-
-                    send(
-                        ws,
-                        {
-                            type:
-                                "roomCreated",
-
-                            code,
-
-                            difficulty,
-
-                            difficultyName:
-                                DIFFICULTIES[
-                                    difficulty
-                                ].name
-                        }
-                    );
-
-                    sendState(room);
-
-                    return;
-                }
-
-                /* JOIN ROOM */
-
-                if (
-                    data.type ===
-                    "joinRoom"
-                ) {
-
-                    const code =
-                        String(
-                            data.code || ""
-                        )
-                            .trim()
-                            .toUpperCase();
-
-                    const room =
-                        rooms[code];
-
-                    if (!room) {
-
-                        send(
-                            ws,
-                            {
-                                type:
-                                    "errorMessage",
-
-                                message:
-                                    "Lobby nicht gefunden."
-                            }
-                        );
-
-                        return;
-                    }
-
-                    if (
-                        Object.keys(
-                            room.players
-                        ).length >=
-                        MAX_PLAYERS
-                    ) {
-
-                        send(
-                            ws,
-                            {
-                                type:
-                                    "errorMessage",
-
-                                message:
-                                    "Lobby ist voll."
-                            }
-                        );
-
-                        return;
-                    }
-
-                    const player =
-                        createPlayer(
-                            ws,
-                            room,
-                            data
-                        );
-
-                    room.players[
-                        ws.clientId
-                    ] =
-                        player;
-
-                    ws.room = code;
-
-                    send(
-                        ws,
-                        {
-                            type:
-                                "joinedRoom",
-
-                            code,
-
-                            difficulty:
-                                room.difficulty
-                        }
-                    );
-
-                    sendState(room);
-
-                    return;
-                }
-
-                /* ROOM CHECK */
-
-                const room =
-                    rooms[ws.room];
-
-                if (!room) {
-                    return;
-                }
-
-                /* MOVEMENT */
-
-                if (
-                    data.type ===
-                    "moveIntent"
-                ) {
-
-                    const player =
-                        room.players[
-                            ws.clientId
-                        ];
-
-                    if (
-                        !player ||
-                        !player.alive
-                    ) {
-                        return;
-                    }
-
-                    player.input.dx =
-                        clamp(
-                            Number(
-                                data.dx
-                            ) || 0,
-                            -1,
-                            1
-                        );
-
-                    player.input.dy =
-                        clamp(
-                            Number(
-                                data.dy
-                            ) || 0,
-                            -1,
-                            1
-                        );
-
-                    return;
-                }
-
-                /* STOP */
-
-                if (
-                    data.type ===
-                    "stopMove"
-                ) {
-
-                    const player =
-                        room.players[
-                            ws.clientId
-                        ];
-
-                    if (!player) {
-                        return;
-                    }
-
-                    player.input.dx = 0;
-                    player.input.dy = 0;
-
-                    return;
-                }
-
-                /* SHOOT */
-
-                if (
-                    data.type ===
-                    "shoot"
-                ) {
-
-                    const player =
-                        room.players[
-                            ws.clientId
-                        ];
-
-                    if (
-                        !player ||
-                        !player.alive
-                    ) {
-                        return;
-                    }
-
-                    const dx =
-                        Number(data.dx);
-
-                    const dy =
-                        Number(data.dy);
-
-                    if (
-                        !Number.isFinite(dx) ||
-                        !Number.isFinite(dy)
-                    ) {
-                        return;
-                    }
-
-                    if (
-                        Math.hypot(dx, dy) <
-                        0.001
-                    ) {
-                        return;
-                    }
-
-                    attack(
-                        room,
-                        player,
-                        Math.atan2(dy, dx)
-                    );
-
-                    return;
-                }
-
-                /* RELOAD */
-
-                if (
-                    data.type ===
-                    "reload"
-                ) {
-
-                    const player =
-                        room.players[
-                            ws.clientId
-                        ];
-
-                    if (player) {
-                        startReload(player);
-                    }
-
-                    return;
-                }
-
-                /* HEAL */
-
-                if (
-                    data.type ===
-                    "heal"
-                ) {
-
-                    const player =
-                        room.players[
-                            ws.clientId
-                        ];
-
-                    if (player) {
-                        healPlayer(
-                            room,
-                            player
-                        );
-                    }
-
-                    return;
-                }
-
-                /* NEW ROUND */
-
-                if (
-                    data.type ===
-                    "newRound"
-                ) {
-
-                    restartRound(room);
-
-                    return;
-                }
-
-                /* CHANGE SKIN */
-
-                if (
-                    data.type ===
-                    "changeSkin"
-                ) {
-
-                    const player =
-                        room.players[
-                            ws.clientId
-                        ];
-
-                    if (!player) {
-                        return;
-                    }
-
-                    const skin =
-                        getSkin(
-                            data.skin
-                        );
-
-                    player.skin =
-                        skin.id;
-
-                    player.weapon =
-                        skin.weapon;
-
-                    resetEntity(
-                        player,
-                        room
-                    );
-
-                    sendState(room);
-
-                    return;
-                }
-            }
-        );
-
-        ws.on(
-            "close",
-            () => {
-
-                const room =
-                    rooms[ws.room];
-
-                if (!room) {
-                    return;
-                }
-
-                delete room.players[
-                    ws.clientId
-                ];
-
-                if (
-                    Object.keys(
-                        room.players
-                    ).length === 0
-                ) {
-
-                    delete rooms[
-                        ws.room
-                    ];
-
-                } else {
-
-                    checkRoundEnd(room);
-
-                    sendState(room);
-                }
-            }
-        );
+      return;
     }
-);
 
-/* =====================================================
-   GAME LOOP
-===================================================== */
+    if (data.type === "shoot") {
+      if (room.roundOver) return;
 
-setInterval(
-    () => {
+      const dx = Number(data.dx) || 0;
+      const dy = Number(data.dy) || 0;
 
-        for (
-            const room of
-            Object.values(rooms)
-        ) {
+      shoot(room, player, dx, dy);
 
-            updatePlayers(room);
-
-            updateBots(room);
-
-            updateBullets(room);
-
-            sendState(room);
-        }
-
-    },
-    1000 / TICK_RATE
-);
-
-/* =====================================================
-   START
-===================================================== */
-
-server.listen(
-    PORT,
-    "0.0.0.0",
-    () => {
-
-        console.log(
-            `Battle Zone Server läuft auf Port ${PORT}`
-        );
-
-        console.log(
-            `Health: /health`
-        );
+      return;
     }
-);
 
-server.on(
-    "error",
-    error => {
-
-        console.error(
-            "SERVER ERROR:",
-            error
-        );
+    if (data.type === "heal") {
+      heal(player, room);
+      return;
     }
-);
-```
+
+    if (data.type === "useSuper") {
+      useSuper(player, room);
+      return;
+    }
+
+    if (data.type === "reload") {
+      player.lastShot = 0;
+      return;
+    }
+
+    if (data.type === "changeSkin") {
+      const skin = getSkin(data.skin);
+
+      player.skin = skin.id;
+
+      player.hp = Math.min(
+        player.hp,
+        100 + skin.healthBonus
+      );
+
+      player.maxHp = 100 + skin.healthBonus;
+      player.maxShield = 50 + skin.shieldBonus;
+      player.shield = Math.min(
+        player.shield,
+        player.maxShield
+      );
+
+      return;
+    }
+
+    if (data.type === "newRound") {
+      if (!room.roundOver) return;
+
+      resetRound(room);
+
+      return;
+    }
+  });
+
+  ws.on("close", () => {
+    if (!client.room || !client.player) return;
+
+    const room = client.room;
+
+    room.players.delete(client.player.id);
+
+    if (room.players.size === 0) {
+      rooms.delete(room.code);
+    } else {
+      checkRound(room);
+    }
+  });
+});
+
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`Battle Zone Server läuft auf Port ${PORT}`);
+});
