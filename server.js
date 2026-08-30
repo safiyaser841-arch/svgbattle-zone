@@ -7,7 +7,6 @@ const WebSocket = require("ws");
 
 const app = express();
 const server = http.createServer(app);
-
 const PORT = Number(process.env.PORT) || 10000;
 
 app.use(express.static(path.join(__dirname)));
@@ -29,6 +28,7 @@ const MAP = {
 const PLAYER_RADIUS = 20;
 const MIN_SPAWN_DISTANCE = 180;
 const MAX_PLAYERS = 8;
+const TICK_MS = 1000 / 30;
 
 const WALLS = [
   { x: 80, y: 80, w: 300, h: 45 },
@@ -48,6 +48,35 @@ const WALLS = [
   { x: 1290, y: 725, w: 230, h: 45 }
 ];
 
+const DIFFICULTIES = {
+  easy: {
+    name: "Leicht",
+    botSpeed: 2.0,
+    aim: 0.78,
+    fireChance: 0.55,
+    reaction: 0.92,
+    damage: 0.85
+  },
+
+  medium: {
+    name: "Mittel",
+    botSpeed: 2.8,
+    aim: 0.90,
+    fireChance: 0.78,
+    reaction: 0.97,
+    damage: 1.00
+  },
+
+  hard: {
+    name: "Schwer",
+    botSpeed: 3.4,
+    aim: 0.97,
+    fireChance: 0.92,
+    reaction: 1.00,
+    damage: 1.12
+  }
+};
+
 const WEAPONS = {
   Pistole: {
     damage: 12,
@@ -56,7 +85,9 @@ const WEAPONS = {
     range: 760,
     pellets: 1,
     spread: 0,
-    melee: false
+    melee: false,
+    ammo: 12,
+    reload: 32
   },
 
   SMG: {
@@ -65,8 +96,10 @@ const WEAPONS = {
     cooldown: 4,
     range: 560,
     pellets: 1,
-    spread: 0.07,
-    melee: false
+    spread: 0.08,
+    melee: false,
+    ammo: 28,
+    reload: 36
   },
 
   Gewehr: {
@@ -76,7 +109,9 @@ const WEAPONS = {
     range: 900,
     pellets: 1,
     spread: 0.02,
-    melee: false
+    melee: false,
+    ammo: 8,
+    reload: 42
   },
 
   Schrotflinte: {
@@ -86,7 +121,9 @@ const WEAPONS = {
     range: 380,
     pellets: 6,
     spread: 0.28,
-    melee: false
+    melee: false,
+    ammo: 5,
+    reload: 50
   },
 
   Bogen: {
@@ -96,7 +133,9 @@ const WEAPONS = {
     range: 950,
     pellets: 1,
     spread: 0,
-    melee: false
+    melee: false,
+    ammo: 6,
+    reload: 45
   },
 
   Schwert: {
@@ -106,7 +145,9 @@ const WEAPONS = {
     range: 88,
     pellets: 1,
     spread: 0,
-    melee: true
+    melee: true,
+    ammo: Infinity,
+    reload: 0
   }
 };
 
@@ -120,7 +161,9 @@ const SKINS = [
     price: 0,
     damageBonus: 0,
     superNeed: 0,
-    super: "Kein Super"
+    super: "Kein Super",
+    healthBonus: 0,
+    shieldBonus: 0
   },
 
   {
@@ -132,8 +175,11 @@ const SKINS = [
     price: 50,
     damageBonus: 5,
     superNeed: 500,
-    super: "Feuerstoß"
+    super: "Feuerstoß",
+    healthBonus: 10,
+    shieldBonus: 10
   },
+
   {
     id: "rare2",
     name: "Frost",
@@ -143,8 +189,11 @@ const SKINS = [
     price: 100,
     damageBonus: 5,
     superNeed: 500,
-    super: "Eisstoß"
+    super: "Eisstoß",
+    healthBonus: 10,
+    shieldBonus: 10
   },
+
   {
     id: "rare3",
     name: "Volt",
@@ -154,8 +203,11 @@ const SKINS = [
     price: 150,
     damageBonus: 5,
     superNeed: 500,
-    super: "Blitz"
+    super: "Blitz",
+    healthBonus: 10,
+    shieldBonus: 10
   },
+
   {
     id: "rare4",
     name: "Venom",
@@ -165,8 +217,11 @@ const SKINS = [
     price: 200,
     damageBonus: 5,
     superNeed: 500,
-    super: "Giftwelle"
+    super: "Giftwelle",
+    healthBonus: 10,
+    shieldBonus: 10
   },
+
   {
     id: "rare5",
     name: "Crimson",
@@ -176,7 +231,9 @@ const SKINS = [
     price: 250,
     damageBonus: 5,
     superNeed: 500,
-    super: "Rotorkanone"
+    super: "Rotorkanone",
+    healthBonus: 10,
+    shieldBonus: 10
   },
 
   {
@@ -188,8 +245,11 @@ const SKINS = [
     price: 350,
     damageBonus: 10,
     superNeed: 1000,
-    super: "Teleport-Klinge"
+    super: "Teleport-Klinge",
+    healthBonus: 45,
+    shieldBonus: 35
   },
+
   {
     id: "super2",
     name: "Cyber",
@@ -199,8 +259,11 @@ const SKINS = [
     price: 400,
     damageBonus: 10,
     superNeed: 1000,
-    super: "Cyber-Salve"
+    super: "Cyber-Salve",
+    healthBonus: 20,
+    shieldBonus: 20
   },
+
   {
     id: "super3",
     name: "Iceberg",
@@ -210,8 +273,11 @@ const SKINS = [
     price: 450,
     damageBonus: 10,
     superNeed: 1000,
-    super: "Eissturm"
+    super: "Eissturm",
+    healthBonus: 20,
+    shieldBonus: 20
   },
+
   {
     id: "super4",
     name: "Inferno",
@@ -221,8 +287,11 @@ const SKINS = [
     price: 500,
     damageBonus: 10,
     superNeed: 1000,
-    super: "Feuerkreis"
+    super: "Feuerkreis",
+    healthBonus: 20,
+    shieldBonus: 20
   },
+
   {
     id: "super5",
     name: "Toxic",
@@ -232,7 +301,9 @@ const SKINS = [
     price: 550,
     damageBonus: 10,
     superNeed: 1000,
-    super: "Giftregen"
+    super: "Giftregen",
+    healthBonus: 20,
+    shieldBonus: 20
   },
 
   {
@@ -244,8 +315,11 @@ const SKINS = [
     price: 650,
     damageBonus: 15,
     superNeed: 1500,
-    super: "Galaxiestrahl"
+    super: "Galaxiestrahl",
+    healthBonus: 30,
+    shieldBonus: 25
   },
+
   {
     id: "epic2",
     name: "Neon",
@@ -255,8 +329,11 @@ const SKINS = [
     price: 700,
     damageBonus: 15,
     superNeed: 1500,
-    super: "Neon-Sturm"
+    super: "Neon-Sturm",
+    healthBonus: 30,
+    shieldBonus: 25
   },
+
   {
     id: "epic3",
     name: "Storm",
@@ -266,8 +343,11 @@ const SKINS = [
     price: 750,
     damageBonus: 15,
     superNeed: 1500,
-    super: "Gewitter"
+    super: "Gewitter",
+    healthBonus: 30,
+    shieldBonus: 25
   },
+
   {
     id: "epic4",
     name: "Inferno X",
@@ -277,8 +357,11 @@ const SKINS = [
     price: 800,
     damageBonus: 15,
     superNeed: 1500,
-    super: "Magma-Welle"
+    super: "Magma-Welle",
+    healthBonus: 30,
+    shieldBonus: 25
   },
+
   {
     id: "epic5",
     name: "Void",
@@ -288,7 +371,9 @@ const SKINS = [
     price: 850,
     damageBonus: 15,
     superNeed: 1500,
-    super: "Void-Schlag"
+    super: "Void-Schlag",
+    healthBonus: 55,
+    shieldBonus: 45
   },
 
   {
@@ -300,8 +385,11 @@ const SKINS = [
     price: 1000,
     damageBonus: 25,
     superNeed: 2000,
-    super: "Drachenatem"
+    super: "Drachenatem",
+    healthBonus: 40,
+    shieldBonus: 35
   },
+
   {
     id: "mythic2",
     name: "Demon",
@@ -311,8 +399,11 @@ const SKINS = [
     price: 1100,
     damageBonus: 25,
     superNeed: 2000,
-    super: "Dämonensprung"
+    super: "Dämonensprung",
+    healthBonus: 70,
+    shieldBonus: 55
   },
+
   {
     id: "mythic3",
     name: "Titan",
@@ -322,8 +413,11 @@ const SKINS = [
     price: 1200,
     damageBonus: 25,
     superNeed: 2000,
-    super: "Titanen-Schuss"
+    super: "Titanen-Schuss",
+    healthBonus: 40,
+    shieldBonus: 35
   },
+
   {
     id: "mythic4",
     name: "Phoenix",
@@ -333,8 +427,11 @@ const SKINS = [
     price: 1300,
     damageBonus: 25,
     superNeed: 2000,
-    super: "Phönix-Flamme"
+    super: "Phönix-Flamme",
+    healthBonus: 40,
+    shieldBonus: 35
   },
+
   {
     id: "mythic5",
     name: "Cosmic",
@@ -344,7 +441,9 @@ const SKINS = [
     price: 1400,
     damageBonus: 25,
     superNeed: 2000,
-    super: "Kosmischer Sturm"
+    super: "Kosmischer Sturm",
+    healthBonus: 40,
+    shieldBonus: 35
   },
 
   {
@@ -356,8 +455,11 @@ const SKINS = [
     price: 1500,
     damageBonus: 35,
     superNeed: 2500,
-    super: "Legendärer Strahl"
+    super: "Legendärer Strahl",
+    healthBonus: 50,
+    shieldBonus: 45
   },
+
   {
     id: "legend2",
     name: "King",
@@ -367,8 +469,11 @@ const SKINS = [
     price: 1750,
     damageBonus: 35,
     superNeed: 2500,
-    super: "Königsschlag"
+    super: "Königsschlag",
+    healthBonus: 90,
+    shieldBonus: 70
   },
+
   {
     id: "legend3",
     name: "Battle God",
@@ -378,7 +483,9 @@ const SKINS = [
     price: 2000,
     damageBonus: 35,
     superNeed: 2500,
-    super: "Götterhagel"
+    super: "Götterhagel",
+    healthBonus: 50,
+    shieldBonus: 45
   },
 
   {
@@ -390,38 +497,47 @@ const SKINS = [
     price: 2001,
     damageBonus: 50,
     superNeed: 3000,
-    super: "Omega-Zerstörer"
+    super: "Omega-Zerstörer",
+    healthBonus: 120,
+    shieldBonus: 90
   }
 ];
 
 const TUTORIAL = [
   {
     title: "Bewegen",
-    text: "PC/Laptop: nur die Pfeiltasten. Handy/iPad: linker Joystick."
+    text:
+      "PC/Laptop: nur die Pfeiltasten. Handy/Tablet: linker Joystick."
   },
   {
     title: "Zielen",
-    text: "PC: Maus. Handy/iPad: rechter Bereich."
+    text:
+      "PC: Maus. Handy/Tablet: rechter Bereich."
   },
   {
     title: "Schießen",
-    text: "PC: Linksklick. Handy/iPad: roter Schussknopf."
+    text:
+      "PC: Linksklick. Handy/Tablet: Schusstaste."
   },
   {
-    title: "Wände",
-    text: "Spieler, Bots und Kugeln können nicht durch Wände."
+    title: "Nahkampf",
+    text:
+      "Nahkampf-Skins haben mehr Leben und Schutz."
   },
   {
-    title: "Bots",
-    text: "Du kannst 0 bis 5 Bots wählen."
+    title: "Heilen",
+    text:
+      "Nach einer kurzen Zeit ohne Treffer regenerierst du Leben."
   },
   {
-    title: "Lobby",
-    text: "Teile den Raumcode mit deinen Freunden."
+    title: "Schüsse",
+    text:
+      "Du bestimmst die Richtung deiner Schüsse und Schläge selbst."
   },
   {
-    title: "Skins",
-    text: "Skins haben eigene Namen, Waffen, Preise und Schadensboni."
+    title: "Schwierigkeit",
+    text:
+      "Leicht, Mittel und Schwer verändern Bot-Geschwindigkeit, Reaktion und Genauigkeit."
   }
 ];
 
@@ -432,36 +548,30 @@ function send(ws, data) {
     ws &&
     ws.readyState === WebSocket.OPEN
   ) {
-    ws.send(JSON.stringify(data));
+    ws.send(
+      JSON.stringify(data)
+    );
   }
 }
 
 function broadcast(room, data) {
   for (
-    const player of Object.values(room.players)
+    const player of Object.values(
+      room.players
+    )
   ) {
-    send(player.ws, data);
+    send(
+      player.ws,
+      data
+    );
   }
 }
 
-function randomCode() {
-  return Math.random()
-    .toString(36)
-    .substring(2, 6)
-    .toUpperCase();
-}
-
-function createRoomCode() {
-  let code = randomCode();
-
-  while (rooms[code]) {
-    code = randomCode();
-  }
-
-  return code;
-}
-
-function clamp(value, min, max) {
+function clamp(
+  value,
+  min,
+  max
+) {
   return Math.max(
     min,
     Math.min(max, value)
@@ -479,7 +589,8 @@ function getSkin(id) {
   return (
     SKINS.find(
       skin => skin.id === id
-    ) || SKINS[0]
+    ) ||
+    SKINS[0]
   );
 }
 
@@ -489,13 +600,35 @@ function randomWeapon() {
 
   return names[
     Math.floor(
-      Math.random() * names.length
+      Math.random() *
+      names.length
     )
   ];
 }
 
+function randomCode() {
+  return Math.random()
+    .toString(36)
+    .slice(2, 6)
+    .toUpperCase();
+}
+
+function createRoomCode() {
+  let code =
+    randomCode();
+
+  while (
+    rooms[code]
+  ) {
+    code =
+      randomCode();
+  }
+
+  return code;
+}
+
 /* =========================================
-   WALL COLLISIONS
+   WALLS
 ========================================= */
 
 function circleHitsWall(
@@ -571,21 +704,23 @@ function lineHitsWall(
     const x =
       x1 +
       (x2 - x1) *
-        t;
+      t;
 
     const y =
       y1 +
       (y2 - y1) *
-        t;
+      t;
 
     for (
       const wall of WALLS
     ) {
       if (
         x >= wall.x &&
-        x <= wall.x + wall.w &&
+        x <= wall.x +
+          wall.w &&
         y >= wall.y &&
-        y <= wall.y + wall.h
+        y <= wall.y +
+          wall.h
       ) {
         return true;
       }
@@ -596,7 +731,7 @@ function lineHitsWall(
 }
 
 /* =========================================
-   SPAWNS
+   SPAWN
 ========================================= */
 
 function safeSpawn(room) {
@@ -609,12 +744,18 @@ function safeSpawn(room) {
     const x =
       50 +
       Math.random() *
-        (MAP.width - 100);
+      (
+        MAP.width -
+        100
+      );
 
     const y =
       50 +
       Math.random() *
-        (MAP.height - 100);
+      (
+        MAP.height -
+        100
+      );
 
     if (
       circleHitsWall(
@@ -626,7 +767,8 @@ function safeSpawn(room) {
       continue;
     }
 
-    let tooClose = false;
+    let tooClose =
+      false;
 
     for (
       const entity of [
@@ -636,6 +778,7 @@ function safeSpawn(room) {
         ...room.bots
       ]
     ) {
+
       if (
         !entity ||
         !entity.alive
@@ -650,98 +793,95 @@ function safeSpawn(room) {
         ) <
         MIN_SPAWN_DISTANCE
       ) {
-        tooClose = true;
+        tooClose =
+          true;
         break;
       }
     }
 
-    if (!tooClose) {
-      return { x, y };
+    if (
+      !tooClose
+    ) {
+      return {
+        x,
+        y
+      };
     }
   }
 
   return {
     x:
       MAP.width / 2,
+
     y:
       MAP.height / 2
   };
 }
 
 /* =========================================
-   MOVE
+   COMBATANT
 ========================================= */
 
-function moveEntity(
-  entity,
-  dx,
-  dy
+function resetCombatant(
+  entity
 ) {
-  const len =
-    Math.hypot(dx, dy);
-
-  if (!len) {
-    return;
-  }
-
-  dx /= len;
-  dy /= len;
-
-  const speed =
-    entity.bot
-      ? 2.8
-      : 5;
-
-  const nextX =
-    entity.x +
-    dx * speed;
-
-  const nextY =
-    entity.y +
-    dy * speed;
-
-  if (
-    !circleHitsWall(
-      nextX,
-      entity.y,
-      PLAYER_RADIUS
-    )
-  ) {
-    entity.x =
-      nextX;
-  }
-
-  if (
-    !circleHitsWall(
-      entity.x,
-      nextY,
-      PLAYER_RADIUS
-    )
-  ) {
-    entity.y =
-      nextY;
-  }
-
-  entity.x =
-    clamp(
-      entity.x,
-      PLAYER_RADIUS,
-      MAP.width -
-        PLAYER_RADIUS
+  const skin =
+    getSkin(
+      entity.skin
     );
 
-  entity.y =
-    clamp(
-      entity.y,
-      PLAYER_RADIUS,
-      MAP.height -
-        PLAYER_RADIUS
-    );
+  entity.maxHp =
+    100 +
+    skin.healthBonus;
+
+  entity.maxShield =
+    50 +
+    skin.shieldBonus;
+
+  entity.hp =
+    entity.maxHp;
+
+  entity.shield =
+    entity.maxShield;
+
+  entity.alive =
+    true;
+
+  entity.cooldown =
+    0;
+
+  entity.reloadTimer =
+    0;
+
+  entity.healCooldown =
+    0;
+
+  entity.healTimer =
+    0;
+
+  entity.lastHitAt =
+    0;
+
+  entity.botDamage =
+    0;
+
+  entity.superReady =
+    false;
+
+  entity.ammo =
+    WEAPONS[
+      entity.weapon
+    ].ammo;
+
+  if (
+    !Number.isFinite(
+      entity.ammo
+    )
+  ) {
+    entity.ammo =
+      999999;
+  }
 }
-
-/* =========================================
-   CREATE PLAYER / BOT
-========================================= */
 
 function createPlayer(
   ws,
@@ -749,12 +889,14 @@ function createPlayer(
   data
 ) {
   const skin =
-    getSkin(data?.skin);
+    getSkin(
+      data?.skin
+    );
 
   const spawn =
     safeSpawn(room);
 
-  return {
+  const player = {
     id:
       ws.clientId,
 
@@ -777,10 +919,20 @@ function createPlayer(
     y:
       spawn.y,
 
-    hp: 100,
-    shield: 50,
+    hp:
+      100,
 
-    alive: true,
+    maxHp:
+      100,
+
+    shield:
+      50,
+
+    maxShield:
+      50,
+
+    alive:
+      true,
 
     skin:
       skin.id,
@@ -788,69 +940,105 @@ function createPlayer(
     weapon:
       skin.weapon,
 
-    kills: 0,
+    kills:
+      0,
 
-    botDamage: 0,
+    botDamage:
+      0,
 
-    superReady: false,
+    superReady:
+      false,
 
-    cooldown: 0,
+    cooldown:
+      0,
 
-    trophyRewardGiven: false
+    reloadTimer:
+      0,
+
+    healCooldown:
+      0,
+
+    healTimer:
+      0,
+
+    lastHitAt:
+      0,
+
+    trophies:
+      0
   };
+
+  resetCombatant(
+    player
+  );
+
+  return player;
 }
 
 function createBots(room) {
 
-  room.bots = [];
+  room.bots =
+    [];
 
   for (
     let i = 0;
     i < room.botCount;
     i++
   ) {
-    const spawn =
-      safeSpawn(room);
 
     const skin =
       SKINS[
         1 +
         (
-          i %
-          5
+          i % 5
         )
       ];
 
-    room.bots.push({
+    const bot = {
+
       id:
         "bot-" +
         i +
         "-" +
         Math.random()
           .toString(36)
-          .substring(
+          .slice(
             2,
             8
           ),
 
-      ws: null,
+      ws:
+        null,
 
-      bot: true,
+      bot:
+        true,
 
       name:
         "BOT " +
-        (i + 1),
+        (
+          i + 1
+        ),
 
       x:
-        spawn.x,
+        0,
 
       y:
-        spawn.y,
+        0,
 
-      hp: 100,
-      shield: 50,
+      hp:
+        100,
 
-      alive: true,
+      maxHp:
+        100,
+
+      shield:
+        50,
+
+      maxShield:
+        50,
+
+      alive:
+        true,
 
       skin:
         skin.id,
@@ -858,27 +1046,70 @@ function createBots(room) {
       weapon:
         skin.weapon,
 
-      kills: 0,
+      kills:
+        0,
 
-      botDamage: 0,
+      botDamage:
+        0,
 
-      superReady: false,
+      superReady:
+        false,
 
       cooldown:
         Math.floor(
-          Math.random() * 20
+          Math.random() *
+          20
         ),
 
-      target: null
-    });
+      reloadTimer:
+        0,
+
+      healCooldown:
+        0,
+
+      healTimer:
+        0,
+
+      lastHitAt:
+        0,
+
+      target:
+        null
+    };
+
+    /*
+    Bots bekommen nacheinander
+    sichere Positionen.
+    */
+
+    const spawn =
+      safeSpawn(
+        room
+      );
+
+    bot.x =
+      spawn.x;
+
+    bot.y =
+      spawn.y;
+
+    resetCombatant(
+      bot
+    );
+
+    room.bots.push(
+      bot
+    );
   }
 }
 
 /* =========================================
-   STATE
+   PUBLIC STATE
 ========================================= */
 
-function publicEntity(entity) {
+function publicEntity(
+  entity
+) {
   return {
     id:
       entity.id,
@@ -904,6 +1135,9 @@ function publicEntity(entity) {
         )
       ),
 
+    maxHp:
+      entity.maxHp,
+
     shield:
       Math.max(
         0,
@@ -912,6 +1146,9 @@ function publicEntity(entity) {
           0
         )
       ),
+
+    maxShield:
+      entity.maxShield,
 
     alive:
       entity.alive,
@@ -935,6 +1172,13 @@ function publicEntity(entity) {
         entity.superReady
       ),
 
+    ammo:
+      entity.ammo,
+
+    reloadTimer:
+      entity.reloadTimer ||
+      0,
+
     bot:
       Boolean(
         entity.bot
@@ -956,6 +1200,14 @@ function sendState(room) {
       walls:
         WALLS,
 
+      difficulty:
+        room.difficulty,
+
+      difficultyName:
+        DIFFICULTIES[
+          room.difficulty
+        ].name,
+
       players:
         Object.values(
           room.players
@@ -972,60 +1224,118 @@ function sendState(room) {
 }
 
 /* =========================================
-   DAMAGE
+   RELOAD
 ========================================= */
 
-function damageMultiplier(
-  attacker
+function finishReload(
+  entity
 ) {
-  if (!attacker) {
-    return 1;
-  }
+  const weapon =
+    WEAPONS[
+      entity.weapon
+    ];
 
-  const skin =
-    getSkin(
-      attacker.skin
-    );
+  if (!weapon)
+    return;
 
-  return (
-    1 +
-    skin.damageBonus /
-    100
-  );
+  entity.ammo =
+    weapon.ammo;
+
+  entity.reloadTimer =
+    0;
 }
 
-function addBotDamage(
-  attacker,
-  target,
-  amount
+function tryReload(
+  entity
 ) {
+  const weapon =
+    WEAPONS[
+      entity.weapon
+    ];
+
   if (
-    !attacker ||
-    !target ||
-    !target.bot
+    !weapon ||
+    weapon.melee ||
+    entity.reloadTimer > 0 ||
+    entity.ammo >=
+      weapon.ammo
   ) {
     return;
   }
 
-  attacker.botDamage =
-    (
-      attacker.botDamage ||
-      0
-    ) + amount;
+  entity.reloadTimer =
+    weapon.reload;
+}
 
-  const skin =
-    getSkin(
-      attacker.skin
+/* =========================================
+   HEALING
+========================================= */
+
+function manualHeal(
+  entity
+) {
+  if (
+    !entity.alive ||
+    entity.healCooldown > 0
+  ) {
+    return false;
+  }
+
+  entity.healCooldown =
+    150;
+
+  entity.healTimer =
+    0;
+
+  entity.hp =
+    Math.min(
+      entity.maxHp,
+      entity.hp + 28
     );
 
+  entity.shield =
+    Math.min(
+      entity.maxShield,
+      entity.shield + 12
+    );
+
+  return true;
+}
+
+/* =========================================
+   DAMAGE
+========================================= */
+
+function damageMultiplier(
+  attacker,
+  room
+) {
+  const skin =
+    getSkin(
+      attacker?.skin
+    );
+
+  const base =
+    1 +
+    skin.damageBonus /
+      100;
+
   if (
-    skin.superNeed > 0 &&
-    attacker.botDamage >=
-      skin.superNeed
+    attacker?.bot
   ) {
-    attacker.superReady =
-      true;
+    const difficulty =
+      DIFFICULTIES[
+        room.difficulty
+      ] ||
+      DIFFICULTIES.medium;
+
+    return (
+      base *
+      difficulty.damage
+    );
   }
+
+  return base;
 }
 
 function applyDamage(
@@ -1047,16 +1357,24 @@ function applyDamage(
       Math.round(
         rawDamage *
         damageMultiplier(
-          attacker
+          attacker,
+          room
         )
       )
     );
+
+  target.lastHitAt =
+    Date.now();
+
+  target.healTimer =
+    0;
 
   let remaining =
     finalDamage;
 
   if (
-    target.shield > 0
+    target.shield >
+    0
   ) {
     const absorbed =
       Math.min(
@@ -1072,17 +1390,41 @@ function applyDamage(
   }
 
   if (
-    remaining > 0
+    remaining >
+    0
   ) {
     target.hp -=
       remaining;
   }
 
-  addBotDamage(
-    attacker,
-    target,
-    finalDamage
-  );
+  if (
+    attacker &&
+    target.bot
+  ) {
+
+    attacker.botDamage =
+      (
+        attacker.botDamage ||
+        0
+      ) +
+      finalDamage;
+
+    const skin =
+      getSkin(
+        attacker.skin
+      );
+
+    if (
+      skin.superNeed >
+        0 &&
+      attacker.botDamage >=
+        skin.superNeed
+    ) {
+
+      attacker.superReady =
+        true;
+    }
+  }
 
   broadcast(
     room,
@@ -1104,16 +1446,20 @@ function applyDamage(
     return;
   }
 
-  target.hp = 0;
+  target.hp =
+    0;
+
   target.alive =
     false;
 
   if (attacker) {
+
     attacker.kills =
       (
         attacker.kills ||
         0
-      ) + 1;
+      ) +
+      1;
   }
 
   broadcast(
@@ -1135,10 +1481,6 @@ function applyDamage(
   checkRoundEnd(
     room
   );
-
-  sendState(
-    room
-  );
 }
 
 /* =========================================
@@ -1147,20 +1489,21 @@ function applyDamage(
 
 function spawnBullet(
   room,
-  attacker,
+  owner,
   angle,
   weapon
 ) {
+
   room.bullets.push({
 
     owner:
-      attacker.id,
+      owner.id,
 
     x:
-      attacker.x,
+      owner.x,
 
     y:
-      attacker.y,
+      owner.y,
 
     dx:
       Math.cos(angle),
@@ -1188,10 +1531,10 @@ function spawnBullet(
         "bulletSpawn",
 
       x:
-        attacker.x,
+        owner.x,
 
       y:
-        attacker.y,
+        owner.y,
 
       dx:
         Math.cos(angle),
@@ -1204,27 +1547,10 @@ function spawnBullet(
 
       color:
         getSkin(
-          attacker.skin
+          owner.skin
         ).color
     }
   );
-}
-
-function findEntity(
-  room,
-  id
-) {
-  if (
-    room.players[id]
-  ) {
-    return room.players[id];
-  }
-
-  return room.bots.find(
-    bot =>
-      bot.id ===
-      id
-  ) || null;
 }
 
 /* =========================================
@@ -1236,6 +1562,7 @@ function attack(
   attacker,
   angle
 ) {
+
   const weapon =
     WEAPONS[
       attacker.weapon
@@ -1246,8 +1573,23 @@ function attack(
   }
 
   if (
-    attacker.cooldown > 0
+    attacker.cooldown >
+      0 ||
+    attacker.reloadTimer >
+      0
   ) {
+    return;
+  }
+
+  if (
+    !weapon.melee &&
+    attacker.ammo <= 0
+  ) {
+
+    tryReload(
+      attacker
+    );
+
     return;
   }
 
@@ -1270,7 +1612,7 @@ function attack(
       if (
         !target.alive ||
         target.id ===
-        attacker.id
+          attacker.id
       ) {
         continue;
       }
@@ -1321,8 +1663,9 @@ function attack(
 
       if (
         Math.abs(diff) <=
-        0.9
+        0.95
       ) {
+
         applyDamage(
           room,
           target,
@@ -1342,12 +1685,19 @@ function attack(
           attacker.x,
 
         y:
-          attacker.y
+          attacker.y,
+
+        angle,
+
+        weapon:
+          attacker.weapon
       }
     );
 
     return;
   }
+
+  attacker.ammo--;
 
   const pellets =
     weapon.pellets ||
@@ -1378,6 +1728,38 @@ function attack(
       weapon
     );
   }
+
+  if (
+    attacker.ammo <=
+    0
+  ) {
+
+    tryReload(
+      attacker
+    );
+  }
+}
+
+/* =========================================
+   FIND ENTITY
+========================================= */
+
+function findEntity(
+  room,
+  id
+) {
+
+  if (
+    room.players[id]
+  ) {
+    return room.players[id];
+  }
+
+  return room.bots.find(
+    bot =>
+      bot.id ===
+      id
+  ) || null;
 }
 
 /* =========================================
@@ -1424,7 +1806,7 @@ function updateBullets() {
         bullet.speed;
 
       /*
-      Wand getroffen
+      Wand
       */
 
       if (
@@ -1458,9 +1840,8 @@ function updateBullets() {
         continue;
       }
 
-      /*
-      Gegner getroffen
-      */
+      let hit =
+        false;
 
       const targets = [
         ...Object.values(
@@ -1468,9 +1849,6 @@ function updateBullets() {
         ),
         ...room.bots
       ];
-
-      let hit =
-        false;
 
       for (
         const target
@@ -1495,7 +1873,8 @@ function updateBullets() {
 
         if (
           d >
-          PLAYER_RADIUS + 5
+          PLAYER_RADIUS +
+            5
         ) {
           continue;
         }
@@ -1571,8 +1950,243 @@ function updateBullets() {
 }
 
 /* =========================================
-   BOT AI
+   BOT TARGET
 ========================================= */
+
+function chooseTarget(
+  room,
+  bot
+) {
+
+  const targets = [
+    ...Object.values(
+      room.players
+    ),
+    ...room.bots
+  ].filter(
+    target =>
+      target.alive &&
+      target.id !==
+        bot.id
+  );
+
+  if (
+    !targets.length
+  ) {
+    return null;
+  }
+
+  targets.sort(
+    (a,b) =>
+      distance(
+        bot,
+        a
+      ) -
+      distance(
+        bot,
+        b
+      )
+  );
+
+  return targets[0];
+}
+
+/* =========================================
+   BOT MOVEMENT
+========================================= */
+
+function updateBot(
+  room,
+  bot
+) {
+
+  if (
+    !bot.alive
+  ) {
+    return;
+  }
+
+  const difficulty =
+    DIFFICULTIES[
+      room.difficulty
+    ] ||
+    DIFFICULTIES.medium;
+
+  if (
+    bot.cooldown >
+      0
+  ) {
+    bot.cooldown--;
+  }
+
+  if (
+    bot.reloadTimer >
+      0
+  ) {
+
+    bot.reloadTimer--;
+
+    if (
+      bot.reloadTimer <=
+        0
+    ) {
+      finishReload(
+        bot
+      );
+    }
+  }
+
+  if (
+    bot.healCooldown >
+      0
+  ) {
+    bot.healCooldown--;
+  }
+
+  const target =
+    chooseTarget(
+      room,
+      bot
+    );
+
+  if (!target) {
+    return;
+  }
+
+  bot.target =
+    target.id;
+
+  const dx =
+    target.x -
+    bot.x;
+
+  const dy =
+    target.y -
+    bot.y;
+
+  const d =
+    Math.hypot(
+      dx,
+      dy
+    ) || 1;
+
+  const trueAngle =
+    Math.atan2(
+      dy,
+      dx
+    );
+
+  const blocked =
+    lineHitsWall(
+      bot.x,
+      bot.y,
+      target.x,
+      target.y
+    );
+
+  const weapon =
+    WEAPONS[
+      bot.weapon
+    ];
+
+  if (!weapon) {
+    return;
+  }
+
+  /*
+  Bot heilt,
+  wenn es sicher ist.
+  */
+
+  if (
+    bot.hp <
+      bot.maxHp * 0.35 &&
+    bot.healCooldown <=
+      0 &&
+    d > 220 &&
+    !blocked
+  ) {
+
+    bot.healCooldown =
+      150;
+
+    bot.hp =
+      Math.min(
+        bot.maxHp,
+        bot.hp + 30
+      );
+
+    return;
+  }
+
+  /*
+  Bewegung.
+  */
+
+  if (
+    blocked ||
+    d > 160
+  ) {
+
+    const speed =
+      difficulty.botSpeed;
+
+    moveEntity(
+      bot,
+      dx / d *
+        speed,
+      dy / d *
+        speed
+    );
+  }
+
+  /*
+  Angriff.
+  */
+
+  if (
+    !blocked &&
+    d <=
+      weapon.range &&
+    bot.cooldown <=
+      0
+  ) {
+
+    const accuracy =
+      difficulty.aim;
+
+    const randomOffset =
+      (
+        Math.random() -
+        0.5
+      ) *
+      (
+        1 -
+        accuracy
+      ) *
+      0.9;
+
+    const angle =
+      trueAngle +
+      randomOffset;
+
+    const shouldFire =
+      Math.random() <=
+      difficulty.fireChance *
+      difficulty.reaction;
+
+    if (
+      shouldFire
+    ) {
+
+      attack(
+        room,
+        bot,
+        angle
+      );
+    }
+  }
+}
 
 function updateBots() {
 
@@ -1584,129 +2198,14 @@ function updateBots() {
   ) {
 
     for (
-      const bot
-      of room.bots
+      const bot of
+      room.bots
     ) {
 
-      if (
-        !bot.alive
-      ) {
-        continue;
-      }
-
-      if (
-        bot.cooldown > 0
-      ) {
-        bot.cooldown--;
-      }
-
-      const targets = [
-        ...Object.values(
-          room.players
-        ),
-        ...room.bots
-      ].filter(
-        target =>
-          target.alive &&
-          target.id !==
-            bot.id
+      updateBot(
+        room,
+        bot
       );
-
-      if (
-        !targets.length
-      ) {
-        continue;
-      }
-
-      targets.sort(
-        (a,b) =>
-          distance(
-            bot,
-            a
-          ) -
-          distance(
-            bot,
-            b
-          )
-      );
-
-      const target =
-        targets[0];
-
-      bot.target =
-        target.id;
-
-      const dx =
-        target.x -
-        bot.x;
-
-      const dy =
-        target.y -
-        bot.y;
-
-      const d =
-        Math.hypot(
-          dx,
-          dy
-        ) || 1;
-
-      const angle =
-        Math.atan2(
-          dy,
-          dx
-        );
-
-      const weapon =
-        WEAPONS[
-          bot.weapon
-        ];
-
-      if (!weapon) {
-        continue;
-      }
-
-      const blocked =
-        lineHitsWall(
-          bot.x,
-          bot.y,
-          target.x,
-          target.y
-        );
-
-      /*
-      Nicht durch Wände gehen.
-      */
-
-      if (
-        blocked ||
-        d > 145
-      ) {
-
-        moveEntity(
-          bot,
-          dx,
-          dy
-        );
-      }
-
-      /*
-      Nicht durch Wände schießen.
-      */
-
-      if (
-        !blocked &&
-        d <=
-          weapon.range &&
-        bot.cooldown <=
-          0
-      ) {
-
-        attack(
-          room,
-          bot,
-          angle
-        );
-      }
     }
   }
 }
@@ -1725,16 +2224,15 @@ function checkRoundEnd(
     return;
   }
 
-  const alive =
-    [
-      ...Object.values(
-        room.players
-      ),
-      ...room.bots
-    ].filter(
-      entity =>
-        entity.alive
-    );
+  const alive = [
+    ...Object.values(
+      room.players
+    ),
+    ...room.bots
+  ].filter(
+    entity =>
+      entity.alive
+  );
 
   if (
     alive.length <=
@@ -1751,7 +2249,8 @@ function checkRoundEnd(
           "roundEnd",
 
         winner:
-          alive.length === 1
+          alive.length ===
+            1
             ? alive[0].id
             : null
       }
@@ -1769,16 +2268,12 @@ function restartRound(
   room.roundActive =
     true;
 
-  /*
-  Alle alten Bots entfernen.
-  */
-
   room.bots =
     [];
 
   /*
-  Alle Spieler vor dem Spawning
-  auf "nicht aktiv" setzen.
+  Alle Spieler zunächst
+  deaktivieren.
   */
 
   for (
@@ -1794,7 +2289,7 @@ function restartRound(
 
   /*
   Spieler nacheinander
-  mit Abstand spawnen.
+  mit Mindestabstand.
   */
 
   for (
@@ -1815,28 +2310,14 @@ function restartRound(
     player.y =
       spawn.y;
 
-    player.hp =
-      100;
-
-    player.shield =
-      50;
-
-    player.alive =
-      true;
-
-    player.cooldown =
-      0;
-
     player.weapon =
       getSkin(
         player.skin
       ).weapon;
 
-    player.botDamage =
-      0;
-
-    player.superReady =
-      false;
+    resetCombatant(
+      player
+    );
   }
 
   /*
@@ -1861,7 +2342,7 @@ function restartRound(
 }
 
 /* =========================================
-   WEBSOCKET
+   CONNECTION
 ========================================= */
 
 wss.on(
@@ -1894,6 +2375,14 @@ wss.on(
         skins:
           SKINS,
 
+        difficulties:
+          DIFFICULTIES,
+
+        weapons:
+          Object.keys(
+            WEAPONS
+          ),
+
         tutorial:
           TUTORIAL
       }
@@ -1917,11 +2406,9 @@ wss.on(
           return;
         }
 
-        /*
-        -----------------------------------------
-        CREATE ROOM
-        -----------------------------------------
-        */
+        /* =================================
+           CREATE ROOM
+        ================================= */
 
         if (
           data.type ===
@@ -1930,6 +2417,13 @@ wss.on(
 
           const code =
             createRoomCode();
+
+          const difficulty =
+            DIFFICULTIES[
+              data.difficulty
+            ]
+              ? data.difficulty
+              : "medium";
 
           const room = {
 
@@ -1943,12 +2437,16 @@ wss.on(
 
             botCount:
               clamp(
-                Number(
-                  data.bots
-                ) || 0,
+                Math.floor(
+                  Number(
+                    data.bots
+                  ) || 0
+                ),
                 0,
                 5
               ),
+
+            difficulty,
 
             roundActive:
               true
@@ -1969,12 +2467,12 @@ wss.on(
           ] =
             player;
 
+          ws.room =
+            code;
+
           createBots(
             room
           );
-
-          ws.room =
-            code;
 
           send(
             ws,
@@ -1982,7 +2480,14 @@ wss.on(
               type:
                 "roomCreated",
 
-              code
+              code,
+
+              difficulty,
+
+              difficultyName:
+                DIFFICULTIES[
+                  difficulty
+                ].name
             }
           );
 
@@ -1993,11 +2498,9 @@ wss.on(
           return;
         }
 
-        /*
-        -----------------------------------------
-        JOIN ROOM
-        -----------------------------------------
-        */
+        /* =================================
+           JOIN ROOM
+        ================================= */
 
         if (
           data.type ===
@@ -2031,13 +2534,10 @@ wss.on(
             return;
           }
 
-          const playerCount =
+          if (
             Object.keys(
               room.players
-            ).length;
-
-          if (
-            playerCount >=
+            ).length >=
             MAX_PLAYERS
           ) {
 
@@ -2076,7 +2576,15 @@ wss.on(
               type:
                 "joinedRoom",
 
-              code
+              code,
+
+              difficulty:
+                room.difficulty,
+
+              difficultyName:
+                DIFFICULTIES[
+                  room.difficulty
+                ].name
             }
           );
 
@@ -2087,24 +2595,25 @@ wss.on(
           return;
         }
 
-        /*
-        -----------------------------------------
-        MOVE
-        -----------------------------------------
-        */
+        /* =================================
+           RESTLICHE EVENTS
+        ================================= */
+
+        const room =
+          rooms[
+            ws.room
+          ];
+
+        if (!room) {
+          return;
+        }
+
+        /* MOVE */
 
         if (
           data.type ===
           "moveIntent"
         ) {
-
-          const room =
-            rooms[
-              ws.room
-            ];
-
-          if (!room)
-            return;
 
           const player =
             room.players[
@@ -2128,31 +2637,15 @@ wss.on(
             ) || 0
           );
 
-          sendState(
-            room
-          );
-
           return;
         }
 
-        /*
-        -----------------------------------------
-        SHOOT
-        -----------------------------------------
-        */
+        /* SHOOT */
 
         if (
           data.type ===
           "shoot"
         ) {
-
-          const room =
-            rooms[
-              ws.room
-            ];
-
-          if (!room)
-            return;
 
           const player =
             room.players[
@@ -2199,50 +2692,79 @@ wss.on(
           return;
         }
 
-        /*
-        -----------------------------------------
-        NEW ROUND
-        -----------------------------------------
-        */
+        /* RELOAD */
 
         if (
           data.type ===
-          "newRound"
+          "reload"
         ) {
 
-          const room =
-            rooms[
-              ws.room
+          const player =
+            room.players[
+              ws.clientId
             ];
 
-          if (!room)
-            return;
-
-          restartRound(
-            room
-          );
+          if (player) {
+            tryReload(
+              player
+            );
+          }
 
           return;
         }
 
-        /*
-        -----------------------------------------
-        SUPER
-        -----------------------------------------
-        */
+        /* HEAL */
+
+        if (
+          data.type ===
+          "heal"
+        ) {
+
+          const player =
+            room.players[
+              ws.clientId
+            ];
+
+          if (
+            !player ||
+            !player.alive
+          ) {
+            return;
+          }
+
+          if (
+            manualHeal(
+              player
+            )
+          ) {
+
+            broadcast(
+              room,
+              {
+                type:
+                  "healEffect",
+
+                player:
+                  player.id,
+
+                x:
+                  player.x,
+
+                y:
+                  player.y
+              }
+            );
+          }
+
+          return;
+        }
+
+        /* SUPER */
 
         if (
           data.type ===
           "useSuper"
         ) {
-
-          const room =
-            rooms[
-              ws.room
-            ];
-
-          if (!room)
-            return;
 
           const player =
             room.players[
@@ -2289,8 +2811,7 @@ wss.on(
               distance(
                 player,
                 target
-              ) <=
-              180 &&
+              ) <= 180 &&
               !lineHitsWall(
                 player.x,
                 player.y,
@@ -2325,39 +2846,38 @@ wss.on(
             }
           );
 
-          sendState(
+          return;
+        }
+
+        /* NEW ROUND */
+
+        if (
+          data.type ===
+          "newRound"
+        ) {
+
+          restartRound(
             room
           );
 
           return;
         }
 
-        /*
-        -----------------------------------------
-        SKIN
-        -----------------------------------------
-        */
+        /* CHANGE SKIN */
 
         if (
           data.type ===
           "changeSkin"
         ) {
 
-          const room =
-            rooms[
-              ws.room
-            ];
-
-          if (!room)
-            return;
-
           const player =
             room.players[
               ws.clientId
             ];
 
-          if (!player)
+          if (!player) {
             return;
+          }
 
           const skin =
             getSkin(
@@ -2392,11 +2912,13 @@ wss.on(
           player.weapon =
             skin.weapon;
 
+          resetCombatant(
+            player
+          );
+
           sendState(
             room
           );
-
-          return;
         }
       }
     );
@@ -2410,8 +2932,9 @@ wss.on(
             ws.room
           ];
 
-        if (!room)
+        if (!room) {
           return;
+        }
 
         delete room.players[
           ws.clientId
@@ -2430,11 +2953,11 @@ wss.on(
 
         } else {
 
-          sendState(
+          checkRoundEnd(
             room
           );
 
-          checkRoundEnd(
+          sendState(
             room
           );
         }
@@ -2444,15 +2967,11 @@ wss.on(
 );
 
 /* =========================================
-   SERVER LOOP
+   GAME LOOP
 ========================================= */
 
 setInterval(
   () => {
-
-    updateBots();
-
-    updateBullets();
 
     for (
       const room of
@@ -2461,21 +2980,17 @@ setInterval(
       )
     ) {
 
-      for (
-        const player of
-        Object.values(
-          room.players
-        )
-      ) {
+      updatePlayers(
+        room
+      );
 
-        if (
-          player.cooldown >
-          0
-        ) {
+      updateBotsForRoom(
+        room
+      );
 
-          player.cooldown--;
-        }
-      }
+      updateBulletsForRoom(
+        room
+      );
 
       sendState(
         room
@@ -2483,7 +2998,142 @@ setInterval(
     }
 
   },
-  1000 / 30
+  TICK_MS
+);
+
+/*
+Hilfswrapper für den Game Loop,
+damit pro Raum gearbeitet wird.
+*/
+
+function updatePlayers(room) {
+
+  for (
+    const player of
+    Object.values(
+      room.players
+    )
+  ) {
+
+    if (
+      player.cooldown >
+      0
+    ) {
+
+      player.cooldown--;
+    }
+
+    if (
+      player.healCooldown >
+      0
+    ) {
+
+      player.healCooldown--;
+    }
+
+    if (
+      player.reloadTimer >
+      0
+    ) {
+
+      player.reloadTimer--;
+
+      if (
+        player.reloadTimer <=
+        0
+      ) {
+
+        finishReload(
+          player
+        );
+      }
+    }
+
+    if (
+      !player.alive
+    ) {
+      continue;
+    }
+
+    /*
+    Automatische langsame Heilung,
+    wenn längere Zeit kein Treffer kam.
+    */
+
+    const safeTime =
+      Date.now() -
+      player.lastHitAt >
+      3500;
+
+    if (
+      safeTime &&
+      player.hp <
+        player.maxHp &&
+      player.healCooldown <=
+        0
+    ) {
+
+      player.healTimer++;
+
+      if (
+        player.healTimer >=
+        24
+      ) {
+
+        player.hp =
+          Math.min(
+            player.maxHp,
+            player.hp + 4
+          );
+
+        player.healTimer =
+          0;
+      }
+
+    } else {
+
+      player.healTimer =
+        0;
+    }
+  }
+}
+
+function updateBotsForRoom(
+  room
+) {
+
+  for (
+    const bot of
+    room.bots
+  ) {
+
+    updateBot(
+      room,
+      bot
+    );
+  }
+}
+
+function updateBulletsForRoom(
+  room
+) {
+
+  /*
+  Da updateBullets bereits alle
+  Räume verarbeitet, wird hier
+  nichts doppelt ausgeführt.
+  */
+
+}
+
+server.on(
+  "error",
+  error => {
+    console.error(
+      "Server error:",
+      error
+    );
+  }
 );
 
 server.listen(
