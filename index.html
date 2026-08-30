@@ -1,352 +1,2143 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#0b1118">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Battle Zone</title>
+
 <style>
-:root{--panel:rgba(8,15,25,.96);--line:#334155;--blue:#38bdf8;--dark:#0f172a}
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#09111a;color:#fff;font-family:Arial,sans-serif;touch-action:none;user-select:none;-webkit-user-select:none}
-button,input,select{font:inherit}button{border:0;cursor:pointer;color:#fff}.screen{position:fixed;inset:0}
-#menu{display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at center,#274c6d,#060a10 74%);z-index:100}
-.panel{width:min(520px,92vw);padding:26px;border-radius:22px;background:var(--panel);box-shadow:0 25px 80px rgba(0,0,0,.7);text-align:center}
-.logo{font-size:clamp(40px,9vw,60px);font-weight:900;color:var(--blue);text-shadow:0 0 25px var(--blue)}.sub{color:#94a3b8;margin:6px 0 18px}
-.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}.stat{padding:8px;border-radius:9px;background:#0b1220;font-size:12px}.stat b{display:block;color:var(--blue);margin-top:3px}
-.input,.select{width:100%;padding:13px;margin:5px 0;border-radius:10px;border:1px solid var(--line);background:#111827;color:#fff}
-.btn{width:100%;padding:13px;margin-top:7px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#2563eb);font-weight:700}.btn.dark{background:#1e293b}.smallBtn{padding:8px 12px;border-radius:8px;background:#1e293b;color:#fff}
-#skins,#lobby,#tutorial,#game{display:none}
-#skins{background:#050a10;z-index:110;padding:14px;overflow:auto}.header{display:flex;justify-content:space-between;align-items:center;max-width:1050px;margin:auto}.grid{width:min(1050px,96vw);margin:15px auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}.card{background:#101827;border:1px solid #334155;border-radius:14px;padding:10px}.preview{height:105px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#29435d,#0b1119)}.mini{width:52px;height:68px;border-radius:20px 20px 12px 12px;position:relative;box-shadow:inset -11px -11px 16px rgba(0,0,0,.35)}.mini:before{content:"";position:absolute;width:35px;height:35px;left:8px;top:-13px;border-radius:50%;background:#f1c6a6}.muted{font-size:12px;color:#94a3b8;margin-top:4px}.price{font-size:13px;color:#facc15;margin-top:5px}.super{font-size:12px;color:#c4b5fd;margin-top:4px}
-#lobby{z-index:90;align-items:center;justify-content:center;background:radial-gradient(circle,#1b425f,#04070b)}.lobbyBox{width:min(900px,95vw);display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:18px;border-radius:22px;background:var(--panel)}.charStage{min-height:440px;border-radius:18px;position:relative;overflow:hidden;background:radial-gradient(circle,#355776,#0b1118)}.bigChar{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);width:120px;height:155px;border-radius:46px 46px 26px 26px;box-shadow:inset -24px -28px 40px rgba(0,0,0,.45),0 20px 45px rgba(0,0,0,.4)}.bigChar:before{content:"";position:absolute;left:22px;top:-34px;width:76px;height:76px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe8d3,#a56d51)}.bigChar:after{content:"";position:absolute;right:-58px;top:69px;width:88px;height:10px;border-radius:10px;background:linear-gradient(90deg,#111827,#e5e7eb)}.lobbyInfo{display:flex;flex-direction:column;justify-content:center;gap:9px}.room{font-size:42px;letter-spacing:7px;font-weight:900;color:var(--blue)}
-#tutorial{z-index:200;align-items:center;justify-content:center;background:rgba(0,0,0,.8)}.tutorialPanel{width:min(480px,92vw);padding:28px;border-radius:20px;background:#111827;text-align:center}.tutorialPanel p{color:#cbd5e1;line-height:1.6;margin:16px 0}
-#game{background:#24362a}.gameCanvas{position:absolute;inset:0;width:100%;height:100%}.hud{position:fixed;left:8px;top:8px;right:8px;z-index:20;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}.hudBox{padding:8px 10px;border-radius:9px;background:rgba(3,8,15,.8);border:1px solid #334155;font-size:13px}.roomBlue{color:var(--blue);font-weight:700}
-#superBar{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);width:220px;height:10px;background:#111827;border-radius:10px;overflow:hidden;z-index:31}.superFill{width:0;height:100%;background:linear-gradient(90deg,#7c3aed,#ec4899)}
-.controlBtn{position:fixed;z-index:40;border-radius:12px;background:#1e293b;color:#fff;font-weight:700;padding:11px 14px}.ready{background:linear-gradient(135deg,#7c3aed,#ec4899)!important;box-shadow:0 0 22px rgba(236,72,153,.7)}#superBtn{left:50%;bottom:33px;transform:translateX(-50%)}#healBtn{left:50%;bottom:78px;transform:translateX(-50%);background:#14532d}
-#joystick{display:none;position:fixed;left:18px;bottom:18px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.25);z-index:45}#stick{position:absolute;left:41px;top:41px;width:65px;height:65px;border-radius:50%;background:rgba(255,255,255,.5)}
-#aimArea{display:none;position:fixed;right:0;top:0;width:58%;height:100%;z-index:34}#shootBtn{display:none;position:fixed;right:18px;bottom:30px;width:105px;height:105px;border-radius:50%;border:4px solid #fff;background:radial-gradient(circle,#ef4444,#991b1b);font-size:30px;z-index:46}
-#portrait{display:none;position:fixed;inset:0;z-index:300;align-items:center;justify-content:center;background:rgba(3,7,12,.96);text-align:center;padding:24px}.portraitPanel{max-width:440px}.rotateIcon{font-size:60px;margin-bottom:10px}
-#roundMenu{display:none;position:fixed;inset:0;z-index:80;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(0,0,0,.72)}#roundTitle{font-size:clamp(46px,11vw,80px);font-weight:900}.roundBtn{width:min(290px,82vw);padding:14px;border-radius:11px;background:#2563eb;color:#fff;font-weight:700}
-@media(pointer:coarse){#joystick,#aimArea,#shootBtn{display:block}.lobbyBox{grid-template-columns:1fr}.charStage{min-height:270px}.hud{right:120px}#superBtn{bottom:145px}#healBtn{bottom:195px}.hudBox{font-size:12px}}
-@media(pointer:coarse) and (min-width:700px){#joystick{width:175px;height:175px}#stick{width:75px;height:75px}#shootBtn{width:120px;height:120px;right:28px;bottom:32px}}
-@media(orientation:portrait) and (pointer:coarse){#portrait{display:flex}}
-@media(orientation:landscape) and (pointer:coarse){#portrait{display:none}}
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    user-select:none;
+    -webkit-user-select:none;
+}
+
+html,body{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    font-family:Arial,sans-serif;
+    background:#071018;
+    color:white;
+}
+
+button,input,select{
+    font:inherit;
+}
+
+button{
+    border:0;
+    cursor:pointer;
+}
+
+.screen{
+    position:fixed;
+    inset:0;
+}
+
+/* ================= MENU ================= */
+
+#menu{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:
+        radial-gradient(circle at 50% 20%,#16466b 0%,transparent 45%),
+        linear-gradient(135deg,#020617,#0b1724);
+}
+
+.menuBox{
+    width:min(500px,92vw);
+    padding:28px;
+    border-radius:25px;
+    background:rgba(8,15,25,.96);
+    border:1px solid #26384b;
+    box-shadow:0 25px 80px rgba(0,0,0,.7);
+    text-align:center;
+}
+
+.logo{
+    font-size:clamp(38px,10vw,62px);
+    font-weight:900;
+    color:#38bdf8;
+    text-shadow:0 0 30px #38bdf8;
+}
+
+.subtitle{
+    color:#94a3b8;
+    margin:8px 0 22px;
+}
+
+.input,
+.select{
+    width:100%;
+    padding:14px;
+    margin:6px 0;
+    border-radius:12px;
+    border:1px solid #334155;
+    background:#111827;
+    color:white;
+    outline:none;
+}
+
+.btn{
+    width:100%;
+    padding:14px;
+    margin-top:8px;
+    border-radius:12px;
+    background:linear-gradient(135deg,#38bdf8,#2563eb);
+    color:white;
+    font-weight:bold;
+}
+
+.btn.dark{
+    background:#1e293b;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:7px;
+    margin-bottom:12px;
+}
+
+.stat{
+    padding:10px;
+    border-radius:10px;
+    background:#0b1220;
+    font-size:12px;
+}
+
+.stat b{
+    display:block;
+    color:#38bdf8;
+    font-size:17px;
+    margin-top:4px;
+}
+
+#connection{
+    margin-top:12px;
+    font-size:13px;
+    color:#facc15;
+}
+
+/* ================= LOBBY ================= */
+
+#lobby,
+#game,
+#skins,
+#tutorial{
+    display:none;
+}
+
+#lobby{
+    justify-content:center;
+    align-items:center;
+    background:
+        radial-gradient(circle,#17486b,#020617 75%);
+}
+
+.lobbyBox{
+    width:min(900px,94vw);
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+    padding:20px;
+    border-radius:25px;
+    background:rgba(8,15,25,.97);
+}
+
+.characterStage{
+    min-height:420px;
+    border-radius:20px;
+    background:
+        radial-gradient(circle,#315d7e,#0a1119);
+    position:relative;
+    overflow:hidden;
+}
+
+.character{
+    position:absolute;
+    left:50%;
+    top:52%;
+    transform:translate(-50%,-50%);
+    width:100px;
+    height:130px;
+    border-radius:35px 35px 20px 20px;
+    box-shadow:inset -20px -20px 35px rgba(0,0,0,.45);
+}
+
+.character:before{
+    content:"";
+    position:absolute;
+    width:65px;
+    height:65px;
+    left:18px;
+    top:-48px;
+    border-radius:50%;
+    background:#dcae8e;
+}
+
+.lobbyInfo{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:10px;
+}
+
+.roomCode{
+    font-size:42px;
+    font-weight:900;
+    letter-spacing:8px;
+    color:#38bdf8;
+}
+
+/* ================= SKINS ================= */
+
+#skins{
+    padding:18px;
+    overflow:auto;
+    background:#050b12;
+}
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    max-width:1100px;
+    margin:auto;
+}
+
+.skinGrid{
+    width:min(1100px,95vw);
+    margin:20px auto;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:12px;
+}
+
+.skinCard{
+    padding:12px;
+    border-radius:15px;
+    background:#101827;
+    border:1px solid #334155;
+}
+
+.skinPreview{
+    height:110px;
+    border-radius:12px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#0b1119;
+}
+
+.miniCharacter{
+    width:50px;
+    height:70px;
+    border-radius:18px;
+    position:relative;
+}
+
+.miniCharacter:before{
+    content:"";
+    position:absolute;
+    width:35px;
+    height:35px;
+    left:8px;
+    top:-23px;
+    border-radius:50%;
+    background:#dcae8e;
+}
+
+/* ================= TUTORIAL ================= */
+
+#tutorial{
+    justify-content:center;
+    align-items:center;
+    background:rgba(0,0,0,.8);
+    z-index:100;
+}
+
+.tutorialBox{
+    width:min(500px,92vw);
+    padding:28px;
+    border-radius:20px;
+    background:#111827;
+    text-align:center;
+}
+
+.tutorialBox p{
+    margin:20px 0;
+    color:#cbd5e1;
+    line-height:1.6;
+}
+
+/* ================= GAME ================= */
+
+#game{
+    background:#294b31;
+}
+
+#canvas{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+}
+
+.hud{
+    position:fixed;
+    top:8px;
+    left:8px;
+    right:8px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    z-index:20;
+    pointer-events:none;
+}
+
+.hudBox{
+    padding:8px 10px;
+    border-radius:9px;
+    background:rgba(3,8,15,.82);
+    border:1px solid #334155;
+    font-size:13px;
+}
+
+#superBar{
+    position:fixed;
+    left:50%;
+    bottom:15px;
+    transform:translateX(-50%);
+    width:220px;
+    height:12px;
+    background:#111827;
+    border-radius:20px;
+    overflow:hidden;
+    z-index:30;
+}
+
+#superFill{
+    width:0%;
+    height:100%;
+    background:linear-gradient(90deg,#7c3aed,#ec4899);
+}
+
+.control{
+    position:fixed;
+    z-index:40;
+    padding:12px 16px;
+    border-radius:12px;
+    color:white;
+    background:#1e293b;
+    font-weight:bold;
+}
+
+#heal{
+    left:50%;
+    bottom:75px;
+    transform:translateX(-50%);
+    background:#166534;
+}
+
+#super{
+    left:50%;
+    bottom:32px;
+    transform:translateX(-50%);
+}
+
+#shoot{
+    display:none;
+    position:fixed;
+    right:20px;
+    bottom:25px;
+    width:105px;
+    height:105px;
+    border-radius:50%;
+    background:radial-gradient(circle,#ef4444,#991b1b);
+    border:4px solid white;
+    color:white;
+    font-size:30px;
+    z-index:50;
+}
+
+#joystick{
+    display:none;
+    position:fixed;
+    left:20px;
+    bottom:20px;
+    width:145px;
+    height:145px;
+    border-radius:50%;
+    background:rgba(255,255,255,.12);
+    border:2px solid rgba(255,255,255,.25);
+    z-index:50;
+}
+
+#stick{
+    position:absolute;
+    width:62px;
+    height:62px;
+    left:41px;
+    top:41px;
+    border-radius:50%;
+    background:rgba(255,255,255,.5);
+}
+
+#round{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:90;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    gap:12px;
+    background:rgba(0,0,0,.75);
+}
+
+#round h1{
+    font-size:clamp(45px,10vw,80px);
+}
+
+.roundBtn{
+    width:min(300px,80vw);
+    padding:14px;
+    border-radius:12px;
+    background:#2563eb;
+    color:white;
+    font-weight:bold;
+}
+
+/* ================= MOBILE ================= */
+
+@media(pointer:coarse){
+
+    #joystick,
+    #shoot{
+        display:block;
+    }
+
+    .hud{
+        right:100px;
+    }
+
+    .lobbyBox{
+        grid-template-columns:1fr;
+    }
+
+    .characterStage{
+        min-height:260px;
+    }
+}
+
+@media(orientation:portrait) and (pointer:coarse){
+
+    #game:after{
+        content:"📱 Bitte Handy drehen";
+        position:fixed;
+        inset:0;
+        z-index:999;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        background:#020617;
+        font-size:25px;
+        text-align:center;
+    }
+}
 </style>
 </head>
+
 <body>
+
+<!-- MENU -->
+
 <div id="menu" class="screen">
-  <div class="panel">
-    <div class="logo">⚡ BATTLE ZONE</div>
-    <div class="sub">2D Multiplayer Arena</div>
-    <div class="row3">
-      <div class="stat">🏆<br>Trophäen<b id="mTrophies">0</b></div>
-      <div class="stat">💀<br>Kills<b id="mKills">0</b></div>
-      <div class="stat">👤<br>Skin<b id="mSkin">Rookie</b></div>
-    </div>
-    <input id="nameInput" class="input" maxlength="15" placeholder="Dein Name">
-    <select id="difficulty" class="select">
-      <option value="easy">🟢 Leicht</option>
-      <option value="medium" selected>🟡 Mittel</option>
-      <option value="hard">🔴 Schwer</option>
-    </select>
-    <button id="createBtn" class="btn">🎮 Lobby erstellen</button>
-    <input id="roomInput" class="input" maxlength="4" placeholder="Raumcode">
-    <button id="joinBtn" class="btn dark">👥 Lobby beitreten</button>
-    <button id="skinsBtn" class="btn dark">👤 Skins</button>
-    <button id="tutorialBtn" class="btn dark">📖 Tutorial</button>
-  </div>
+
+<div class="menuBox">
+
+<div class="logo">⚡ BATTLE ZONE</div>
+<div class="subtitle">2D Multiplayer Arena</div>
+
+<div class="stats">
+
+<div class="stat">
+🏆 Trophäen
+<b id="trophies">0</b>
 </div>
+
+<div class="stat">
+💀 Kills
+<b id="kills">0</b>
+</div>
+
+<div class="stat">
+👤 Skin
+<b id="skinName">Rookie</b>
+</div>
+
+</div>
+
+<input id="playerName"
+class="input"
+maxlength="15"
+placeholder="Dein Name">
+
+<select id="difficulty" class="select">
+<option value="easy">🟢 Leicht</option>
+<option value="medium" selected>🟡 Mittel</option>
+<option value="hard">🔴 Schwer</option>
+</select>
+
+<button class="btn" id="create">
+🎮 Lobby erstellen
+</button>
+
+<input
+id="roomInput"
+class="input"
+maxlength="4"
+placeholder="Raumcode">
+
+<button class="btn dark" id="join">
+👥 Lobby beitreten
+</button>
+
+<button class="btn dark" id="skinsButton">
+👤 Skins
+</button>
+
+<button class="btn dark" id="tutorialButton">
+📖 Tutorial
+</button>
+
+<div id="connection">
+🔄 Verbinde mit Server...
+</div>
+
+</div>
+</div>
+
+<!-- SKINS -->
 
 <div id="skins" class="screen">
-  <div class="header"><h1>👤 Skins</h1><button id="closeSkins" class="smallBtn">Zurück</button></div>
-  <div id="skinGrid" class="grid"></div>
+
+<div class="topbar">
+<h1>👤 Skins</h1>
+<button class="btn dark" id="closeSkins">Zurück</button>
 </div>
+
+<div id="skinGrid" class="skinGrid"></div>
+
+</div>
+
+<!-- LOBBY -->
 
 <div id="lobby" class="screen">
-  <div class="lobbyBox">
-    <div class="charStage"><div id="bigChar" class="bigChar"></div></div>
-    <div class="lobbyInfo">
-      <h1 id="lobbySkin">Rookie</h1>
-      <div>🔫 Waffe: <b id="lobbyWeapon">Pistole</b></div>
-      <div>💥 Schaden: <b id="lobbyDamage">+0%</b></div>
-      <div>❤️ Leben: <b id="lobbyHp">100</b></div>
-      <div>🛡️ Schutz: <b id="lobbyShield">50</b></div>
-      <div>🏆 Trophäen: <b id="lobbyTrophies">0</b></div>
-      <div>💀 Kills: <b id="lobbyKills">0</b></div>
-      <div>🎯 Schwierigkeit: <b id="lobbyDifficulty">Mittel</b></div>
-      <div>🏠 Raumcode:</div>
-      <div id="lobbyCode" class="room">----</div>
-      <button id="copyBtn" class="btn">📋 Code kopieren</button>
-      <button id="playBtn" class="btn">▶ SPIELEN</button>
-      <button id="lobbyBackBtn" class="btn dark">Zurück</button>
-    </div>
-  </div>
+
+<div class="lobbyBox">
+
+<div class="characterStage">
+<div id="bigCharacter" class="character"></div>
 </div>
+
+<div class="lobbyInfo">
+
+<h1 id="lobbySkin">Rookie</h1>
+
+<div>🔫 Waffe: <b id="lobbyWeapon">Pistole</b></div>
+<div>❤️ Leben: <b id="lobbyHp">100</b></div>
+<div>🛡️ Schutz: <b id="lobbyShield">50</b></div>
+<div>💥 Schaden: <b id="lobbyDamage">0%</b></div>
+
+<div>💀 Kills: <b id="lobbyKills">0</b></div>
+
+<div>🎯 Schwierigkeit:
+<b id="lobbyDifficulty">Mittel</b>
+</div>
+
+<div>🏠 Raumcode</div>
+
+<div class="roomCode" id="roomCode">
+----</div>
+
+<button class="btn" id="copy">
+📋 Code kopieren
+</button>
+
+<button class="btn" id="play">
+▶ SPIELEN
+</button>
+
+<button class="btn dark" id="back">
+Zurück
+</button>
+
+</div>
+</div>
+</div>
+
+<!-- TUTORIAL -->
 
 <div id="tutorial" class="screen">
-  <div class="tutorialPanel">
-    <h2 id="tutorialTitle">Tutorial</h2>
-    <p id="tutorialText"></p>
-    <div id="tutorialCount"></div>
-    <button id="tutorialNext" class="btn">Weiter</button>
-  </div>
+
+<div class="tutorialBox">
+
+<h2 id="tutorialTitle">Tutorial</h2>
+
+<p id="tutorialText"></p>
+
+<div id="tutorialCounter"></div>
+
+<button class="btn" id="tutorialNext">
+Weiter
+</button>
+
 </div>
 
-<div id="portrait"><div class="portraitPanel"><div class="rotateIcon">📱↔️</div><h2>Bitte Handy/Tablet drehen</h2><p>Battle Zone ist im Querformat einfacher zu spielen.</p></div></div>
+</div>
+
+<!-- GAME -->
 
 <div id="game" class="screen">
-  <canvas id="canvas" class="gameCanvas"></canvas>
-  <div class="hud">
-    <div class="hudBox">🏠 <span id="roomTop" class="roomBlue">----</span></div>
-    <div class="hudBox">❤️ <span id="hp">100</span></div>
-    <div class="hudBox">🛡️ <span id="shield">50</span></div>
-    <div class="hudBox">🔫 <span id="weapon">-</span></div>
-    <div class="hudBox">💀 <span id="gKills">0</span></div>
-    <div class="hudBox">🎯 <span id="difficultyTop">Mittel</span></div>
-  </div>
-  <div id="superBar"><div id="superFill" class="superFill"></div></div>
-  <button id="superBtn" class="controlBtn">⚡ SUPER</button>
-  <button id="healBtn" class="controlBtn">💚 HEILEN</button>
-  <div id="aimArea"></div>
-  <div id="joystick"><div id="stick"></div></div>
-  <button id="shootBtn">🔥</button>
-  <div id="roundMenu">
-    <div id="roundTitle">🏆 SIEG!</div>
-    <button id="newRoundBtn" class="roundBtn">🔄 NEUE RUNDE</button>
-    <button id="roundLobbyBtn" class="roundBtn">🏠 ZUR LOBBY</button>
-  </div>
+
+<canvas id="canvas"></canvas>
+
+<div class="hud">
+
+<div class="hudBox">
+🏠 <span id="hudRoom">----</span>
+</div>
+
+<div class="hudBox">
+❤️ <span id="hudHp">100</span>
+</div>
+
+<div class="hudBox">
+🛡️ <span id="hudShield">50</span>
+</div>
+
+<div class="hudBox">
+🔫 <span id="hudWeapon">Pistole</span>
+</div>
+
+<div class="hudBox">
+💀 <span id="hudKills">0</span>
+</div>
+
+<div class="hudBox">
+🎯 <span id="hudDifficulty">Mittel</span>
+</div>
+
+</div>
+
+<div id="superBar">
+<div id="superFill"></div>
+</div>
+
+<button id="heal" class="control">
+💚 HEILEN
+</button>
+
+<button id="super" class="control">
+⚡ SUPER
+</button>
+
+<div id="joystick">
+<div id="stick"></div>
+</div>
+
+<button id="shoot">
+🔥
+</button>
+
+<div id="round">
+
+<h1 id="roundTitle">🏆 SIEG!</h1>
+
+<button class="roundBtn" id="newRound">
+🔄 Neue Runde
+</button>
+
+<button class="roundBtn" id="roundLobby">
+🏠 Lobby
+</button>
+
+</div>
+
 </div>
 
 <script>
+
 "use strict";
 
-const SERVER_URL = "wss://svgbattle-server.onrender.com";
-let socket = null;
-let connected = false;
-let myId = null;
-let roomCode = "";
-let difficulty = "medium";
-let players = {};
-let bots = [];
-let bullets = [];
-let effects = [];
-let walls = [];
-let map = { width: 1600, height: 900 };
-let skinCatalog = {};
-let tutorial = [];
-let tutorialIndex = 0;
-let selectedSkin = localStorage.getItem("battleSkin") || "standard";
-let storedKills = Number(localStorage.getItem("battleKills") || 0);
-let storedTrophies = Number(localStorage.getItem("battleTrophies") || 0);
-let aimX = innerWidth * .75;
-let aimY = innerHeight * .5;
-let joystickX = 0;
-let joystickY = 0;
-let joystickActive = false;
-let firing = false;
-let lastFireAt = 0;
-let localView = {};
-let lastFrameTime = performance.now();
+/* ================= SERVER ================= */
 
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-function resize(){canvas.width=innerWidth;canvas.height=innerHeight;} resize(); addEventListener("resize",resize);
+const SERVER_URL =
+location.protocol === "https:"
+? "wss://svgbattle-server.onrender.com"
+: "ws://localhost:3000";
 
-const keys = {up:false,down:false,left:false,right:false};
+let socket;
+let connected=false;
+let myId=null;
+let roomCode="";
+let players=[];
+let bots=[];
+let bullets=[];
+let effects=[];
+let walls=[];
+let map={width:1600,height:900};
+let skins=[];
+let difficulty="medium";
 
-function send(data){ if(socket && socket.readyState===WebSocket.OPEN) socket.send(JSON.stringify(data)); }
-function connect(){
-  socket = new WebSocket(SERVER_URL);
-  socket.onopen=()=>{connected=true;};
-  socket.onclose=()=>{connected=false;};
-  socket.onerror=e=>console.error("WebSocket:",e);
-  socket.onmessage=e=>{ try{ handleMessage(JSON.parse(e.data)); }catch(err){ console.error(err); } };
+let kills=Number(localStorage.getItem("battleKills")||0);
+let trophies=Number(localStorage.getItem("battleTrophies")||0);
+let selectedSkin=localStorage.getItem("battleSkin")||"standard";
+
+let keys={
+    up:false,
+    down:false,
+    left:false,
+    right:false
+};
+
+let joyX=0;
+let joyY=0;
+let firing=false;
+let aimX=innerWidth*.75;
+let aimY=innerHeight*.5;
+
+/* ================= DOM ================= */
+
+const menu=document.getElementById("menu");
+const lobby=document.getElementById("lobby");
+const game=document.getElementById("game");
+const skinsScreen=document.getElementById("skins");
+const tutorialScreen=document.getElementById("tutorial");
+
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+
+function resize(){
+    canvas.width=innerWidth;
+    canvas.height=innerHeight;
 }
+
+resize();
+
+addEventListener("resize",resize);
+
+/* ================= CONNECTION ================= */
+
+function connect(){
+
+    socket=new WebSocket(SERVER_URL);
+
+    socket.onopen=()=>{
+
+        connected=true;
+
+        document.getElementById("connection").textContent=
+        "🟢 Server verbunden";
+
+    };
+
+    socket.onclose=()=>{
+
+        connected=false;
+
+        document.getElementById("connection").textContent=
+        "🔴 Server getrennt";
+
+        setTimeout(connect,3000);
+
+    };
+
+    socket.onerror=()=>{
+        document.getElementById("connection").textContent=
+        "🟠 Serverfehler";
+    };
+
+    socket.onmessage=e=>{
+
+        try{
+
+            const data=JSON.parse(e.data);
+
+            handleMessage(data);
+
+        }catch(err){
+
+            console.error(err);
+
+        }
+
+    };
+
+}
+
 connect();
 
-function handleMessage(data){
-  if(data.type==="connected"){
-    myId=data.id; map=data.map||map; walls=data.walls||[]; tutorial=data.tutorial||[];
-    skinCatalog={}; for(const s of (data.skins||[])) skinCatalog[s.id]=s;
-    renderSkins(); updateMenu(); updateLobby(); return;
-  }
-  if(data.type==="roomCreated"||data.type==="joinedRoom"){
-    roomCode=data.code; difficulty=data.difficulty||difficulty; showLobby(); return;
-  }
-  if(data.type==="errorMessage"){ alert(data.message); return; }
-  if(data.type==="state"){
-    const nextPlayers={};
-    for(const p of (data.players||[])){ nextPlayers[p.id]=p; localView[p.id] ||= {x:p.x,y:p.y}; localView[p.id].tx=p.x; localView[p.id].ty=p.y; }
-    players=nextPlayers;
-    bots=data.bots||[];
-    for(const b of bots){ localView[b.id] ||= {x:b.x,y:b.y}; localView[b.id].tx=b.x; localView[b.id].ty=b.y; }
-    walls=data.walls||walls; map=data.map||map; difficulty=data.difficulty||difficulty;
-    updateHUD(); updateLobby(); return;
-  }
-  if(data.type==="bulletSpawn"){
-    bullets.push({x:data.x,y:data.y,dx:data.dx,dy:data.dy,speed:data.speed,color:data.color||"#facc15",life:120});
-    effects.push({type:"muzzle",x:data.x,y:data.y,life:8}); return;
-  }
-  if(data.type==="bulletImpact"){effects.push({type:"impact",x:data.x,y:data.y,life:16});return;}
-  if(data.type==="bulletHit"){effects.push({type:"hit",x:data.x,y:data.y,life:18});return;}
-  if(data.type==="meleeEffect"){effects.push({type:"slash",x:data.x,y:data.y,life:18});return;}
-  if(data.type==="superEffect"){effects.push({type:"super",x:data.x,y:data.y,life:35});return;}
-  if(data.type==="healEffect"){effects.push({type:"heal",x:data.x,y:data.y,life:25});return;}
-  if(data.type==="hitEffect" && data.target===myId){effects.push({type:"damage",x:0,y:0,life:10});return;}
-  if(data.type==="elimination"){
-    if(data.killer===myId){ storedKills++; storedTrophies++; localStorage.setItem("battleKills",storedKills); localStorage.setItem("battleTrophies",storedTrophies); updateMenu(); }
-    return;
-  }
-  if(data.type==="roundEnd"){
-    document.getElementById("roundTitle").textContent = data.winner===myId ? "🏆 SIEG!" : "💀 VERLOREN!";
-    document.getElementById("roundMenu").style.display="flex"; return;
-  }
-  if(data.type==="newRound"){
-    bullets=[]; effects=[]; document.getElementById("roundMenu").style.display="none"; return;
-  }
+/* ================= SEND ================= */
+
+function send(data){
+
+    if(
+        socket &&
+        socket.readyState===WebSocket.OPEN
+    ){
+
+        socket.send(JSON.stringify(data));
+
+    }
+
 }
+
+/* ================= SERVER MESSAGES ================= */
+
+function handleMessage(data){
+
+    if(data.type==="connected"){
+
+        myId=data.id;
+
+        map=data.map||map;
+        walls=data.walls||[];
+
+        skins=data.skins||[];
+
+        renderSkins();
+
+        updateMenu();
+
+        return;
+    }
+
+    if(data.type==="roomCreated" ||
+       data.type==="joinedRoom"){
+
+        roomCode=data.code;
+        difficulty=data.difficulty||difficulty;
+
+        showLobby();
+
+        return;
+    }
+
+    if(data.type==="state"){
+
+        players=data.players||[];
+        bots=data.bots||[];
+
+        walls=data.walls||walls;
+        map=data.map||map;
+        difficulty=data.difficulty||difficulty;
+
+        updateHUD();
+        updateLobby();
+
+        return;
+    }
+
+    if(data.type==="bulletSpawn"){
+
+        bullets.push({
+            x:data.x,
+            y:data.y,
+            dx:data.dx,
+            dy:data.dy,
+            speed:data.speed||15,
+            color:data.color||"#facc15",
+            life:100
+        });
+
+        return;
+    }
+
+    if(data.type==="effect"){
+
+        effects.push({
+            x:data.x,
+            y:data.y,
+            type:data.effect||"hit",
+            life:20
+        });
+
+        return;
+    }
+
+    if(data.type==="elimination"){
+
+        if(data.killer===myId){
+
+            kills++;
+            trophies++;
+
+            localStorage.setItem(
+                "battleKills",
+                kills
+            );
+
+            localStorage.setItem(
+                "battleTrophies",
+                trophies
+            );
+
+            updateMenu();
+
+        }
+
+        return;
+    }
+
+    if(data.type==="roundEnd"){
+
+        document.getElementById("roundTitle").textContent=
+        data.winner===myId
+        ? "🏆 SIEG!"
+        : "💀 VERLOREN!";
+
+        document.getElementById("round").style.display="flex";
+
+        return;
+    }
+
+    if(data.type==="newRound"){
+
+        bullets=[];
+        effects=[];
+
+        document.getElementById("round").style.display="none";
+
+        return;
+    }
+
+    if(data.type==="error"){
+
+        alert(data.message);
+
+    }
+
+}
+
+/* ================= MENU ================= */
 
 function updateMenu(){
-  document.getElementById("mTrophies").textContent=storedTrophies;
-  document.getElementById("mKills").textContent=storedKills;
-  document.getElementById("mSkin").textContent=skinCatalog[selectedSkin]?.name||"Rookie";
+
+    document.getElementById("kills").textContent=kills;
+    document.getElementById("trophies").textContent=trophies;
+
+    const s=skins.find(x=>x.id===selectedSkin);
+
+    document.getElementById("skinName").textContent=
+    s ? s.name : "Rookie";
+
 }
 
-function createRoom(){
-  if(!connected){alert("Server ist noch nicht verbunden.");return;}
-  const name=document.getElementById("nameInput").value.trim()||"Player";
-  const count=Math.max(0,Math.min(5,Math.floor(Number(prompt("Bots: 0 bis 5","3"))||0)));
-  difficulty=document.getElementById("difficulty").value;
-  send({type:"createRoom",name,bots:count,skin:selectedSkin,difficulty});
-}
-function joinRoom(){
-  if(!connected){alert("Server ist noch nicht verbunden.");return;}
-  const name=document.getElementById("nameInput").value.trim()||"Player";
-  const code=document.getElementById("roomInput").value.trim().toUpperCase();
-  if(code.length!==4){alert("Der Raumcode muss 4 Zeichen haben.");return;}
-  send({type:"joinRoom",name,code,skin:selectedSkin});
-}
+/* ================= CREATE ================= */
+
+document.getElementById("create").onclick=()=>{
+
+    if(!connected){
+
+        alert("Der Server ist noch nicht verbunden.");
+
+        return;
+    }
+
+    const name=
+    document.getElementById("playerName").value.trim()
+    ||"Player";
+
+    difficulty=
+    document.getElementById("difficulty").value;
+
+    let botsCount=prompt(
+        "Wie viele Bots? 0 bis 5",
+        "3"
+    );
+
+    botsCount=Math.max(
+        0,
+        Math.min(
+            5,
+            Number(botsCount)||0
+        )
+    );
+
+    send({
+
+        type:"createRoom",
+
+        name:name,
+
+        bots:botsCount,
+
+        difficulty:difficulty,
+
+        skin:selectedSkin
+
+    });
+
+};
+
+/* ================= JOIN ================= */
+
+document.getElementById("join").onclick=()=>{
+
+    if(!connected){
+
+        alert("Server ist noch nicht verbunden.");
+
+        return;
+    }
+
+    const name=
+    document.getElementById("playerName").value.trim()
+    ||"Player";
+
+    const code=
+    document.getElementById("roomInput")
+    .value
+    .trim()
+    .toUpperCase();
+
+    if(code.length!==4){
+
+        alert("Der Raumcode muss 4 Zeichen haben.");
+
+        return;
+    }
+
+    send({
+
+        type:"joinRoom",
+
+        name:name,
+
+        code:code,
+
+        skin:selectedSkin
+
+    });
+
+};
+
+/* ================= LOBBY ================= */
 
 function showLobby(){
-  document.getElementById("menu").style.display="none";
-  document.getElementById("lobby").style.display="flex";
-  document.getElementById("lobbyCode").textContent=roomCode;
-  document.getElementById("roomTop").textContent=roomCode;
-  updateLobby();
+
+    menu.style.display="none";
+    skinsScreen.style.display="none";
+    lobby.style.display="flex";
+
+    document.getElementById("roomCode").textContent=roomCode;
+
+    updateLobby();
+
 }
+
 function updateLobby(){
-  const me=players[myId]; const skin=skinCatalog[selectedSkin] || skinCatalog[me?.skin] || null;
-  if(!skin) return;
-  document.getElementById("lobbySkin").textContent=skin.name;
-  document.getElementById("lobbyWeapon").textContent=skin.weapon;
-  document.getElementById("lobbyDamage").textContent=`+${skin.damageBonus}%`;
-  document.getElementById("lobbyHp").textContent=100+skin.healthBonus;
-  document.getElementById("lobbyShield").textContent=50+skin.shieldBonus;
-  document.getElementById("lobbyTrophies").textContent=storedTrophies;
-  document.getElementById("lobbyKills").textContent=me?.kills??storedKills;
-  document.getElementById("lobbyDifficulty").textContent=(difficulty==="easy"?"Leicht":difficulty==="hard"?"Schwer":"Mittel");
-  document.getElementById("bigChar").style.background=`linear-gradient(145deg,${skin.color},#111827)`;
-}
-function startGame(){
-  document.getElementById("lobby").style.display="none";
-  document.getElementById("game").style.display="block";
-  try{ if(screen.orientation?.lock && matchMedia("(pointer:coarse)").matches) screen.orientation.lock("landscape").catch(()=>{}); }catch{}
-}
-function backToMenu(){ document.getElementById("lobby").style.display="none";document.getElementById("game").style.display="none";document.getElementById("menu").style.display="flex"; }
 
-document.getElementById("createBtn").onclick=createRoom;
-document.getElementById("joinBtn").onclick=joinRoom;
-document.getElementById("playBtn").onclick=startGame;
-document.getElementById("lobbyBackBtn").onclick=backToMenu;
-document.getElementById("copyBtn").onclick=()=>{navigator.clipboard?.writeText(roomCode);alert("Code kopiert: "+roomCode);};
+    const me=players.find(
+        p=>p.id===myId
+    );
 
-function openSkins(){document.getElementById("skins").style.display="block";renderSkins();}
-function closeSkins(){document.getElementById("skins").style.display="none";}
-document.getElementById("skinsBtn").onclick=openSkins;
-document.getElementById("closeSkins").onclick=closeSkins;
+    const skin=
+    skins.find(s=>
+        s.id===(me?.skin||selectedSkin)
+    );
+
+    if(!skin)return;
+
+    document.getElementById("lobbySkin")
+    .textContent=skin.name;
+
+    document.getElementById("lobbyWeapon")
+    .textContent=skin.weapon;
+
+    document.getElementById("lobbyHp")
+    .textContent=100+skin.healthBonus;
+
+    document.getElementById("lobbyShield")
+    .textContent=50+skin.shieldBonus;
+
+    document.getElementById("lobbyDamage")
+    .textContent=
+    "+"+skin.damageBonus+"%";
+
+    document.getElementById("lobbyKills")
+    .textContent=
+    me?.kills??kills;
+
+    document.getElementById("lobbyDifficulty")
+    .textContent=
+    difficulty==="easy"
+    ?"Leicht"
+    :difficulty==="hard"
+    ?"Schwer"
+    :"Mittel";
+
+    document.getElementById("bigCharacter")
+    .style.background=
+    `linear-gradient(145deg,${skin.color},#111827)`;
+
+}
+
+/* ================= BUTTONS ================= */
+
+document.getElementById("play").onclick=()=>{
+
+    lobby.style.display="none";
+    game.style.display="block";
+
+    send({
+        type:"startGame"
+    });
+
+};
+
+document.getElementById("back").onclick=()=>{
+
+    lobby.style.display="none";
+    menu.style.display="flex";
+
+};
+
+document.getElementById("copy").onclick=()=>{
+
+    navigator.clipboard
+    ?.writeText(roomCode);
+
+    alert("Raumcode kopiert: "+roomCode);
+
+};
+
+/* ================= SKINS ================= */
+
+document.getElementById("skinsButton").onclick=()=>{
+
+    menu.style.display="none";
+    skinsScreen.style.display="block";
+
+    renderSkins();
+
+};
+
+document.getElementById("closeSkins").onclick=()=>{
+
+    skinsScreen.style.display="none";
+    menu.style.display="flex";
+
+};
 
 function renderSkins(){
-  const grid=document.getElementById("skinGrid"); if(!grid)return; grid.innerHTML="";
-  Object.values(skinCatalog).forEach(skin=>{
-    const card=document.createElement("div");card.className="card";
-    const pv=document.createElement("div");pv.className="preview";
-    const ch=document.createElement("div");ch.className="mini";ch.style.background=`linear-gradient(145deg,${skin.color},#111827)`;pv.appendChild(ch);
-    const title=document.createElement("h3");title.textContent=skin.name;
-    const rarity=document.createElement("div");rarity.className="muted";rarity.textContent=skin.rarity;
-    const weapon=document.createElement("div");weapon.className="muted";weapon.textContent=`🔫 ${skin.weapon}`;
-    const dmg=document.createElement("div");dmg.className="muted";dmg.textContent=`💥 +${skin.damageBonus}% Schaden`;
-    const hp=document.createElement("div");hp.className="muted";hp.textContent=`❤️ +${skin.healthBonus} / 🛡️ +${skin.shieldBonus}`;
-    const price=document.createElement("div");price.className="price";price.textContent=skin.price===0?"Kostenlos":`Preis: ${skin.price} Kills`;
-    const sup=document.createElement("div");sup.className="super";sup.textContent=skin.superNeed?`⚡ ${skin.super} – ${skin.superNeed} Bot-Schaden`:"⚡ Kein Super";
-    const btn=document.createElement("button");btn.textContent=skin.id===selectedSkin?"✓ Ausgewählt":(storedKills>=skin.price?"Auswählen":`🔒 ${skin.price} Kills`);btn.style.cssText="width:100%;margin-top:8px;padding:9px;border-radius:8px;background:#2563eb;color:white";
-    btn.onclick=()=>{if(storedKills<skin.price){alert(`Du brauchst ${skin.price} Kills.`);return;} selectedSkin=skin.id;localStorage.setItem("battleSkin",selectedSkin);updateMenu();updateLobby();send({type:"changeSkin",skin:selectedSkin});renderSkins();};
-    [pv,title,rarity,weapon,dmg,hp,price,sup,btn].forEach(el=>card.appendChild(el));grid.appendChild(card);
-  });
+
+    const grid=document.getElementById("skinGrid");
+
+    grid.innerHTML="";
+
+    skins.forEach(s=>{
+
+        const card=document.createElement("div");
+
+        card.className="skinCard";
+
+        card.innerHTML=`
+
+        <div class="skinPreview">
+
+            <div
+            class="miniCharacter"
+            style="
+            background:linear-gradient(
+            145deg,
+            ${s.color},
+            #111827
+            )">
+            </div>
+
+        </div>
+
+        <h3>${s.name}</h3>
+
+        <p>⭐ ${s.rarity}</p>
+
+        <p>🔫 ${s.weapon}</p>
+
+        <p>❤️ +${s.healthBonus}</p>
+
+        <p>🛡️ +${s.shieldBonus}</p>
+
+        <p>💥 +${s.damageBonus}%</p>
+
+        <p>💀 Preis: ${s.price}</p>
+
+        `;
+
+        const button=document.createElement("button");
+
+        button.className="btn";
+
+        if(
+            selectedSkin===s.id
+        ){
+
+            button.textContent="✓ Ausgewählt";
+
+        }else if(
+            kills>=s.price
+        ){
+
+            button.textContent="Auswählen";
+
+            button.onclick=()=>{
+
+                selectedSkin=s.id;
+
+                localStorage.setItem(
+                    "battleSkin",
+                    selectedSkin
+                );
+
+                send({
+                    type:"changeSkin",
+                    skin:selectedSkin
+                });
+
+                updateMenu();
+                renderSkins();
+
+            };
+
+        }else{
+
+            button.textContent=
+            "🔒 "+s.price+" Kills";
+
+        }
+
+        card.appendChild(button);
+
+        grid.appendChild(card);
+
+    });
+
 }
 
-function openTutorial(){if(!tutorial.length){alert("Tutorial wird noch geladen.");return;}tutorialIndex=0;document.getElementById("tutorial").style.display="flex";renderTutorial();}
-function renderTutorial(){const s=tutorial[tutorialIndex];document.getElementById("tutorialTitle").textContent=s.title;document.getElementById("tutorialText").textContent=s.text;document.getElementById("tutorialCounter").textContent=`${tutorialIndex+1} / ${tutorial.length}`;}
-function nextTutorial(){tutorialIndex++;if(tutorialIndex>=tutorial.length){document.getElementById("tutorial").style.display="none";return;}renderTutorial();}
-document.getElementById("tutorialBtn").onclick=openTutorial;document.getElementById("tutorialNext").onclick=nextTutorial;
+/* ================= TUTORIAL ================= */
 
-addEventListener("keydown",e=>{if(e.key==="ArrowUp"){keys.up=true;e.preventDefault();}if(e.key==="ArrowDown"){keys.down=true;e.preventDefault();}if(e.key==="ArrowLeft"){keys.left=true;e.preventDefault();}if(e.key==="ArrowRight"){keys.right=true;e.preventDefault();}if(e.key==="r"||e.key==="R")send({type:"reload"});});
-addEventListener("keyup",e=>{if(e.key==="ArrowUp")keys.up=false;if(e.key==="ArrowDown")keys.down=false;if(e.key==="ArrowLeft")keys.left=false;if(e.key==="ArrowRight")keys.right=false;});
-setInterval(()=>{if(document.getElementById("game").style.display!=="block")return;let dx=(keys.right?1:0)-(keys.left?1:0);let dy=(keys.down?1:0)-(keys.up?1:0);dx+=joystickX;dy+=joystickY;if(dx||dy)send({type:"moveIntent",dx,dy});},1000/30);
+let tutorialIndex=0;
 
-const joystick=document.getElementById("joystick"),stick=document.getElementById("stick");
-joystick.addEventListener("pointerdown",e=>{joystickActive=true;joystick.setPointerCapture(e.pointerId);updateJoystick(e.clientX,e.clientY);});
-joystick.addEventListener("pointermove",e=>{if(joystickActive)updateJoystick(e.clientX,e.clientY);});
-joystick.addEventListener("pointerup",()=>{joystickActive=false;joystickX=0;joystickY=0;stick.style.left="41px";stick.style.top="41px";});
-function updateJoystick(x,y){const r=joystick.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=x-cx,dy=y-cy;const max=Math.min(48,r.width*.32),d=Math.hypot(dx,dy);if(d>max){dx=dx/d*max;dy=dy/d*max;}joystickX=dx/max;joystickY=dy/max;stick.style.left=(r.width/2-32+dx)+"px";stick.style.top=(r.height/2-32+dy)+"px";}
+const tutorialData=[
 
-const aimArea=document.getElementById("aimArea");
-aimArea.addEventListener("pointerdown",e=>{aimX=e.clientX;aimY=e.clientY;aimArea.setPointerCapture(e.pointerId);firing=true;});
-aimArea.addEventListener("pointermove",e=>{aimX=e.clientX;aimY=e.clientY;});
-aimArea.addEventListener("pointerup",()=>{firing=false;});
-addEventListener("mousemove",e=>{aimX=e.clientX;aimY=e.clientY;});
-addEventListener("mousedown",e=>{if(e.button===0&&document.getElementById("game").style.display==="block")firing=true;});
-addEventListener("mouseup",e=>{if(e.button===0)firing=false;});
+{
+title:"🎮 Bewegung",
+text:"Benutze auf dem PC die Pfeiltasten. Auf dem Handy benutzt du den Joystick."
+},
 
-document.getElementById("shootBtn").addEventListener("pointerdown",e=>{e.preventDefault();firing=true;shoot();});
-document.getElementById("shootBtn").addEventListener("pointerup",()=>{firing=false;});
-document.getElementById("shootBtn").addEventListener("pointercancel",()=>{firing=false;});
-setInterval(()=>{if(firing)shoot();},80);
-function shoot(){const me=players[myId];if(!me||!me.alive)return;const dx=aimX-innerWidth/2,dy=aimY-innerHeight/2;if(Math.hypot(dx,dy)<5)return;send({type:"shoot",dx,dy});}
+{
+title:"🔥 Schießen",
+text:"Auf dem PC klickst du mit der Maus. Auf dem Handy benutzt du den roten Schuss-Button."
+},
 
-document.getElementById("healBtn").onclick=()=>send({type:"heal"});
-document.getElementById("superBtn").onclick=()=>send({type:"useSuper"});
+{
+title:"💚 Heilen",
+text:"Mit HEILEN kannst du verlorenes Leben wiederherstellen."
+},
 
-document.getElementById("newRoundBtn").onclick=()=>send({type:"newRound"});
-document.getElementById("roundLobbyBtn").onclick=()=>{document.getElementById("roundMenu").style.display="none";document.getElementById("game").style.display="none";document.getElementById("lobby").style.display="flex";};
+{
+title:"⚡ Super",
+text:"Dein Super lädt sich durch Schaden auf. Wenn er voll ist, kannst du ihn benutzen."
+},
 
-function updateHUD(){const me=players[myId];if(!me)return;document.getElementById("hp").textContent=me.hp;document.getElementById("shield").textContent=me.shield;document.getElementById("weapon").textContent=me.weapon;document.getElementById("gKills").textContent=me.kills;document.getElementById("roomTop").textContent=roomCode;document.getElementById("difficultyTop").textContent=difficulty==="easy"?"Leicht":difficulty==="hard"?"Schwer":"Mittel";const skin=skinCatalog[me.skin];const need=skin?.superNeed||0;const percent=need?Math.min(100,(me.botDamage||0)/need*100):0;document.getElementById("superFill").style.width=percent+"%";document.getElementById("superBtn").classList.toggle("ready",!!me.superReady);}
+{
+title:"🏆 Gewinnen",
+text:"Besiege die Gegner und Bots. Am Ende der Runde gewinnt der letzte Spieler."
+}
 
-function wx(x,cam){return x-cam.x+canvas.width/2;} function wy(y,cam){return y-cam.y+canvas.height/2;}
+];
+
+document.getElementById("tutorialButton").onclick=()=>{
+
+    menu.style.display="none";
+    tutorialScreen.style.display="flex";
+
+    tutorialIndex=0;
+
+    renderTutorial();
+
+};
+
+function renderTutorial(){
+
+    const t=tutorialData[tutorialIndex];
+
+    document.getElementById("tutorialTitle")
+    .textContent=t.title;
+
+    document.getElementById("tutorialText")
+    .textContent=t.text;
+
+    document.getElementById("tutorialCounter")
+    .textContent=
+    `${tutorialIndex+1} / ${tutorialData.length}`;
+
+}
+
+document.getElementById("tutorialNext").onclick=()=>{
+
+    tutorialIndex++;
+
+    if(
+        tutorialIndex>=tutorialData.length
+    ){
+
+        tutorialScreen.style.display="none";
+        menu.style.display="flex";
+
+        return;
+
+    }
+
+    renderTutorial();
+
+};
+
+/* ================= KEYBOARD ================= */
+
+addEventListener("keydown",e=>{
+
+    if(e.key==="ArrowUp"){
+        keys.up=true;
+        e.preventDefault();
+    }
+
+    if(e.key==="ArrowDown"){
+        keys.down=true;
+        e.preventDefault();
+    }
+
+    if(e.key==="ArrowLeft"){
+        keys.left=true;
+        e.preventDefault();
+    }
+
+    if(e.key==="ArrowRight"){
+        keys.right=true;
+        e.preventDefault();
+    }
+
+    if(e.key==="r"||e.key==="R"){
+
+        send({
+            type:"reload"
+        });
+
+    }
+
+});
+
+addEventListener("keyup",e=>{
+
+    if(e.key==="ArrowUp")
+        keys.up=false;
+
+    if(e.key==="ArrowDown")
+        keys.down=false;
+
+    if(e.key==="ArrowLeft")
+        keys.left=false;
+
+    if(e.key==="ArrowRight")
+        keys.right=false;
+
+});
+
+/* ================= MOVEMENT ================= */
+
+setInterval(()=>{
+
+    if(game.style.display!=="block")
+        return;
+
+    let dx=
+    (keys.right?1:0)-
+    (keys.left?1:0);
+
+    let dy=
+    (keys.down?1:0)-
+    (keys.up?1:0);
+
+    dx+=joyX;
+    dy+=joyY;
+
+    if(dx!==0||dy!==0){
+
+        const length=Math.hypot(dx,dy);
+
+        if(length>1){
+
+            dx/=length;
+            dy/=length;
+
+        }
+
+        send({
+            type:"move",
+            dx:dx,
+            dy:dy
+        });
+
+    }
+
+},33);
+
+/* ================= JOYSTICK ================= */
+
+const joystick=
+document.getElementById("joystick");
+
+const stick=
+document.getElementById("stick");
+
+let joystickActive=false;
+
+joystick.addEventListener(
+"pointerdown",
+e=>{
+
+    joystickActive=true;
+
+    joystick.setPointerCapture(
+        e.pointerId
+    );
+
+    updateJoystick(
+        e.clientX,
+        e.clientY
+    );
+
+});
+
+joystick.addEventListener(
+"pointermove",
+e=>{
+
+    if(joystickActive){
+
+        updateJoystick(
+            e.clientX,
+            e.clientY
+        );
+
+    }
+
+});
+
+joystick.addEventListener(
+"pointerup",
+resetJoystick
+);
+
+joystick.addEventListener(
+"pointercancel",
+resetJoystick
+);
+
+function resetJoystick(){
+
+    joystickActive=false;
+
+    joyX=0;
+    joyY=0;
+
+    stick.style.left="41px";
+    stick.style.top="41px";
+
+}
+
+function updateJoystick(x,y){
+
+    const r=
+    joystick.getBoundingClientRect();
+
+    const cx=
+    r.left+r.width/2;
+
+    const cy=
+    r.top+r.height/2;
+
+    let dx=x-cx;
+    let dy=y-cy;
+
+    const max=45;
+
+    const distance=
+    Math.hypot(dx,dy);
+
+    if(distance>max){
+
+        dx=dx/distance*max;
+        dy=dy/distance*max;
+
+    }
+
+    joyX=dx/max;
+    joyY=dy/max;
+
+    stick.style.left=
+    (r.width/2-31+dx)+"px";
+
+    stick.style.top=
+    (r.height/2-31+dy)+"px";
+
+}
+
+/* ================= AIM ================= */
+
+addEventListener("mousemove",e=>{
+
+    aimX=e.clientX;
+    aimY=e.clientY;
+
+});
+
+addEventListener("mousedown",e=>{
+
+    if(
+        e.button===0 &&
+        game.style.display==="block"
+    ){
+
+        firing=true;
+
+    }
+
+});
+
+addEventListener("mouseup",()=>{
+
+    firing=false;
+
+});
+
+document.getElementById("shoot")
+.addEventListener(
+"pointerdown",
+e=>{
+
+    e.preventDefault();
+
+    firing=true;
+
+    shoot();
+
+});
+
+document.getElementById("shoot")
+.addEventListener(
+"pointerup",
+()=>firing=false
+);
+
+document.getElementById("shoot")
+.addEventListener(
+"pointercancel",
+()=>firing=false
+);
+
+setInterval(()=>{
+
+    if(firing)
+        shoot();
+
+},120);
+
+function shoot(){
+
+    const me=players.find(
+        p=>p.id===myId
+    );
+
+    if(!me||!me.alive)
+        return;
+
+    const dx=
+    aimX-canvas.width/2;
+
+    const dy=
+    aimY-canvas.height/2;
+
+    if(Math.hypot(dx,dy)<5)
+        return;
+
+    send({
+        type:"shoot",
+        dx:dx,
+        dy:dy
+    });
+
+}
+
+/* ================= ACTIONS ================= */
+
+document.getElementById("heal").onclick=()=>{
+
+    send({
+        type:"heal"
+    });
+
+};
+
+document.getElementById("super").onclick=()=>{
+
+    send({
+        type:"super"
+    });
+
+};
+
+document.getElementById("newRound").onclick=()=>{
+
+    send({
+        type:"newRound"
+    });
+
+};
+
+document.getElementById("roundLobby").onclick=()=>{
+
+    document.getElementById("round")
+    .style.display="none";
+
+    game.style.display="none";
+    lobby.style.display="flex";
+
+};
+
+/* ================= HUD ================= */
+
+function updateHUD(){
+
+    const me=players.find(
+        p=>p.id===myId
+    );
+
+    if(!me)return;
+
+    document.getElementById("hudHp")
+    .textContent=Math.max(0,Math.round(me.hp));
+
+    document.getElementById("hudShield")
+    .textContent=Math.max(0,Math.round(me.shield));
+
+    document.getElementById("hudWeapon")
+    .textContent=me.weapon;
+
+    document.getElementById("hudKills")
+    .textContent=me.kills;
+
+    document.getElementById("hudRoom")
+    .textContent=roomCode;
+
+    document.getElementById("hudDifficulty")
+    .textContent=
+    difficulty==="easy"
+    ?"Leicht"
+    :difficulty==="hard"
+    ?"Schwer"
+    :"Mittel";
+
+    const skin=
+    skins.find(s=>s.id===me.skin);
+
+    if(skin&&skin.superNeed){
+
+        const percent=
+        Math.min(
+            100,
+            me.superCharge/
+            skin.superNeed*100
+        );
+
+        document.getElementById("superFill")
+        .style.width=percent+"%";
+
+    }
+
+}
+
+/* ================= CAMERA ================= */
+
+function worldX(x,cam){
+
+    return x-cam.x+
+    canvas.width/2;
+
+}
+
+function worldY(y,cam){
+
+    return y-cam.y+
+    canvas.height/2;
+
+}
+
+/* ================= ARENA ================= */
+
 function drawArena(cam){
-  const g=ctx.createLinearGradient(0,0,0,canvas.height);g.addColorStop(0,"#35583b");g.addColorStop(1,"#1b3021");ctx.fillStyle=g;ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.strokeStyle="rgba(255,255,255,.04)";const grid=50;const ox=(-cam.x+canvas.width/2)%grid,oy=(-cam.y+canvas.height/2)%grid;
-  for(let x=ox;x<canvas.width;x+=grid){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();}
-  for(let y=oy;y<canvas.height;y+=grid){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();}
-  for(const w of walls){const x=wx(w.x,cam),y=wy(w.y,cam);ctx.fillStyle="rgba(0,0,0,.32)";ctx.fillRect(x+7,y+9,w.w,w.h);const wg=ctx.createLinearGradient(x,y,x,y+w.h);wg.addColorStop(0,"#8b98a5");wg.addColorStop(.5,"#596875");wg.addColorStop(1,"#26333d");ctx.fillStyle=wg;ctx.fillRect(x,y,w.w,w.h);ctx.strokeStyle="#c1ccd5";ctx.lineWidth=2;ctx.strokeRect(x,y,w.w,w.h);}
-}
-function charColor(id){return skinCatalog[id]?.color||"#38bdf8";}
-function drawCharacter(e,cam){
-  const x=wx(e.x,cam),y=wy(e.y,cam),color=charColor(e.skin);
-  ctx.beginPath();ctx.ellipse(x,y+22,24,9,0,0,Math.PI*2);ctx.fillStyle="rgba(0,0,0,.38)";ctx.fill();
-  const body=ctx.createRadialGradient(x-8,y-10,2,x+15,y+18,35);body.addColorStop(0,"#fff");body.addColorStop(.18,color);body.addColorStop(1,"#101827");ctx.fillStyle=body;ctx.beginPath();ctx.roundRect(x-18,y-8,36,38,10);ctx.fill();
-  const head=ctx.createRadialGradient(x-5,y-26,2,x+7,y-12,20);head.addColorStop(0,"#ffe6cf");head.addColorStop(1,"#9f694e");ctx.fillStyle=head;ctx.beginPath();ctx.arc(x,y-20,14,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y-23,14,Math.PI,0);ctx.fill();
-  let angle=e.id===myId?Math.atan2(aimY-canvas.height/2,aimX-canvas.width/2):e.facing||0;
-  ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.strokeStyle="#e5e7eb";ctx.lineWidth=7;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(8,0);ctx.lineTo(35,0);ctx.stroke();ctx.restore();
-  ctx.fillStyle="#3a0b0b";ctx.fillRect(x-24,y-38,48,5);ctx.fillStyle="#22c55e";ctx.fillRect(x-24,y-38,48*Math.max(0,e.hp/(e.maxHp||100)),5);
-  if(e.shield>0){ctx.strokeStyle="#38bdf8";ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,29,0,Math.PI*2);ctx.stroke();}
-  ctx.font="bold 12px Arial";ctx.textAlign="center";ctx.fillStyle="#fff";ctx.shadowBlur=5;ctx.shadowColor="#000";ctx.fillText(e.name,x,y-46);ctx.shadowBlur=0;
-}
-function drawBullets(cam){bullets=bullets.filter(b=>{b.x+=b.dx*b.speed/3;b.y+=b.dy*b.speed/3;b.life--;const x=wx(b.x,cam),y=wy(b.y,cam);ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fillStyle=b.color;ctx.shadowBlur=15;ctx.shadowColor=b.color;ctx.fill();ctx.shadowBlur=0;return b.life>0;});}
-function drawEffects(cam){effects=effects.filter(f=>{f.life--;const x=wx(f.x,cam),y=wy(f.y,cam);if(f.type==="muzzle"){ctx.beginPath();ctx.arc(x,y,10,0,Math.PI*2);ctx.fillStyle="#ffe066";ctx.fill();}if(f.type==="impact"){ctx.beginPath();ctx.arc(x,y,8+(15-f.life)*2,0,Math.PI*2);ctx.strokeStyle="#facc15";ctx.lineWidth=3;ctx.stroke();}if(f.type==="hit"){ctx.beginPath();ctx.arc(x,y,10+(18-f.life)*2,0,Math.PI*2);ctx.strokeStyle="#ff5c5c";ctx.lineWidth=4;ctx.stroke();}if(f.type==="slash"){ctx.beginPath();ctx.arc(x,y,48,-.9,.9);ctx.strokeStyle="#fff";ctx.lineWidth=8;ctx.stroke();}if(f.type==="super"){ctx.beginPath();ctx.arc(x,y,25+(35-f.life)*6,0,Math.PI*2);ctx.strokeStyle="#ec4899";ctx.lineWidth=8;ctx.stroke();}if(f.type==="heal"){ctx.beginPath();ctx.arc(x,y,16+(25-f.life)*2,0,Math.PI*2);ctx.strokeStyle="#4ade80";ctx.lineWidth=4;ctx.stroke();}if(f.type==="damage"){ctx.fillStyle="rgba(255,0,0,.16)";ctx.fillRect(0,0,canvas.width,canvas.height);}return f.life>0;});}
 
-function render(){requestAnimationFrame(render);if(document.getElementById("game").style.display!=="block")return;const me=players[myId];if(!me){ctx.fillStyle="#203142";ctx.fillRect(0,0,canvas.width,canvas.height);return;}const cam={x:me.x,y:me.y};drawArena(cam);Object.values(players).forEach(p=>{if(p.alive)drawCharacter(p,cam)});bots.forEach(b=>{if(b.alive)drawCharacter(b,cam)});drawBullets(cam);drawEffects(cam);}
+    const gradient=
+    ctx.createLinearGradient(
+        0,0,0,canvas.height
+    );
+
+    gradient.addColorStop(
+        0,
+        "#3f6745"
+    );
+
+    gradient.addColorStop(
+        1,
+        "#17291b"
+    );
+
+    ctx.fillStyle=gradient;
+
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    const grid=50;
+
+    const ox=
+    (-cam.x+
+    canvas.width/2)%grid;
+
+    const oy=
+    (-cam.y+
+    canvas.height/2)%grid;
+
+    ctx.strokeStyle=
+    "rgba(255,255,255,.05)";
+
+    ctx.lineWidth=1;
+
+    for(
+        let x=ox;
+        x<canvas.width;
+        x+=grid
+    ){
+
+        ctx.beginPath();
+
+        ctx.moveTo(x,0);
+        ctx.lineTo(x,canvas.height);
+
+        ctx.stroke();
+
+    }
+
+    for(
+        let y=oy;
+        y<canvas.height;
+        y+=grid
+    ){
+
+        ctx.beginPath();
+
+        ctx.moveTo(0,y);
+        ctx.lineTo(canvas.width,y);
+
+        ctx.stroke();
+
+    }
+
+    for(const w of walls){
+
+        const x=worldX(w.x,cam);
+        const y=worldY(w.y,cam);
+
+        ctx.fillStyle=
+        "rgba(0,0,0,.35)";
+
+        ctx.fillRect(
+            x+7,
+            y+8,
+            w.w,
+            w.h
+        );
+
+        ctx.fillStyle="#64748b";
+
+        ctx.fillRect(
+            x,
+            y,
+            w.w,
+            w.h
+        );
+
+        ctx.strokeStyle="#cbd5e1";
+
+        ctx.strokeRect(
+            x,
+            y,
+            w.w,
+            w.h
+        );
+
+    }
+
+}
+
+/* ================= CHARACTER ================= */
+
+function getSkin(id){
+
+    return skins.find(
+        s=>s.id===id
+    );
+
+}
+
+function drawCharacter(entity,cam){
+
+    const x=
+    worldX(entity.x,cam);
+
+    const y=
+    worldY(entity.y,cam);
+
+    const skin=
+    getSkin(entity.skin);
+
+    const color=
+    skin?.color||"#38bdf8";
+
+    /* shadow */
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        x,
+        y+23,
+        25,
+        9,
+        0,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fillStyle=
+    "rgba(0,0,0,.4)";
+
+    ctx.fill();
+
+    /* body */
+
+    const body=
+    ctx.createLinearGradient(
+        x-20,
+        y-10,
+        x+20,
+        y+35
+    );
+
+    body.addColorStop(
+        0,
+        color
+    );
+
+    body.addColorStop(
+        1,
+        "#111827"
+    );
+
+    ctx.fillStyle=body;
+
+    ctx.beginPath();
+
+    ctx.roundRect(
+        x-18,
+        y-8,
+        36,
+        40,
+        10
+    );
+
+    ctx.fill();
+
+    /* head */
+
+    ctx.fillStyle="#dcae8e";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x,
+        y-21,
+        14,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+    /* weapon */
+
+    let angle=
+    entity.id===myId
+    ?
+    Math.atan2(
+        aimY-canvas.height/2,
+        aimX-canvas.width/2
+    )
+    :
+    entity.facing||0;
+
+    ctx.save();
+
+    ctx.translate(x,y);
+
+    ctx.rotate(angle);
+
+    ctx.strokeStyle="#e5e7eb";
+
+    ctx.lineWidth=7;
+
+    ctx.lineCap="round";
+
+    ctx.beginPath();
+
+    ctx.moveTo(8,0);
+
+    ctx.lineTo(35,0);
+
+    ctx.stroke();
+
+    ctx.restore();
+
+    /* HP */
+
+    const maxHp=
+    entity.maxHp||100;
+
+    ctx.fillStyle="#450a0a";
+
+    ctx.fillRect(
+        x-25,
+        y-40,
+        50,
+        5
+    );
+
+    ctx.fillStyle="#22c55e";
+
+    ctx.fillRect(
+        x-25,
+        y-40,
+        50*
+        Math.max(
+            0,
+            entity.hp/maxHp
+        ),
+        5
+    );
+
+    /* shield */
+
+    if(entity.shield>0){
+
+        ctx.strokeStyle=
+        "#38bdf8";
+
+        ctx.lineWidth=2;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            y,
+            30,
+            0,
+            Math.PI*2
+        );
+
+        ctx.stroke();
+
+    }
+
+    /* name */
+
+    ctx.font=
+    "bold 12px Arial";
+
+    ctx.textAlign="center";
+
+    ctx.fillStyle="white";
+
+    ctx.fillText(
+        entity.name||"Bot",
+        x,
+        y-48
+    );
+
+}
+
+/* ================= BULLETS ================= */
+
+function drawBullets(cam){
+
+    bullets=
+    bullets.filter(b=>{
+
+        b.x+=b.dx*b.speed/3;
+        b.y+=b.dy*b.speed/3;
+
+        b.life--;
+
+        const x=
+        worldX(b.x,cam);
+
+        const y=
+        worldY(b.y,cam);
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            y,
+            5,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fillStyle=b.color;
+
+        ctx.shadowBlur=15;
+
+        ctx.shadowColor=b.color;
+
+        ctx.fill();
+
+        ctx.shadowBlur=0;
+
+        return b.life>0;
+
+    });
+
+}
+
+/* ================= EFFECTS ================= */
+
+function drawEffects(cam){
+
+    effects=
+    effects.filter(e=>{
+
+        e.life--;
+
+        const x=
+        worldX(e.x,cam);
+
+        const y=
+        worldY(e.y,cam);
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            y,
+            10+(20-e.life)*2,
+            0,
+            Math.PI*2
+        );
+
+        ctx.strokeStyle=
+        e.type==="heal"
+        ?" #4ade80"
+        :"#facc15";
+
+        ctx.lineWidth=4;
+
+        ctx.stroke();
+
+        return e.life>0;
+
+    });
+
+}
+
+/* ================= GAME LOOP ================= */
+
+function render(){
+
+    requestAnimationFrame(render);
+
+    if(game.style.display!=="block")
+        return;
+
+    const me=players.find(
+        p=>p.id===myId
+    );
+
+    if(!me){
+
+        ctx.fillStyle="#15231a";
+
+        ctx.fillRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        return;
+
+    }
+
+    const cam={
+        x:me.x,
+        y:me.y
+    };
+
+    drawArena(cam);
+
+    players.forEach(p=>{
+
+        if(p.alive)
+            drawCharacter(p,cam);
+
+    });
+
+    bots.forEach(b=>{
+
+        if(b.alive)
+            drawCharacter(b,cam);
+
+    });
+
+    drawBullets(cam);
+
+    drawEffects(cam);
+
+}
+
 render();
+
 updateMenu();
+
 </script>
+
 </body>
 </html>
