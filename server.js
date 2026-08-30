@@ -10,21 +10,24 @@ const server = http.createServer(app);
 
 const PORT = Number(process.env.PORT) || 10000;
 
+/* =====================================================
+   SERVER
+===================================================== */
+
 app.use(express.static(path.join(__dirname)));
 
-app.get("/health", (_req, res) => {
+app.get("/health", (req, res) => {
     res.json({
         ok: true,
-        game: "Battle Zone"
+        game: "Battle Zone",
+        players: getTotalPlayers()
     });
 });
 
-const wss = new WebSocket.Server({
-    server
-});
+const wss = new WebSocket.Server({ server });
 
 /* =====================================================
-   MAP
+   GAME SETTINGS
 ===================================================== */
 
 const MAP = {
@@ -33,11 +36,12 @@ const MAP = {
 };
 
 const PLAYER_RADIUS = 20;
-const MIN_SPAWN_DISTANCE = 180;
 const MAX_PLAYERS = 8;
+const MAX_BOTS = 5;
+const TICK_RATE = 30;
 
 /* =====================================================
-   WÄNDE
+   WALLS
 ===================================================== */
 
 const WALLS = [
@@ -59,45 +63,48 @@ const WALLS = [
 ];
 
 /* =====================================================
-   SCHWIERIGKEIT
+   DIFFICULTY
 ===================================================== */
 
 const DIFFICULTIES = {
     easy: {
         name: "Leicht",
         botSpeed: 1.8,
-        accuracy: 0.72,
-        fireChance: 0.45,
-        damage: 0.8
+        accuracy: 0.65,
+        fireChance: 0.35,
+        damageMultiplier: 0.75
     },
 
     medium: {
         name: "Mittel",
         botSpeed: 2.5,
-        accuracy: 0.86,
-        fireChance: 0.7,
-        damage: 1
+        accuracy: 0.82,
+        fireChance: 0.60,
+        damageMultiplier: 1
     },
 
     hard: {
         name: "Schwer",
         botSpeed: 3.2,
         accuracy: 0.95,
-        fireChance: 0.9,
-        damage: 1.1
+        fireChance: 0.85,
+        damageMultiplier: 1.15
     }
 };
 
 /* =====================================================
-   WAFFEN
+   WEAPONS
 ===================================================== */
 
 const WEAPONS = {
+
     Pistole: {
         damage: 12,
-        speed: 18,
         cooldown: 10,
+        speed: 18,
         range: 760,
+        ammo: 12,
+        reload: 45,
         pellets: 1,
         spread: 0,
         melee: false
@@ -105,9 +112,11 @@ const WEAPONS = {
 
     SMG: {
         damage: 6,
-        speed: 20,
         cooldown: 4,
+        speed: 20,
         range: 560,
+        ammo: 30,
+        reload: 50,
         pellets: 1,
         spread: 0.08,
         melee: false
@@ -115,9 +124,11 @@ const WEAPONS = {
 
     Gewehr: {
         damage: 19,
-        speed: 22,
         cooldown: 16,
+        speed: 22,
         range: 900,
+        ammo: 8,
+        reload: 55,
         pellets: 1,
         spread: 0.02,
         melee: false
@@ -125,9 +136,11 @@ const WEAPONS = {
 
     Schrotflinte: {
         damage: 7,
-        speed: 15,
         cooldown: 30,
+        speed: 15,
         range: 380,
+        ammo: 5,
+        reload: 60,
         pellets: 6,
         spread: 0.28,
         melee: false
@@ -135,9 +148,11 @@ const WEAPONS = {
 
     Bogen: {
         damage: 30,
-        speed: 14,
         cooldown: 28,
+        speed: 14,
         range: 950,
+        ammo: 6,
+        reload: 65,
         pellets: 1,
         spread: 0,
         melee: false
@@ -145,9 +160,11 @@ const WEAPONS = {
 
     Schwert: {
         damage: 35,
-        speed: 0,
         cooldown: 18,
-        range: 88,
+        speed: 0,
+        range: 90,
+        ammo: 999999,
+        reload: 0,
         pellets: 1,
         spread: 0,
         melee: true
@@ -160,372 +177,158 @@ const WEAPONS = {
 
 const SKINS = [
     {
-        id: "standard",
+        id: "rookie",
         name: "Rookie",
         rarity: "Standard",
         color: "#38bdf8",
         weapon: "Pistole",
-        price: 0,
-        damageBonus: 0,
-        superNeed: 0,
-        healthBonus: 0,
-        shieldBonus: 0
+        health: 100,
+        shield: 50,
+        bonusDamage: 0
     },
 
     {
-        id: "rare1",
+        id: "blaze",
         name: "Blaze",
         rarity: "Selten",
         color: "#ef4444",
         weapon: "SMG",
-        price: 50,
-        damageBonus: 5,
-        superNeed: 500,
-        healthBonus: 10,
-        shieldBonus: 10
+        health: 110,
+        shield: 60,
+        bonusDamage: 5
     },
 
     {
-        id: "rare2",
+        id: "frost",
         name: "Frost",
         rarity: "Selten",
         color: "#67e8f9",
         weapon: "Bogen",
-        price: 100,
-        damageBonus: 5,
-        superNeed: 500,
-        healthBonus: 10,
-        shieldBonus: 10
+        health: 110,
+        shield: 60,
+        bonusDamage: 5
     },
 
     {
-        id: "rare3",
-        name: "Volt",
-        rarity: "Selten",
-        color: "#facc15",
-        weapon: "Pistole",
-        price: 150,
-        damageBonus: 5,
-        superNeed: 500,
-        healthBonus: 10,
-        shieldBonus: 10
-    },
-
-    {
-        id: "rare4",
-        name: "Venom",
-        rarity: "Selten",
-        color: "#22c55e",
-        weapon: "SMG",
-        price: 200,
-        damageBonus: 5,
-        superNeed: 500,
-        healthBonus: 10,
-        shieldBonus: 10
-    },
-
-    {
-        id: "rare5",
-        name: "Crimson",
-        rarity: "Selten",
-        color: "#dc2626",
-        weapon: "Schrotflinte",
-        price: 250,
-        damageBonus: 5,
-        superNeed: 500,
-        healthBonus: 10,
-        shieldBonus: 10
-    },
-
-    {
-        id: "super1",
+        id: "shadow",
         name: "Shadow",
         rarity: "Superselten",
         color: "#111827",
         weapon: "Schwert",
-        price: 350,
-        damageBonus: 10,
-        superNeed: 1000,
-        healthBonus: 45,
-        shieldBonus: 35
+        health: 145,
+        shield: 85,
+        bonusDamage: 10
     },
 
     {
-        id: "super2",
+        id: "cyber",
         name: "Cyber",
         rarity: "Superselten",
         color: "#06b6d4",
         weapon: "SMG",
-        price: 400,
-        damageBonus: 10,
-        superNeed: 1000,
-        healthBonus: 20,
-        shieldBonus: 20
+        health: 120,
+        shield: 70,
+        bonusDamage: 10
     },
 
     {
-        id: "super3",
-        name: "Iceberg",
-        rarity: "Superselten",
-        color: "#bae6fd",
-        weapon: "Bogen",
-        price: 450,
-        damageBonus: 10,
-        superNeed: 1000,
-        healthBonus: 20,
-        shieldBonus: 20
-    },
-
-    {
-        id: "super4",
-        name: "Inferno",
-        rarity: "Superselten",
-        color: "#f97316",
-        weapon: "Schrotflinte",
-        price: 500,
-        damageBonus: 10,
-        superNeed: 1000,
-        healthBonus: 20,
-        shieldBonus: 20
-    },
-
-    {
-        id: "super5",
-        name: "Toxic",
-        rarity: "Superselten",
-        color: "#84cc16",
-        weapon: "Gewehr",
-        price: 550,
-        damageBonus: 10,
-        superNeed: 1000,
-        healthBonus: 20,
-        shieldBonus: 20
-    },
-
-    {
-        id: "epic1",
+        id: "galaxy",
         name: "Galaxy",
         rarity: "Episch",
         color: "#8b5cf6",
         weapon: "Gewehr",
-        price: 650,
-        damageBonus: 15,
-        superNeed: 1500,
-        healthBonus: 30,
-        shieldBonus: 25
+        health: 130,
+        shield: 75,
+        bonusDamage: 15
     },
 
     {
-        id: "epic2",
-        name: "Neon",
-        rarity: "Episch",
-        color: "#ec4899",
-        weapon: "SMG",
-        price: 700,
-        damageBonus: 15,
-        superNeed: 1500,
-        healthBonus: 30,
-        shieldBonus: 25
-    },
-
-    {
-        id: "epic3",
-        name: "Storm",
-        rarity: "Episch",
-        color: "#60a5fa",
-        weapon: "Bogen",
-        price: 750,
-        damageBonus: 15,
-        superNeed: 1500,
-        healthBonus: 30,
-        shieldBonus: 25
-    },
-
-    {
-        id: "epic4",
-        name: "Inferno X",
-        rarity: "Episch",
-        color: "#f43f5e",
-        weapon: "Schrotflinte",
-        price: 800,
-        damageBonus: 15,
-        superNeed: 1500,
-        healthBonus: 30,
-        shieldBonus: 25
-    },
-
-    {
-        id: "epic5",
+        id: "void",
         name: "Void",
         rarity: "Episch",
         color: "#312e81",
         weapon: "Schwert",
-        price: 850,
-        damageBonus: 15,
-        superNeed: 1500,
-        healthBonus: 55,
-        shieldBonus: 45
+        health: 155,
+        shield: 95,
+        bonusDamage: 15
     },
 
     {
-        id: "mythic1",
+        id: "dragon",
         name: "Dragon",
         rarity: "Mythisch",
         color: "#f59e0b",
         weapon: "Bogen",
-        price: 1000,
-        damageBonus: 25,
-        superNeed: 2000,
-        healthBonus: 40,
-        shieldBonus: 35
+        health: 140,
+        shield: 85,
+        bonusDamage: 25
     },
 
     {
-        id: "mythic2",
+        id: "demon",
         name: "Demon",
         rarity: "Mythisch",
         color: "#7f1d1d",
         weapon: "Schwert",
-        price: 1100,
-        damageBonus: 25,
-        superNeed: 2000,
-        healthBonus: 70,
-        shieldBonus: 55
+        health: 170,
+        shield: 105,
+        bonusDamage: 25
     },
 
     {
-        id: "mythic3",
-        name: "Titan",
-        rarity: "Mythisch",
-        color: "#64748b",
-        weapon: "Gewehr",
-        price: 1200,
-        damageBonus: 25,
-        superNeed: 2000,
-        healthBonus: 40,
-        shieldBonus: 35
-    },
-
-    {
-        id: "mythic4",
-        name: "Phoenix",
-        rarity: "Mythisch",
-        color: "#fb923c",
-        weapon: "Schrotflinte",
-        price: 1300,
-        damageBonus: 25,
-        superNeed: 2000,
-        healthBonus: 40,
-        shieldBonus: 35
-    },
-
-    {
-        id: "mythic5",
-        name: "Cosmic",
-        rarity: "Mythisch",
-        color: "#6366f1",
-        weapon: "SMG",
-        price: 1400,
-        damageBonus: 25,
-        superNeed: 2000,
-        healthBonus: 40,
-        shieldBonus: 35
-    },
-
-    {
-        id: "legend1",
+        id: "legend",
         name: "Legend",
         rarity: "Legendär",
         color: "#facc15",
         weapon: "Gewehr",
-        price: 1500,
-        damageBonus: 35,
-        superNeed: 2500,
-        healthBonus: 50,
-        shieldBonus: 45
+        health: 150,
+        shield: 95,
+        bonusDamage: 35
     },
 
     {
-        id: "legend2",
+        id: "king",
         name: "King",
         rarity: "Legendär",
         color: "#fde68a",
         weapon: "Schwert",
-        price: 1750,
-        damageBonus: 35,
-        superNeed: 2500,
-        healthBonus: 90,
-        shieldBonus: 70
-    },
-
-    {
-        id: "legend3",
-        name: "Battle God",
-        rarity: "Legendär",
-        color: "#ffffff",
-        weapon: "Schrotflinte",
-        price: 2000,
-        damageBonus: 35,
-        superNeed: 2500,
-        healthBonus: 50,
-        shieldBonus: 45
-    },
-
-    {
-        id: "omega",
-        name: "Omega",
-        rarity: "Spezial",
-        color: "#ffffff",
-        weapon: "Schwert",
-        price: 2001,
-        damageBonus: 50,
-        superNeed: 3000,
-        healthBonus: 120,
-        shieldBonus: 90
+        health: 190,
+        shield: 120,
+        bonusDamage: 35
     }
 ];
+
+/* =====================================================
+   ROOMS
+===================================================== */
 
 const rooms = {};
 
 /* =====================================================
-   BASIC
+   UTILITY
 ===================================================== */
 
 function send(ws, data) {
     if (
         ws &&
-        ws.readyState ===
-            WebSocket.OPEN
+        ws.readyState === WebSocket.OPEN
     ) {
-        ws.send(
-            JSON.stringify(data)
-        );
+        ws.send(JSON.stringify(data));
     }
 }
 
 function broadcast(room, data) {
     for (
-        const player
-        of Object.values(room.players)
+        const player of Object.values(room.players)
     ) {
-        send(
-            player.ws,
-            data
-        );
+        send(player.ws, data);
     }
 }
 
-function clamp(
-    value,
-    min,
-    max
-) {
+function clamp(value, min, max) {
     return Math.max(
         min,
-        Math.min(
-            max,
-            value
-        )
+        Math.min(max, value)
     );
 }
 
@@ -538,43 +341,35 @@ function distance(a, b) {
 
 function getSkin(id) {
     return (
-        SKINS.find(
-            skin =>
-                skin.id === id
-        ) ||
+        SKINS.find(s => s.id === id) ||
         SKINS[0]
     );
 }
 
-function randomWeapon() {
-    const names =
-        Object.keys(
-            WEAPONS
-        );
+function getWeapon(entity) {
+    return WEAPONS[entity.weapon] ||
+        WEAPONS.Pistole;
+}
 
-    return names[
-        Math.floor(
-            Math.random() *
-            names.length
-        )
-    ];
+function getTotalPlayers() {
+    let total = 0;
+
+    for (const room of Object.values(rooms)) {
+        total += Object.keys(room.players).length;
+    }
+
+    return total;
 }
 
 function createRoomCode() {
     let code;
 
     do {
-        code =
-            Math.random()
-                .toString(36)
-                .substring(
-                    2,
-                    6
-                )
-                .toUpperCase();
-    } while (
-        rooms[code]
-    );
+        code = Math.random()
+            .toString(36)
+            .substring(2, 6)
+            .toUpperCase();
+    } while (rooms[code]);
 
     return code;
 }
@@ -583,45 +378,29 @@ function createRoomCode() {
    COLLISION
 ===================================================== */
 
-function circleHitsWall(
-    x,
-    y,
-    radius
-) {
-    for (
-        const wall of WALLS
-    ) {
-        const closestX =
-            Math.max(
-                wall.x,
-                Math.min(
-                    x,
-                    wall.x +
-                        wall.w
-                )
-            );
+function circleHitsWall(x, y, radius) {
 
-        const closestY =
-            Math.max(
-                wall.y,
-                Math.min(
-                    y,
-                    wall.y +
-                        wall.h
-                )
-            );
+    for (const wall of WALLS) {
 
-        const dx =
-            x - closestX;
+        const closestX = clamp(
+            x,
+            wall.x,
+            wall.x + wall.w
+        );
 
-        const dy =
-            y - closestY;
+        const closestY = clamp(
+            y,
+            wall.y,
+            wall.y + wall.h
+        );
+
+        const dx = x - closestX;
+        const dy = y - closestY;
 
         if (
             dx * dx +
-                dy * dy <
-            radius *
-                radius
+            dy * dy <
+            radius * radius
         ) {
             return true;
         }
@@ -630,56 +409,42 @@ function circleHitsWall(
     return false;
 }
 
-function lineHitsWall(
-    x1,
-    y1,
-    x2,
-    y2
-) {
-    const d =
+function lineHitsWall(x1, y1, x2, y2) {
+
+    const distanceValue =
         Math.hypot(
             x2 - x1,
             y2 - y1
         );
 
-    const steps =
-        Math.max(
-            1,
-            Math.ceil(
-                d / 4
-            )
-        );
+    const steps = Math.max(
+        1,
+        Math.ceil(distanceValue / 5)
+    );
 
     for (
         let i = 0;
         i <= steps;
         i++
     ) {
-        const t =
-            i / steps;
+
+        const t = i / steps;
 
         const x =
             x1 +
-            (x2 - x1) *
-                t;
+            (x2 - x1) * t;
 
         const y =
             y1 +
-            (y2 - y1) *
-                t;
+            (y2 - y1) * t;
 
-        for (
-            const wall of WALLS
-        ) {
+        for (const wall of WALLS) {
+
             if (
                 x >= wall.x &&
-                x <=
-                    wall.x +
-                    wall.w &&
+                x <= wall.x + wall.w &&
                 y >= wall.y &&
-                y <=
-                    wall.y +
-                    wall.h
+                y <= wall.y + wall.h
             ) {
                 return true;
             }
@@ -693,28 +458,23 @@ function lineHitsWall(
    SPAWN
 ===================================================== */
 
-function safeSpawn(room) {
+function findSpawn(room) {
 
     for (
         let attempt = 0;
-        attempt < 3000;
+        attempt < 1000;
         attempt++
     ) {
+
         const x =
             50 +
             Math.random() *
-                (
-                    MAP.width -
-                    100
-                );
+            (MAP.width - 100);
 
         const y =
             50 +
             Math.random() *
-                (
-                    MAP.height -
-                    100
-                );
+            (MAP.height - 100);
 
         if (
             circleHitsWall(
@@ -726,53 +486,36 @@ function safeSpawn(room) {
             continue;
         }
 
-        let tooClose =
-            false;
+        let safe = true;
 
-        for (
-            const entity of [
-                ...Object.values(
-                    room.players
-                ),
-                ...room.bots
-            ]
-        ) {
-            if (
-                !entity ||
-                !entity.alive
-            ) {
-                continue;
-            }
+        const entities = [
+            ...Object.values(room.players),
+            ...room.bots
+        ];
+
+        for (const entity of entities) {
+
+            if (!entity.alive) continue;
 
             if (
                 Math.hypot(
                     entity.x - x,
                     entity.y - y
-                ) <
-                MIN_SPAWN_DISTANCE
+                ) < 150
             ) {
-                tooClose =
-                    true;
+                safe = false;
                 break;
             }
         }
 
-        if (!tooClose) {
-            return {
-                x,
-                y
-            };
+        if (safe) {
+            return { x, y };
         }
     }
 
     return {
-        x:
-            MAP.width /
-            2,
-
-        y:
-            MAP.height /
-            2
+        x: MAP.width / 2,
+        y: MAP.height / 2
     };
 }
 
@@ -780,155 +523,80 @@ function safeSpawn(room) {
    RESET
 ===================================================== */
 
-function resetCombatant(
-    entity
-) {
-    const skin =
-        getSkin(
-            entity.skin
-        );
+function resetEntity(entity, room) {
 
-    entity.maxHp =
-        100 +
-        skin.healthBonus;
+    const skin = getSkin(entity.skin);
 
-    entity.maxShield =
-        50 +
-        skin.shieldBonus;
+    entity.maxHp = skin.health;
+    entity.maxShield = skin.shield;
 
-    entity.hp =
-        entity.maxHp;
+    entity.hp = entity.maxHp;
+    entity.shield = entity.maxShield;
 
-    entity.shield =
-        entity.maxShield;
+    entity.alive = true;
 
-    entity.alive =
-        true;
+    entity.cooldown = 0;
+    entity.reloadTimer = 0;
+    entity.healCooldown = 0;
 
-    entity.cooldown =
-        0;
-
-    entity.reloadTimer =
-        0;
-
-    entity.healCooldown =
-        0;
-
-    entity.healTimer =
-        0;
-
-    entity.lastHitAt =
-        Date.now();
-
-    entity.botDamage =
-        0;
-
-    entity.superReady =
-        false;
-
-    entity.ammo =
-        WEAPONS[
-            entity.weapon
-        ].melee
-            ? 999999
-            : WEAPONS[
-                  entity.weapon
-              ].ammo;
+    entity.lastDamage = Date.now();
 
     entity.input = {
         dx: 0,
         dy: 0
     };
+
+    const weapon = getWeapon(entity);
+
+    entity.ammo = weapon.melee
+        ? 999999
+        : weapon.ammo;
 }
 
 /* =====================================================
-   PLAYER
+   CREATE PLAYER
 ===================================================== */
 
-function createPlayer(
-    ws,
-    room,
-    data
-) {
-    const skin =
-        getSkin(
-            data?.skin
-        );
+function createPlayer(ws, room, data) {
 
-    const spawn =
-        safeSpawn(room);
+    const skin = getSkin(data?.skin);
+    const spawn = findSpawn(room);
 
     const player = {
-        id:
-            ws.clientId,
+
+        id: ws.clientId,
 
         ws,
 
-        bot:
-            false,
+        bot: false,
 
-        name:
-            String(
-                data?.name ||
-                    "Player"
-            ).substring(
-                0,
-                15
-            ),
+        name: String(
+            data?.name || "Player"
+        ).substring(0, 16),
 
-        x:
-            spawn.x,
+        x: spawn.x,
+        y: spawn.y,
 
-        y:
-            spawn.y,
+        skin: skin.id,
+        weapon: skin.weapon,
 
-        skin:
-            skin.id,
+        hp: 100,
+        maxHp: 100,
 
-        weapon:
-            skin.weapon,
+        shield: 50,
+        maxShield: 50,
 
-        hp:
-            100,
+        alive: true,
 
-        maxHp:
-            100,
+        kills: 0,
 
-        shield:
-            50,
+        cooldown: 0,
+        reloadTimer: 0,
+        healCooldown: 0,
 
-        maxShield:
-            50,
+        lastDamage: Date.now(),
 
-        alive:
-            true,
-
-        kills:
-            0,
-
-        botDamage:
-            0,
-
-        superReady:
-            false,
-
-        cooldown:
-            0,
-
-        reloadTimer:
-            0,
-
-        healCooldown:
-            0,
-
-        healTimer:
-            0,
-
-        lastHitAt:
-            Date.now(),
-
-        ammo:
-            0,
+        ammo: 0,
 
         input: {
             dx: 0,
@@ -936,117 +604,85 @@ function createPlayer(
         }
     };
 
-    resetCombatant(
-        player
+    resetEntity(
+        player,
+        room
     );
 
     return player;
 }
 
 /* =====================================================
-   BOTS
+   CREATE BOTS
 ===================================================== */
 
 function createBots(room) {
 
-    room.bots =
-        [];
+    room.bots = [];
 
     for (
         let i = 0;
         i < room.botCount;
         i++
     ) {
+
         const skin =
             SKINS[
-                1 +
-                (
-                    i %
-                    5
+                1 + (
+                    i % (
+                        SKINS.length - 1
+                    )
                 )
             ];
+
+        const spawn = findSpawn(room);
 
         const bot = {
 
             id:
                 "bot-" +
-                i +
-                "-" +
                 Math.random()
                     .toString(36)
-                    .substring(
-                        2,
-                        8
-                    ),
+                    .substring(2, 9),
 
-            ws:
-                null,
+            ws: null,
 
-            bot:
-                true,
+            bot: true,
 
             name:
                 "BOT " +
-                (
-                    i + 1
-                ),
+                (i + 1),
 
-            x:
-                0,
+            x: spawn.x,
+            y: spawn.y,
 
-            y:
-                0,
+            skin: skin.id,
+            weapon: skin.weapon,
 
-            skin:
-                skin.id,
+            hp: 100,
+            maxHp: 100,
 
-            weapon:
-                skin.weapon,
+            shield: 50,
+            maxShield: 50,
 
-            hp:
-                100,
+            alive: true,
 
-            maxHp:
-                100,
+            kills: 0,
 
-            shield:
-                50,
+            cooldown: 0,
+            reloadTimer: 0,
+            healCooldown: 0,
 
-            maxShield:
-                50,
+            lastDamage: Date.now(),
 
-            alive:
-                true,
+            ammo: 0,
 
-            kills:
-                0,
+            target: null,
 
-            botDamage:
-                0,
-
-            superReady:
-                false,
-
-            cooldown:
-                0,
-
-            reloadTimer:
-                0,
-
-            healCooldown:
-                0,
-
-            healTimer:
-                0,
-
-            lastHitAt:
-                Date.now(),
-
-            ammo:
-                0,
-
-            target:
-                null,
+            moveSpeed:
+                DIFFICULTIES[
+                    room.difficulty
+                ].botSpeed,
 
             input: {
                 dx: 0,
@@ -1054,266 +690,42 @@ function createBots(room) {
             }
         };
 
-        const spawn =
-            safeSpawn(
-                room
-            );
-
-        bot.x =
-            spawn.x;
-
-        bot.y =
-            spawn.y;
-
-        resetCombatant(
-            bot
+        resetEntity(
+            bot,
+            room
         );
 
-        room.bots.push(
-            bot
-        );
+        room.bots.push(bot);
     }
-}
-
-/* =====================================================
-   STATE
-===================================================== */
-
-function publicEntity(
-    entity
-) {
-    return {
-        id:
-            entity.id,
-
-        name:
-            entity.name,
-
-        x:
-            Math.round(
-                entity.x
-            ),
-
-        y:
-            Math.round(
-                entity.y
-            ),
-
-        hp:
-            Math.max(
-                0,
-                Math.round(
-                    entity.hp
-                )
-            ),
-
-        maxHp:
-            entity.maxHp,
-
-        shield:
-            Math.max(
-                0,
-                Math.round(
-                    entity.shield
-                )
-            ),
-
-        maxShield:
-            entity.maxShield,
-
-        alive:
-            entity.alive,
-
-        skin:
-            entity.skin,
-
-        weapon:
-            entity.weapon,
-
-        kills:
-            entity.kills,
-
-        botDamage:
-            entity.botDamage,
-
-        superReady:
-            Boolean(
-                entity.superReady
-            ),
-
-        ammo:
-            entity.ammo,
-
-        reloadTimer:
-            entity.reloadTimer,
-
-        bot:
-            Boolean(
-                entity.bot
-            )
-    };
-}
-
-function sendState(room) {
-
-    broadcast(
-        room,
-        {
-            type:
-                "state",
-
-            map:
-                MAP,
-
-            walls:
-                WALLS,
-
-            players:
-                Object.values(
-                    room.players
-                ).map(
-                    publicEntity
-                ),
-
-            bots:
-                room.bots.map(
-                    publicEntity
-                )
-        }
-    );
 }
 
 /* =====================================================
    MOVEMENT
 ===================================================== */
 
-function updatePlayers(room) {
+function moveEntity(entity, dx, dy) {
 
-    for (
-        const player of
-        Object.values(
-            room.players
-        )
-    ) {
-        if (
-            !player.alive
-        ) {
-            player.input.dx = 0;
-            player.input.dy = 0;
-            continue;
-        }
-
-        moveEntity(
-            player,
-            player.input.dx,
-            player.input.dy
-        );
-
-        if (
-            player.cooldown >
-            0
-        ) {
-            player.cooldown--;
-        }
-
-        if (
-            player.reloadTimer >
-            0
-        ) {
-            player.reloadTimer--;
-
-            if (
-                player.reloadTimer <=
-                0
-            ) {
-                reloadWeapon(
-                    player
-                );
-            }
-        }
-
-        if (
-            player.healCooldown >
-            0
-        ) {
-            player.healCooldown--;
-        }
-
-        /*
-        Automatische Regeneration
-        nach etwas Ruhe.
-        */
-
-        if (
-            Date.now() -
-                player.lastHitAt >
-                3000 &&
-            player.hp <
-                player.maxHp
-        ) {
-            player.healTimer++;
-
-            if (
-                player.healTimer >=
-                30
-            ) {
-                player.hp =
-                    Math.min(
-                        player.maxHp,
-                        player.hp + 3
-                    );
-
-                player.healTimer =
-                    0;
-            }
-        } else {
-            player.healTimer =
-                0;
-        }
-    }
-}
-
-function moveEntity(
-    entity,
-    dx,
-    dy
-) {
     const length =
-        Math.hypot(
-            dx,
-            dy
-        );
+        Math.hypot(dx, dy);
 
-    if (
-        length <= 0
-    ) {
+    if (length < 0.001) {
         return;
     }
 
-    dx /=
-        length;
+    dx /= length;
+    dy /= length;
 
-    dy /=
-        length;
-
-    const speed =
-        entity.bot
-            ? 2.5
-            : 5;
+    const speed = entity.bot
+        ? entity.moveSpeed
+        : 5;
 
     const nextX =
         entity.x +
-        dx *
-            speed;
+        dx * speed;
 
     const nextY =
         entity.y +
-        dy *
-            speed;
-
-    /*
-    X
-    */
+        dy * speed;
 
     if (
         !circleHitsWall(
@@ -1322,13 +734,8 @@ function moveEntity(
             PLAYER_RADIUS
         )
     ) {
-        entity.x =
-            nextX;
+        entity.x = nextX;
     }
-
-    /*
-    Y
-    */
 
     if (
         !circleHitsWall(
@@ -1337,68 +744,34 @@ function moveEntity(
             PLAYER_RADIUS
         )
     ) {
-        entity.y =
-            nextY;
+        entity.y = nextY;
     }
 
-    entity.x =
-        clamp(
-            entity.x,
-            PLAYER_RADIUS,
-            MAP.width -
-                PLAYER_RADIUS
-        );
+    entity.x = clamp(
+        entity.x,
+        PLAYER_RADIUS,
+        MAP.width - PLAYER_RADIUS
+    );
 
-    entity.y =
-        clamp(
-            entity.y,
-            PLAYER_RADIUS,
-            MAP.height -
-                PLAYER_RADIUS
-        );
+    entity.y = clamp(
+        entity.y,
+        PLAYER_RADIUS,
+        MAP.height - PLAYER_RADIUS
+    );
 }
 
 /* =====================================================
    RELOAD
 ===================================================== */
 
-function reloadWeapon(
-    entity
-) {
-    const weapon =
-        WEAPONS[
-            entity.weapon
-        ];
+function startReload(entity) {
+
+    const weapon = getWeapon(entity);
 
     if (
-        !weapon ||
-        weapon.melee
-    ) {
-        return;
-    }
-
-    entity.ammo =
-        weapon.ammo;
-
-    entity.reloadTimer =
-        0;
-}
-
-function startReload(
-    entity
-) {
-    const weapon =
-        WEAPONS[
-            entity.weapon
-        ];
-
-    if (
-        !weapon ||
         weapon.melee ||
-        entity.reloadTimer >
-            0 ||
-        entity.ammo >=
-            weapon.ammo
+        entity.reloadTimer > 0 ||
+        entity.ammo >= weapon.ammo
     ) {
         return;
     }
@@ -1407,52 +780,62 @@ function startReload(
         weapon.reload;
 }
 
+function finishReload(entity) {
+
+    const weapon = getWeapon(entity);
+
+    if (weapon.melee) {
+        return;
+    }
+
+    entity.ammo = weapon.ammo;
+    entity.reloadTimer = 0;
+}
+
 /* =====================================================
    DAMAGE
 ===================================================== */
 
-function getDamage(
+function calculateDamage(
     attacker,
     room,
-    amount
+    baseDamage
 ) {
+
     const skin =
-        getSkin(
-            attacker?.skin
+        getSkin(attacker.skin);
+
+    let damage =
+        baseDamage *
+        (
+            1 +
+            skin.bonusDamage / 100
         );
 
-    let multiplier =
-        1 +
-        skin.damageBonus /
-            100;
+    if (attacker.bot) {
 
-    if (
-        attacker?.bot
-    ) {
         const difficulty =
             DIFFICULTIES[
                 room.difficulty
             ];
 
-        multiplier *=
-            difficulty.damage;
+        damage *=
+            difficulty.damageMultiplier;
     }
 
     return Math.max(
         1,
-        Math.round(
-            amount *
-                multiplier
-        )
+        Math.round(damage)
     );
 }
 
-function applyDamage(
+function damageEntity(
     room,
     target,
-    rawDamage,
+    baseDamage,
     attacker
 ) {
+
     if (
         !target ||
         !target.alive
@@ -1461,172 +844,97 @@ function applyDamage(
     }
 
     const damage =
-        getDamage(
+        calculateDamage(
             attacker,
             room,
-            rawDamage
+            baseDamage
         );
 
-    target.lastHitAt =
+    target.lastDamage =
         Date.now();
 
-    target.healTimer =
-        0;
+    let remaining = damage;
 
-    let left =
-        damage;
+    if (target.shield > 0) {
 
-    if (
-        target.shield >
-        0
-    ) {
-        const blocked =
+        const shieldDamage =
             Math.min(
                 target.shield,
-                left
+                remaining
             );
 
         target.shield -=
-            blocked;
+            shieldDamage;
 
-        left -=
-            blocked;
+        remaining -=
+            shieldDamage;
     }
 
-    if (
-        left > 0
-    ) {
-        target.hp -=
-            left;
-    }
-
-    /*
-    Super-Ladung durch Bot-Schaden
-    */
-
-    if (
-        attacker &&
-        target.bot
-    ) {
-
-        attacker.botDamage =
-            (
-                attacker.botDamage ||
-                0
-            ) +
-            damage;
-
-        const skin =
-            getSkin(
-                attacker.skin
-            );
-
-        if (
-            skin.superNeed >
-                0 &&
-            attacker.botDamage >=
-                skin.superNeed
-        ) {
-            attacker.superReady =
-                true;
-        }
+    if (remaining > 0) {
+        target.hp -= remaining;
     }
 
     broadcast(
         room,
         {
-            type:
-                "hitEffect",
-
-            target:
-                target.id,
-
+            type: "hitEffect",
+            target: target.id,
             damage
         }
     );
 
-    if (
-        target.hp > 0
-    ) {
+    if (target.hp > 0) {
         return;
     }
 
-    target.hp =
-        0;
-
-    target.alive =
-        false;
+    target.hp = 0;
+    target.shield = 0;
+    target.alive = false;
 
     if (attacker) {
-        attacker.kills =
-            (
-                attacker.kills ||
-                0
-            ) + 1;
+        attacker.kills++;
     }
 
     broadcast(
         room,
         {
-            type:
-                "elimination",
-
-            killer:
-                attacker
-                    ? attacker.id
-                    : null,
-
-            victim:
-                target.id
+            type: "elimination",
+            killer: attacker
+                ? attacker.id
+                : null,
+            victim: target.id
         }
     );
 
-    checkRoundEnd(
-        room
-    );
+    checkRoundEnd(room);
 }
 
 /* =====================================================
    ATTACK
 ===================================================== */
 
-function attack(
-    room,
-    attacker,
-    angle
-) {
-    if (
-        !attacker.alive
-    ) {
+function attack(room, attacker, angle) {
+
+    if (!attacker.alive) {
         return;
     }
 
     const weapon =
-        WEAPONS[
-            attacker.weapon
-        ];
-
-    if (!weapon) {
-        return;
-    }
+        getWeapon(attacker);
 
     if (
-        attacker.cooldown >
-            0 ||
-        attacker.reloadTimer >
-            0
+        attacker.cooldown > 0 ||
+        attacker.reloadTimer > 0
     ) {
         return;
     }
 
     if (
         !weapon.melee &&
-        attacker.ammo <=
-            0
+        attacker.ammo <= 0
     ) {
-        startReload(
-            attacker
-        );
+
+        startReload(attacker);
 
         return;
     }
@@ -1634,26 +942,20 @@ function attack(
     attacker.cooldown =
         weapon.cooldown;
 
-    /*
-    NAHKAMPF
-    */
+    /* MELEE */
 
-    if (
-        weapon.melee
-    ) {
+    if (weapon.melee) {
 
-        for (
-            const target of [
-                ...Object.values(
-                    room.players
-                ),
-                ...room.bots
-            ]
-        ) {
+        const targets = [
+            ...Object.values(room.players),
+            ...room.bots
+        ];
+
+        for (const target of targets) {
+
             if (
                 !target.alive ||
-                target.id ===
-                    attacker.id
+                target.id === attacker.id
             ) {
                 continue;
             }
@@ -1664,16 +966,9 @@ function attack(
                     target
                 );
 
-            if (
-                d >
-                    weapon.range
-            ) {
+            if (d > weapon.range) {
                 continue;
             }
-
-            /*
-            Wand muss frei sein
-            */
 
             if (
                 lineHitsWall(
@@ -1688,31 +983,29 @@ function attack(
 
             const targetAngle =
                 Math.atan2(
-                    target.y -
-                        attacker.y,
-                    target.x -
-                        attacker.x
+                    target.y - attacker.y,
+                    target.x - attacker.x
                 );
 
-            const difference =
-                Math.atan2(
-                    Math.sin(
-                        targetAngle -
-                            angle
-                    ),
-                    Math.cos(
-                        targetAngle -
-                            angle
-                    )
-                );
+            let difference =
+                targetAngle - angle;
+
+            while (difference > Math.PI) {
+                difference -=
+                    Math.PI * 2;
+            }
+
+            while (difference < -Math.PI) {
+                difference +=
+                    Math.PI * 2;
+            }
 
             if (
-                Math.abs(
-                    difference
-                ) <=
-                0.95
+                Math.abs(difference) <
+                0.9
             ) {
-                applyDamage(
+
+                damageEntity(
                     room,
                     target,
                     weapon.damage,
@@ -1724,15 +1017,9 @@ function attack(
         broadcast(
             room,
             {
-                type:
-                    "meleeEffect",
-
-                x:
-                    attacker.x,
-
-                y:
-                    attacker.y,
-
+                type: "meleeEffect",
+                x: attacker.x,
+                y: attacker.y,
                 angle
             }
         );
@@ -1740,91 +1027,55 @@ function attack(
         return;
     }
 
-    /*
-    SCHUSSWAFFE
-    */
+    /* RANGED */
 
     attacker.ammo--;
 
-    const pellets =
-        weapon.pellets ||
-        1;
-
     for (
         let i = 0;
-        i < pellets;
+        i < weapon.pellets;
         i++
     ) {
-        const spread =
-            weapon.spread ||
-            0;
 
         const shotAngle =
             angle +
             (
                 Math.random() -
-                    0.5
+                0.5
             ) *
-                spread;
+            weapon.spread;
 
         room.bullets.push({
 
-            owner:
-                attacker.id,
+            owner: attacker.id,
 
-            x:
-                attacker.x,
+            x: attacker.x,
+            y: attacker.y,
 
-            y:
-                attacker.y,
+            dx: Math.cos(shotAngle),
+            dy: Math.sin(shotAngle),
 
-            dx:
-                Math.cos(
-                    shotAngle
-                ),
+            speed: weapon.speed,
 
-            dy:
-                Math.sin(
-                    shotAngle
-                ),
+            damage: weapon.damage,
 
-            speed:
-                weapon.speed,
+            range: weapon.range,
 
-            damage:
-                weapon.damage,
-
-            range:
-                weapon.range,
-
-            travel:
-                0
+            travel: 0
         });
 
         broadcast(
             room,
             {
-                type:
-                    "bulletSpawn",
+                type: "bulletSpawn",
 
-                x:
-                    attacker.x,
+                x: attacker.x,
+                y: attacker.y,
 
-                y:
-                    attacker.y,
+                dx: Math.cos(shotAngle),
+                dy: Math.sin(shotAngle),
 
-                dx:
-                    Math.cos(
-                        shotAngle
-                    ),
-
-                dy:
-                    Math.sin(
-                        shotAngle
-                    ),
-
-                speed:
-                    weapon.speed,
+                speed: weapon.speed,
 
                 color:
                     getSkin(
@@ -1834,42 +1085,29 @@ function attack(
         );
     }
 
-    if (
-        attacker.ammo <=
-            0
-    ) {
-        startReload(
-            attacker
-        );
+    if (attacker.ammo <= 0) {
+        startReload(attacker);
     }
 }
 
 /* =====================================================
-   BULLET UPDATE
+   BULLETS
 ===================================================== */
 
-function updateBullets(
-    room
-) {
+function updateBullets(room) {
 
     for (
         let i =
-            room.bullets.length -
-            1;
-
+            room.bullets.length - 1;
         i >= 0;
-
         i--
     ) {
 
         const bullet =
             room.bullets[i];
 
-        const oldX =
-            bullet.x;
-
-        const oldY =
-            bullet.y;
+        const oldX = bullet.x;
+        const oldY = bullet.y;
 
         bullet.x +=
             bullet.dx *
@@ -1882,9 +1120,7 @@ function updateBullets(
         bullet.travel +=
             bullet.speed;
 
-        /*
-        Wand
-        */
+        /* WALL */
 
         if (
             lineHitsWall(
@@ -1895,20 +1131,6 @@ function updateBullets(
             )
         ) {
 
-            broadcast(
-                room,
-                {
-                    type:
-                        "bulletImpact",
-
-                    x:
-                        bullet.x,
-
-                    y:
-                        bullet.y
-                }
-            );
-
             room.bullets.splice(
                 i,
                 1
@@ -1917,56 +1139,33 @@ function updateBullets(
             continue;
         }
 
-        /*
-        Gegner
-        */
+        /* TARGET */
 
         const targets = [
-            ...Object.values(
-                room.players
-            ),
+            ...Object.values(room.players),
             ...room.bots
         ];
 
-        let hit =
-            false;
+        let hit = false;
 
-        for (
-            const target
-            of targets
-        ) {
+        for (const target of targets) {
 
             if (
                 !target.alive ||
-                target.id ===
-                    bullet.owner
+                target.id === bullet.owner
             ) {
                 continue;
             }
 
             const d =
                 Math.hypot(
-                    target.x -
-                        bullet.x,
-                    target.y -
-                        bullet.y
+                    target.x - bullet.x,
+                    target.y - bullet.y
                 );
 
             if (
                 d >
-                    PLAYER_RADIUS +
-                    5
-            ) {
-                continue;
-            }
-
-            if (
-                lineHitsWall(
-                    oldX,
-                    oldY,
-                    target.x,
-                    target.y
-                )
+                PLAYER_RADIUS + 6
             ) {
                 continue;
             }
@@ -1977,7 +1176,7 @@ function updateBullets(
                     bullet.owner
                 );
 
-            applyDamage(
+            damageEntity(
                 room,
                 target,
                 bullet.damage,
@@ -1987,17 +1186,10 @@ function updateBullets(
             broadcast(
                 room,
                 {
-                    type:
-                        "bulletHit",
-
-                    x:
-                        target.x,
-
-                    y:
-                        target.y,
-
-                    damage:
-                        bullet.damage
+                    type: "bulletHit",
+                    x: target.x,
+                    y: target.y,
+                    damage: bullet.damage
                 }
             );
 
@@ -2006,15 +1198,11 @@ function updateBullets(
                 1
             );
 
-            hit =
-                true;
-
+            hit = true;
             break;
         }
 
-        if (
-            hit
-        ) {
+        if (hit) {
             continue;
         }
 
@@ -2031,67 +1219,71 @@ function updateBullets(
     }
 }
 
-function findEntity(
-    room,
-    id
-) {
-    if (
-        room.players[id]
-    ) {
+/* =====================================================
+   FIND ENTITY
+===================================================== */
+
+function findEntity(room, id) {
+
+    if (room.players[id]) {
         return room.players[id];
     }
 
-    return room.bots.find(
-        bot =>
-            bot.id === id
-    ) || null;
+    return (
+        room.bots.find(
+            bot => bot.id === id
+        ) || null
+    );
 }
 
 /* =====================================================
-   BOT KI
+   BOT AI
 ===================================================== */
 
-function chooseTarget(
-    room,
-    bot
-) {
+function chooseTarget(room, bot) {
+
     const targets = [
-        ...Object.values(
-            room.players
-        ),
+        ...Object.values(room.players),
         ...room.bots
     ].filter(
-        target =>
-            target.alive &&
-            target.id !==
-                bot.id
+        entity =>
+            entity.alive &&
+            entity.id !== bot.id
     );
 
-    if (
-        targets.length ===
-        0
-    ) {
+    if (!targets.length) {
         return null;
     }
 
-    targets.sort(
-        (a, b) =>
-            distance(
-                bot,
-                a
-            ) -
-            distance(
-                bot,
-                b
-            )
-    );
+    let best = targets[0];
+    let bestDistance =
+        distance(bot, best);
 
-    return targets[0];
+    for (
+        let i = 1;
+        i < targets.length;
+        i++
+    ) {
+
+        const d =
+            distance(
+                bot,
+                targets[i]
+            );
+
+        if (d < bestDistance) {
+
+            best =
+                targets[i];
+
+            bestDistance = d;
+        }
+    }
+
+    return best;
 }
 
-function updateBots(
-    room
-) {
+function updateBots(room) {
 
     const difficulty =
         DIFFICULTIES[
@@ -2099,38 +1291,24 @@ function updateBots(
         ] ||
         DIFFICULTIES.medium;
 
-    for (
-        const bot of
-        room.bots
-    ) {
+    for (const bot of room.bots) {
 
-        if (
-            !bot.alive
-        ) {
+        if (!bot.alive) {
             continue;
         }
 
-        if (
-            bot.cooldown >
-                0
-        ) {
+        if (bot.cooldown > 0) {
             bot.cooldown--;
         }
 
-        if (
-            bot.reloadTimer >
-                0
-        ) {
+        if (bot.reloadTimer > 0) {
 
             bot.reloadTimer--;
 
             if (
-                bot.reloadTimer <=
-                    0
+                bot.reloadTimer <= 0
             ) {
-                reloadWeapon(
-                    bot
-                );
+                finishReload(bot);
             }
         }
 
@@ -2148,33 +1326,19 @@ function updateBots(
             target.id;
 
         const dx =
-            target.x -
-            bot.x;
+            target.x - bot.x;
 
         const dy =
-            target.y -
-            bot.y;
+            target.y - bot.y;
 
         const d =
-            Math.hypot(
-                dx,
-                dy
-            ) || 1;
-
-        const targetAngle =
-            Math.atan2(
-                dy,
-                dx
-            );
+            Math.hypot(dx, dy) || 1;
 
         const weapon =
-            WEAPONS[
-                bot.weapon
-            ];
+            getWeapon(bot);
 
-        if (!weapon) {
-            continue;
-        }
+        const angle =
+            Math.atan2(dy, dx);
 
         const blocked =
             lineHitsWall(
@@ -2184,61 +1348,48 @@ function updateBots(
                 target.y
             );
 
-        /*
-        Bewegung
-        */
+        /* MOVEMENT */
 
         if (
             blocked ||
-            d > 150
+            d > weapon.range * 0.55
         ) {
-
-            const speed =
-                difficulty.botSpeed;
 
             moveEntity(
                 bot,
-                dx /
-                    d *
-                    speed,
-                dy /
-                    d *
-                    speed
+                dx / d,
+                dy / d
             );
         }
 
-        /*
-        Angriff
-        */
+        /* ATTACK */
 
         if (
             !blocked &&
-            d <=
-                weapon.range &&
-            bot.cooldown <=
-                0
+            d <= weapon.range &&
+            bot.cooldown <= 0
         ) {
 
             if (
-                Math.random() <=
+                Math.random() <
                 difficulty.fireChance
             ) {
 
                 const error =
                     (
                         Math.random() -
-                            0.5
+                        0.5
                     ) *
                     (
                         1 -
                         difficulty.accuracy
-                    );
+                    ) *
+                    1.2;
 
                 attack(
                     room,
                     bot,
-                    targetAngle +
-                        error
+                    angle + error
                 );
             }
         }
@@ -2246,127 +1397,188 @@ function updateBots(
 }
 
 /* =====================================================
-   SUPER
+   PLAYER UPDATE
 ===================================================== */
 
-function useSuper(
-    room,
-    player
-) {
+function updatePlayers(room) {
+
+    for (
+        const player of
+        Object.values(room.players)
+    ) {
+
+        if (!player.alive) {
+            continue;
+        }
+
+        moveEntity(
+            player,
+            player.input.dx,
+            player.input.dy
+        );
+
+        if (player.cooldown > 0) {
+            player.cooldown--;
+        }
+
+        if (player.reloadTimer > 0) {
+
+            player.reloadTimer--;
+
+            if (
+                player.reloadTimer <= 0
+            ) {
+                finishReload(player);
+            }
+        }
+
+        if (player.healCooldown > 0) {
+            player.healCooldown--;
+        }
+
+        /* Passive regeneration */
+
+        if (
+            Date.now() -
+            player.lastDamage >
+            5000 &&
+            player.hp <
+            player.maxHp
+        ) {
+
+            player.hp =
+                Math.min(
+                    player.maxHp,
+                    player.hp + 0.15
+                );
+        }
+    }
+}
+
+/* =====================================================
+   HEAL
+===================================================== */
+
+function healPlayer(room, player) {
 
     if (
+        !player ||
         !player.alive ||
-        !player.superReady
+        player.healCooldown > 0
     ) {
         return;
     }
 
-    const skin =
-        getSkin(
-            player.skin
+    player.healCooldown = 180;
+
+    player.hp =
+        Math.min(
+            player.maxHp,
+            player.hp + 30
         );
 
-    player.superReady =
-        false;
-
-    player.botDamage =
-        0;
-
-    for (
-        const target of [
-            ...Object.values(
-                room.players
-            ),
-            ...room.bots
-        ]
-    ) {
-
-        if (
-            !target.alive ||
-            target.id ===
-                player.id
-        ) {
-            continue;
-        }
-
-        if (
-            distance(
-                player,
-                target
-            ) <=
-            180 &&
-            !lineHitsWall(
-                player.x,
-                player.y,
-                target.x,
-                target.y
-            )
-        ) {
-
-            applyDamage(
-                room,
-                target,
-                40,
-                player
-            );
-        }
-    }
+    player.shield =
+        Math.min(
+            player.maxShield,
+            player.shield + 15
+        );
 
     broadcast(
         room,
         {
-            type:
-                "superEffect",
-
-            x:
-                player.x,
-
-            y:
-                player.y,
-
-            name:
-                skin.super
+            type: "healEffect",
+            player: player.id,
+            x: player.x,
+            y: player.y
         }
     );
 }
 
 /* =====================================================
-   ROUND END
+   PUBLIC STATE
 ===================================================== */
 
-function checkRoundEnd(
-    room
-) {
+function publicEntity(entity) {
 
-    if (
-        !room.roundActive
-    ) {
+    return {
+
+        id: entity.id,
+
+        name: entity.name,
+
+        x: Math.round(entity.x),
+        y: Math.round(entity.y),
+
+        hp: Math.round(entity.hp),
+        maxHp: entity.maxHp,
+
+        shield: Math.round(entity.shield),
+        maxShield: entity.maxShield,
+
+        alive: entity.alive,
+
+        skin: entity.skin,
+
+        weapon: entity.weapon,
+
+        kills: entity.kills,
+
+        ammo: entity.ammo,
+
+        reloadTimer:
+            entity.reloadTimer,
+
+        bot: entity.bot
+    };
+}
+
+function sendState(room) {
+
+    broadcast(
+        room,
+        {
+            type: "state",
+
+            map: MAP,
+
+            walls: WALLS,
+
+            players:
+                Object.values(
+                    room.players
+                ).map(publicEntity),
+
+            bots:
+                room.bots.map(publicEntity)
+        }
+    );
+}
+
+/* =====================================================
+   ROUND
+===================================================== */
+
+function checkRoundEnd(room) {
+
+    if (!room.roundActive) {
         return;
     }
 
     const alive = [
-        ...Object.values(
-            room.players
-        ),
+        ...Object.values(room.players),
         ...room.bots
     ].filter(
-        entity =>
-            entity.alive
+        entity => entity.alive
     );
 
-    if (
-        alive.length <=
-        1
-    ) {
+    if (alive.length <= 1) {
 
-        room.roundActive =
-            false;
+        room.roundActive = false;
 
         broadcast(
             room,
             {
-                type:
-                    "roundEnd",
+                type: "roundEnd",
 
                 winner:
                     alive.length
@@ -2377,89 +1589,45 @@ function checkRoundEnd(
     }
 }
 
-/* =====================================================
-   NEW ROUND
-===================================================== */
+function restartRound(room) {
 
-function restartRound(
-    room
-) {
+    room.bullets = [];
 
-    room.bullets =
-        [];
-
-    room.bots =
-        [];
-
-    room.roundActive =
-        true;
-
-    /*
-    Alle Spieler deaktivieren,
-    damit Spawn-Abstand funktioniert.
-    */
+    room.roundActive = true;
 
     for (
-        const player
-        of Object.values(
-            room.players
-        )
-    ) {
-        player.alive =
-            false;
-    }
-
-    /*
-    Spieler einzeln platzieren
-    */
-
-    for (
-        const player
-        of Object.values(
-            room.players
-        )
+        const player of
+        Object.values(room.players)
     ) {
 
         const spawn =
-            safeSpawn(
-                room
-            );
+            findSpawn(room);
 
-        player.x =
-            spawn.x;
+        player.x = spawn.x;
+        player.y = spawn.y;
 
-        player.y =
-            spawn.y;
+        const skin =
+            getSkin(player.skin);
 
         player.weapon =
-            getSkin(
-                player.skin
-            ).weapon;
+            skin.weapon;
 
-        resetCombatant(
-            player
+        resetEntity(
+            player,
+            room
         );
     }
 
-    /*
-    Danach Bots.
-    */
-
-    createBots(
-        room
-    );
+    createBots(room);
 
     broadcast(
         room,
         {
-            type:
-                "newRound"
+            type: "newRound"
         }
     );
 
-    sendState(
-        room
-    );
+    sendState(room);
 }
 
 /* =====================================================
@@ -2473,34 +1641,25 @@ wss.on(
         ws.clientId =
             Math.random()
                 .toString(36)
-                .substring(
-                    2,
-                    10
-                );
+                .substring(2, 10);
 
         send(
             ws,
             {
-                type:
-                    "connected",
+                type: "connected",
 
-                id:
-                    ws.clientId,
+                id: ws.clientId,
 
-                map:
-                    MAP,
+                map: MAP,
 
-                walls:
-                    WALLS,
+                walls: WALLS,
 
-                skins:
-                    SKINS,
+                skins: SKINS,
+
+                weapons: WEAPONS,
 
                 difficulties:
-                    DIFFICULTIES,
-
-                tutorial:
-                    TUTORIAL
+                    DIFFICULTIES
             }
         );
 
@@ -2519,12 +1678,21 @@ wss.on(
 
                 } catch {
 
+                    send(
+                        ws,
+                        {
+                            type:
+                                "errorMessage",
+
+                            message:
+                                "Ungültige Nachricht."
+                        }
+                    );
+
                     return;
                 }
 
-                /* =================================
-                   CREATE ROOM
-                ================================= */
+                /* CREATE ROOM */
 
                 if (
                     data.type ===
@@ -2541,6 +1709,17 @@ wss.on(
                             ? data.difficulty
                             : "medium";
 
+                    const botCount =
+                        clamp(
+                            Math.floor(
+                                Number(
+                                    data.bots
+                                ) || 0
+                            ),
+                            0,
+                            MAX_BOTS
+                        );
+
                     const room = {
 
                         code,
@@ -2551,21 +1730,11 @@ wss.on(
 
                         bullets: [],
 
-                        botCount:
-                            clamp(
-                                Math.floor(
-                                    Number(
-                                        data.bots
-                                    ) || 0
-                                ),
-                                0,
-                                5
-                            ),
+                        botCount,
 
                         difficulty,
 
-                        roundActive:
-                            true
+                        roundActive: true
                     };
 
                     rooms[code] =
@@ -2583,12 +1752,9 @@ wss.on(
                     ] =
                         player;
 
-                    ws.room =
-                        code;
+                    ws.room = code;
 
-                    createBots(
-                        room
-                    );
+                    createBots(room);
 
                     send(
                         ws,
@@ -2607,16 +1773,12 @@ wss.on(
                         }
                     );
 
-                    sendState(
-                        room
-                    );
+                    sendState(room);
 
                     return;
                 }
 
-                /* =================================
-                   JOIN ROOM
-                ================================= */
+                /* JOIN ROOM */
 
                 if (
                     data.type ===
@@ -2625,8 +1787,7 @@ wss.on(
 
                     const code =
                         String(
-                            data.code ||
-                                ""
+                            data.code || ""
                         )
                             .trim()
                             .toUpperCase();
@@ -2643,7 +1804,7 @@ wss.on(
                                     "errorMessage",
 
                                 message:
-                                    "Diese Lobby existiert nicht."
+                                    "Lobby nicht gefunden."
                             }
                         );
 
@@ -2664,7 +1825,7 @@ wss.on(
                                     "errorMessage",
 
                                 message:
-                                    "Diese Lobby ist voll."
+                                    "Lobby ist voll."
                             }
                         );
 
@@ -2683,8 +1844,7 @@ wss.on(
                     ] =
                         player;
 
-                    ws.room =
-                        code;
+                    ws.room = code;
 
                     send(
                         ws,
@@ -2695,33 +1855,25 @@ wss.on(
                             code,
 
                             difficulty:
-                                room.difficulty,
-
-                            difficultyName:
-                                DIFFICULTIES[
-                                    room.difficulty
-                                ].name
+                                room.difficulty
                         }
                     );
 
-                    sendState(
-                        room
-                    );
+                    sendState(room);
 
                     return;
                 }
 
+                /* ROOM CHECK */
+
                 const room =
-                    rooms[
-                        ws.room
-                    ];
+                    rooms[ws.room];
 
-                if (!room)
+                if (!room) {
                     return;
+                }
 
-                /* =================================
-                   BEWEGUNG
-                ================================= */
+                /* MOVEMENT */
 
                 if (
                     data.type ===
@@ -2761,9 +1913,7 @@ wss.on(
                     return;
                 }
 
-                /* =================================
-                   STOPP BEWEGUNG
-                ================================= */
+                /* STOP */
 
                 if (
                     data.type ===
@@ -2775,21 +1925,17 @@ wss.on(
                             ws.clientId
                         ];
 
-                    if (!player)
+                    if (!player) {
                         return;
+                    }
 
-                    player.input.dx =
-                        0;
-
-                    player.input.dy =
-                        0;
+                    player.input.dx = 0;
+                    player.input.dy = 0;
 
                     return;
                 }
 
-                /* =================================
-                   SCHIESSEN
-                ================================= */
+                /* SHOOT */
 
                 if (
                     data.type ===
@@ -2809,22 +1955,21 @@ wss.on(
                     }
 
                     const dx =
-                        Number(
-                            data.dx
-                        );
+                        Number(data.dx);
 
                     const dy =
-                        Number(
-                            data.dy
-                        );
+                        Number(data.dy);
 
                     if (
-                        !Number.isFinite(
-                            dx
-                        ) ||
-                        !Number.isFinite(
-                            dy
-                        )
+                        !Number.isFinite(dx) ||
+                        !Number.isFinite(dy)
+                    ) {
+                        return;
+                    }
+
+                    if (
+                        Math.hypot(dx, dy) <
+                        0.001
                     ) {
                         return;
                     }
@@ -2832,18 +1977,13 @@ wss.on(
                     attack(
                         room,
                         player,
-                        Math.atan2(
-                            dy,
-                            dx
-                        )
+                        Math.atan2(dy, dx)
                     );
 
                     return;
                 }
 
-                /* =================================
-                   RELOAD
-                ================================= */
+                /* RELOAD */
 
                 if (
                     data.type ===
@@ -2855,20 +1995,14 @@ wss.on(
                             ws.clientId
                         ];
 
-                    if (
-                        player
-                    ) {
-                        startReload(
-                            player
-                        );
+                    if (player) {
+                        startReload(player);
                     }
 
                     return;
                 }
 
-                /* =================================
-                   HEILEN
-                ================================= */
+                /* HEAL */
 
                 if (
                     data.type ===
@@ -2880,68 +2014,8 @@ wss.on(
                             ws.clientId
                         ];
 
-                    if (
-                        !player ||
-                        !player.alive ||
-                        player.healCooldown >
-                            0
-                    ) {
-                        return;
-                    }
-
-                    player.healCooldown =
-                        180;
-
-                    player.hp =
-                        Math.min(
-                            player.maxHp,
-                            player.hp + 30
-                        );
-
-                    player.shield =
-                        Math.min(
-                            player.maxShield,
-                            player.shield + 15
-                        );
-
-                    broadcast(
-                        room,
-                        {
-                            type:
-                                "healEffect",
-
-                            player:
-                                player.id,
-
-                            x:
-                                player.x,
-
-                            y:
-                                player.y
-                        }
-                    );
-
-                    return;
-                }
-
-                /* =================================
-                   SUPER
-                ================================= */
-
-                if (
-                    data.type ===
-                    "useSuper"
-                ) {
-
-                    const player =
-                        room.players[
-                            ws.clientId
-                        ];
-
-                    if (
-                        player
-                    ) {
-                        useSuper(
+                    if (player) {
+                        healPlayer(
                             room,
                             player
                         );
@@ -2950,9 +2024,19 @@ wss.on(
                     return;
                 }
 
-                /* =================================
-                   SKIN
-                ================================= */
+                /* NEW ROUND */
+
+                if (
+                    data.type ===
+                    "newRound"
+                ) {
+
+                    restartRound(room);
+
+                    return;
+                }
+
+                /* CHANGE SKIN */
 
                 if (
                     data.type ===
@@ -2964,38 +2048,14 @@ wss.on(
                             ws.clientId
                         ];
 
-                    if (!player)
+                    if (!player) {
                         return;
+                    }
 
                     const skin =
                         getSkin(
                             data.skin
                         );
-
-                    /*
-                    In deinem System werden
-                    Kills momentan als
-                    Freischaltwert benutzt.
-                    */
-
-                    if (
-                        player.kills <
-                        skin.price
-                    ) {
-
-                        send(
-                            ws,
-                            {
-                                type:
-                                    "errorMessage",
-
-                                message:
-                                    `Du brauchst ${skin.price} Kills.`
-                            }
-                        );
-
-                        return;
-                    }
 
                     player.skin =
                         skin.id;
@@ -3003,29 +2063,12 @@ wss.on(
                     player.weapon =
                         skin.weapon;
 
-                    resetCombatant(
-                        player
-                    );
-
-                    sendState(
+                    resetEntity(
+                        player,
                         room
                     );
 
-                    return;
-                }
-
-                /* =================================
-                   NEUE RUNDE
-                ================================= */
-
-                if (
-                    data.type ===
-                    "newRound"
-                ) {
-
-                    restartRound(
-                        room
-                    );
+                    sendState(room);
 
                     return;
                 }
@@ -3037,12 +2080,11 @@ wss.on(
             () => {
 
                 const room =
-                    rooms[
-                        ws.room
-                    ];
+                    rooms[ws.room];
 
-                if (!room)
+                if (!room) {
                     return;
+                }
 
                 delete room.players[
                     ws.clientId
@@ -3051,8 +2093,7 @@ wss.on(
                 if (
                     Object.keys(
                         room.players
-                    ).length ===
-                    0
+                    ).length === 0
                 ) {
 
                     delete rooms[
@@ -3061,13 +2102,9 @@ wss.on(
 
                 } else {
 
-                    checkRoundEnd(
-                        room
-                    );
+                    checkRoundEnd(room);
 
-                    sendState(
-                        room
-                    );
+                    sendState(room);
                 }
             }
         );
@@ -3075,7 +2112,7 @@ wss.on(
 );
 
 /* =====================================================
-   HAUPT-GAME-LOOP
+   GAME LOOP
 ===================================================== */
 
 setInterval(
@@ -3083,50 +2120,24 @@ setInterval(
 
         for (
             const room of
-            Object.values(
-                rooms
-            )
+            Object.values(rooms)
         ) {
 
-            /*
-            Spieler bewegen
-            */
+            updatePlayers(room);
 
-            updatePlayers(
-                room
-            );
+            updateBots(room);
 
-            /*
-            Bots bewegen + angreifen
-            */
+            updateBullets(room);
 
-            updateBots(
-                room
-            );
-
-            /*
-            Kugeln bewegen + treffen
-            */
-
-            updateBullets(
-                room
-            );
-
-            /*
-            Zustand senden
-            */
-
-            sendState(
-                room
-            );
+            sendState(room);
         }
 
     },
-    1000 / 30
+    1000 / TICK_RATE
 );
 
 /* =====================================================
-   SERVER START
+   START
 ===================================================== */
 
 server.listen(
@@ -3135,8 +2146,11 @@ server.listen(
     () => {
 
         console.log(
-            "Battle Zone Server läuft auf Port " +
-            PORT
+            `Battle Zone Server läuft auf Port ${PORT}`
+        );
+
+        console.log(
+            `Health: /health`
         );
     }
 );
@@ -3146,8 +2160,9 @@ server.on(
     error => {
 
         console.error(
-            "Serverfehler:",
+            "SERVER ERROR:",
             error
         );
     }
 );
+```
