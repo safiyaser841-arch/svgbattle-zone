@@ -3,451 +3,321 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
 <title>Battle Zone</title>
 
 <style>
-*{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-    user-select:none;
-    -webkit-user-select:none;
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-html,body{
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    font-family:Arial,sans-serif;
-    background:#071018;
-    color:white;
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background: #101820;
+    color: white;
 }
 
-button,input,select{
-    font:inherit;
+button,
+input,
+select {
+    font-family: Arial, sans-serif;
 }
 
-button{
-    border:0;
-    cursor:pointer;
+button {
+    cursor: pointer;
 }
 
-.screen{
-    position:fixed;
-    inset:0;
+.screen {
+    width: 100%;
+    height: 100%;
 }
 
-/* ================= MENU ================= */
+/* MENU */
 
-#menu{
-    display:flex;
-    justify-content:center;
-    align-items:center;
+#menu {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     background:
-        radial-gradient(circle at 50% 20%,#16466b 0%,transparent 45%),
-        linear-gradient(135deg,#020617,#0b1724);
+        radial-gradient(circle at center, #214b70 0%, #101820 55%, #05080c 100%);
 }
 
-.menuBox{
-    width:min(500px,92vw);
-    padding:28px;
-    border-radius:25px;
-    background:rgba(8,15,25,.96);
-    border:1px solid #26384b;
-    box-shadow:0 25px 80px rgba(0,0,0,.7);
-    text-align:center;
+.menuBox {
+    width: min(450px, 92%);
+    background: rgba(10, 17, 27, 0.96);
+    padding: 30px;
+    border-radius: 22px;
+    text-align: center;
+    box-shadow: 0 0 50px rgba(0,0,0,.6);
 }
 
-.logo{
-    font-size:clamp(38px,10vw,62px);
-    font-weight:900;
-    color:#38bdf8;
-    text-shadow:0 0 30px #38bdf8;
+.logo {
+    font-size: 42px;
+    font-weight: 900;
+    color: #38bdf8;
+    margin-bottom: 8px;
 }
 
-.subtitle{
-    color:#94a3b8;
-    margin:8px 0 22px;
+.subtitle {
+    color: #94a3b8;
+    margin-bottom: 25px;
 }
 
-.input,
-.select{
-    width:100%;
-    padding:14px;
-    margin:6px 0;
-    border-radius:12px;
-    border:1px solid #334155;
-    background:#111827;
-    color:white;
-    outline:none;
+input,
+select {
+    width: 100%;
+    padding: 13px;
+    margin-top: 9px;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    background: #111827;
+    color: white;
+    outline: none;
 }
 
-.btn{
-    width:100%;
-    padding:14px;
-    margin-top:8px;
-    border-radius:12px;
-    background:linear-gradient(135deg,#38bdf8,#2563eb);
-    color:white;
-    font-weight:bold;
+button {
+    width: 100%;
+    padding: 13px;
+    margin-top: 9px;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
+    background: #2563eb;
 }
 
-.btn.dark{
-    background:#1e293b;
+button:hover {
+    filter: brightness(1.15);
 }
 
-.stats{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:7px;
-    margin-bottom:12px;
+.darkButton {
+    background: #1e293b;
 }
 
-.stat{
-    padding:10px;
-    border-radius:10px;
-    background:#0b1220;
-    font-size:12px;
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 7px;
+    margin-bottom: 10px;
 }
 
-.stat b{
-    display:block;
-    color:#38bdf8;
-    font-size:17px;
-    margin-top:4px;
+.stat {
+    background: #0b1220;
+    padding: 10px;
+    border-radius: 9px;
+    font-size: 12px;
 }
 
-#connection{
-    margin-top:12px;
-    font-size:13px;
-    color:#facc15;
+.stat strong {
+    display: block;
+    margin-top: 4px;
+    color: #38bdf8;
 }
 
-/* ================= LOBBY ================= */
+/* LOBBY */
 
-#lobby,
-#game,
-#skins,
-#tutorial{
-    display:none;
-}
-
-#lobby{
-    justify-content:center;
-    align-items:center;
+#lobby {
+    display: none;
+    justify-content: center;
+    align-items: center;
     background:
-        radial-gradient(circle,#17486b,#020617 75%);
+        radial-gradient(circle, #1e4968, #060a0f);
 }
 
-.lobbyBox{
-    width:min(900px,94vw);
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:20px;
-    padding:20px;
-    border-radius:25px;
-    background:rgba(8,15,25,.97);
+.lobbyBox {
+    width: min(850px, 94%);
+    background: rgba(10,17,27,.97);
+    border-radius: 20px;
+    padding: 22px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
 }
 
-.characterStage{
-    min-height:420px;
-    border-radius:20px;
+.characterArea {
+    min-height: 400px;
+    border-radius: 15px;
     background:
-        radial-gradient(circle,#315d7e,#0a1119);
-    position:relative;
-    overflow:hidden;
+        radial-gradient(circle, #355d7d, #0b1118);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
 }
 
-.character{
-    position:absolute;
-    left:50%;
-    top:52%;
-    transform:translate(-50%,-50%);
-    width:100px;
-    height:130px;
-    border-radius:35px 35px 20px 20px;
-    box-shadow:inset -20px -20px 35px rgba(0,0,0,.45);
+.character {
+    width: 90px;
+    height: 120px;
+    border-radius: 30px 30px 20px 20px;
+    background: linear-gradient(145deg,#38bdf8,#164e63);
+    position: relative;
+    box-shadow: 0 20px 30px rgba(0,0,0,.5);
 }
 
-.character:before{
-    content:"";
-    position:absolute;
-    width:65px;
-    height:65px;
-    left:18px;
-    top:-48px;
-    border-radius:50%;
-    background:#dcae8e;
+.character::before {
+    content: "";
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #e8b995;
+    position: absolute;
+    left: 15px;
+    top: -40px;
 }
 
-.lobbyInfo{
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    gap:10px;
+.lobbyInfo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-.roomCode{
-    font-size:42px;
-    font-weight:900;
-    letter-spacing:8px;
-    color:#38bdf8;
+.roomCode {
+    font-size: 45px;
+    font-weight: 900;
+    letter-spacing: 8px;
+    color: #38bdf8;
+    margin: 10px 0;
 }
 
-/* ================= SKINS ================= */
+/* GAME */
 
-#skins{
-    padding:18px;
-    overflow:auto;
-    background:#050b12;
+#game {
+    display: none;
+    position: relative;
+    background: #263c28;
 }
 
-.topbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    max-width:1100px;
-    margin:auto;
+canvas {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
 }
 
-.skinGrid{
-    width:min(1100px,95vw);
-    margin:20px auto;
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-    gap:12px;
+.hud {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    z-index: 10;
 }
 
-.skinCard{
-    padding:12px;
-    border-radius:15px;
-    background:#101827;
-    border:1px solid #334155;
+.hudBox {
+    background: rgba(0,0,0,.65);
+    padding: 8px 11px;
+    border-radius: 8px;
+    font-size: 13px;
 }
 
-.skinPreview{
-    height:110px;
-    border-radius:12px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:#0b1119;
+.health {
+    color: #4ade80;
 }
 
-.miniCharacter{
-    width:50px;
-    height:70px;
-    border-radius:18px;
-    position:relative;
+.shield {
+    color: #38bdf8;
 }
 
-.miniCharacter:before{
-    content:"";
-    position:absolute;
-    width:35px;
-    height:35px;
-    left:8px;
-    top:-23px;
-    border-radius:50%;
-    background:#dcae8e;
+/* CONTROLS */
+
+#shootButton {
+    position: absolute;
+    right: 25px;
+    bottom: 25px;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #dc2626;
+    font-size: 30px;
+    z-index: 20;
 }
 
-/* ================= TUTORIAL ================= */
-
-#tutorial{
-    justify-content:center;
-    align-items:center;
-    background:rgba(0,0,0,.8);
-    z-index:100;
+#healButton {
+    position: absolute;
+    right: 140px;
+    bottom: 40px;
+    width: 85px;
+    height: 50px;
+    background: #15803d;
+    z-index: 20;
 }
 
-.tutorialBox{
-    width:min(500px,92vw);
-    padding:28px;
-    border-radius:20px;
-    background:#111827;
-    text-align:center;
+#joystick {
+    display: none;
+    position: absolute;
+    left: 25px;
+    bottom: 25px;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.12);
+    border: 2px solid rgba(255,255,255,.3);
+    z-index: 20;
 }
 
-.tutorialBox p{
-    margin:20px 0;
-    color:#cbd5e1;
-    line-height:1.6;
+#stick {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.55);
+    position: absolute;
+    left: 40px;
+    top: 40px;
 }
 
-/* ================= GAME ================= */
+/* MESSAGE */
 
-#game{
-    background:#294b31;
+#message {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    font-size: 55px;
+    font-weight: 900;
+    text-align: center;
+    display: none;
+    z-index: 30;
 }
 
-#canvas{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-}
+/* MOBILE */
 
-.hud{
-    position:fixed;
-    top:8px;
-    left:8px;
-    right:8px;
-    display:flex;
-    flex-wrap:wrap;
-    gap:6px;
-    z-index:20;
-    pointer-events:none;
-}
-
-.hudBox{
-    padding:8px 10px;
-    border-radius:9px;
-    background:rgba(3,8,15,.82);
-    border:1px solid #334155;
-    font-size:13px;
-}
-
-#superBar{
-    position:fixed;
-    left:50%;
-    bottom:15px;
-    transform:translateX(-50%);
-    width:220px;
-    height:12px;
-    background:#111827;
-    border-radius:20px;
-    overflow:hidden;
-    z-index:30;
-}
-
-#superFill{
-    width:0%;
-    height:100%;
-    background:linear-gradient(90deg,#7c3aed,#ec4899);
-}
-
-.control{
-    position:fixed;
-    z-index:40;
-    padding:12px 16px;
-    border-radius:12px;
-    color:white;
-    background:#1e293b;
-    font-weight:bold;
-}
-
-#heal{
-    left:50%;
-    bottom:75px;
-    transform:translateX(-50%);
-    background:#166534;
-}
-
-#super{
-    left:50%;
-    bottom:32px;
-    transform:translateX(-50%);
-}
-
-#shoot{
-    display:none;
-    position:fixed;
-    right:20px;
-    bottom:25px;
-    width:105px;
-    height:105px;
-    border-radius:50%;
-    background:radial-gradient(circle,#ef4444,#991b1b);
-    border:4px solid white;
-    color:white;
-    font-size:30px;
-    z-index:50;
-}
-
-#joystick{
-    display:none;
-    position:fixed;
-    left:20px;
-    bottom:20px;
-    width:145px;
-    height:145px;
-    border-radius:50%;
-    background:rgba(255,255,255,.12);
-    border:2px solid rgba(255,255,255,.25);
-    z-index:50;
-}
-
-#stick{
-    position:absolute;
-    width:62px;
-    height:62px;
-    left:41px;
-    top:41px;
-    border-radius:50%;
-    background:rgba(255,255,255,.5);
-}
-
-#round{
-    display:none;
-    position:fixed;
-    inset:0;
-    z-index:90;
-    justify-content:center;
-    align-items:center;
-    flex-direction:column;
-    gap:12px;
-    background:rgba(0,0,0,.75);
-}
-
-#round h1{
-    font-size:clamp(45px,10vw,80px);
-}
-
-.roundBtn{
-    width:min(300px,80vw);
-    padding:14px;
-    border-radius:12px;
-    background:#2563eb;
-    color:white;
-    font-weight:bold;
-}
-
-/* ================= MOBILE ================= */
-
-@media(pointer:coarse){
-
-    #joystick,
-    #shoot{
-        display:block;
-    }
-
-    .hud{
-        right:100px;
-    }
-
-    .lobbyBox{
-        grid-template-columns:1fr;
-    }
-
-    .characterStage{
-        min-height:260px;
+@media (pointer: coarse) {
+    #joystick {
+        display: block;
     }
 }
 
-@media(orientation:portrait) and (pointer:coarse){
+@media (max-width: 700px) {
 
-    #game:after{
-        content:"📱 Bitte Handy drehen";
-        position:fixed;
-        inset:0;
-        z-index:999;
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        background:#020617;
-        font-size:25px;
-        text-align:center;
+    .logo {
+        font-size: 32px;
+    }
+
+    .menuBox {
+        padding: 20px;
+    }
+
+    .lobbyBox {
+        grid-template-columns: 1fr;
+    }
+
+    .characterArea {
+        min-height: 220px;
+    }
+
+    .lobbyInfo {
+        text-align: center;
+    }
+
+    .roomCode {
+        font-size: 35px;
     }
 }
 </style>
@@ -459,322 +329,369 @@ button{
 
 <div id="menu" class="screen">
 
-<div class="menuBox">
+    <div class="menuBox">
 
-<div class="logo">⚡ BATTLE ZONE</div>
-<div class="subtitle">2D Multiplayer Arena</div>
+        <div class="logo">⚡ BATTLE ZONE</div>
 
-<div class="stats">
+        <div class="subtitle">
+            Simple Multiplayer Battle Arena
+        </div>
 
-<div class="stat">
-🏆 Trophäen
-<b id="trophies">0</b>
+        <div class="stats">
+
+            <div class="stat">
+                🏆 Trophäen
+                <strong id="trophies">0</strong>
+            </div>
+
+            <div class="stat">
+                💀 Kills
+                <strong id="kills">0</strong>
+            </div>
+
+            <div class="stat">
+                👤 Spieler
+                <strong>Online</strong>
+            </div>
+
+        </div>
+
+        <input
+            id="playerName"
+            maxlength="15"
+            placeholder="Dein Name"
+        >
+
+        <select id="difficulty">
+
+            <option value="easy">
+                🟢 Leicht
+            </option>
+
+            <option value="medium" selected>
+                🟡 Mittel
+            </option>
+
+            <option value="hard">
+                🔴 Schwer
+            </option>
+
+        </select>
+
+        <select id="botCount">
+
+            <option value="0">0 Bots</option>
+            <option value="1">1 Bot</option>
+            <option value="2" selected>2 Bots</option>
+            <option value="3">3 Bots</option>
+            <option value="4">4 Bots</option>
+            <option value="5">5 Bots</option>
+
+        </select>
+
+        <button id="createButton">
+            🎮 Lobby erstellen
+        </button>
+
+        <input
+            id="roomCodeInput"
+            maxlength="4"
+            placeholder="Raumcode"
+        >
+
+        <button id="joinButton" class="darkButton">
+            👥 Lobby beitreten
+        </button>
+
+        <button id="tutorialButton" class="darkButton">
+            📖 Tutorial
+        </button>
+
+    </div>
+
 </div>
 
-<div class="stat">
-💀 Kills
-<b id="kills">0</b>
-</div>
-
-<div class="stat">
-👤 Skin
-<b id="skinName">Rookie</b>
-</div>
-
-</div>
-
-<input id="playerName"
-class="input"
-maxlength="15"
-placeholder="Dein Name">
-
-<select id="difficulty" class="select">
-<option value="easy">🟢 Leicht</option>
-<option value="medium" selected>🟡 Mittel</option>
-<option value="hard">🔴 Schwer</option>
-</select>
-
-<button class="btn" id="create">
-🎮 Lobby erstellen
-</button>
-
-<input
-id="roomInput"
-class="input"
-maxlength="4"
-placeholder="Raumcode">
-
-<button class="btn dark" id="join">
-👥 Lobby beitreten
-</button>
-
-<button class="btn dark" id="skinsButton">
-👤 Skins
-</button>
-
-<button class="btn dark" id="tutorialButton">
-📖 Tutorial
-</button>
-
-<div id="connection">
-🔄 Verbinde mit Server...
-</div>
-
-</div>
-</div>
-
-<!-- SKINS -->
-
-<div id="skins" class="screen">
-
-<div class="topbar">
-<h1>👤 Skins</h1>
-<button class="btn dark" id="closeSkins">Zurück</button>
-</div>
-
-<div id="skinGrid" class="skinGrid"></div>
-
-</div>
 
 <!-- LOBBY -->
 
 <div id="lobby" class="screen">
 
-<div class="lobbyBox">
+    <div class="lobbyBox">
 
-<div class="characterStage">
-<div id="bigCharacter" class="character"></div>
-</div>
+        <div class="characterArea">
 
-<div class="lobbyInfo">
+            <div
+                id="lobbyCharacter"
+                class="character">
+            </div>
 
-<h1 id="lobbySkin">Rookie</h1>
+        </div>
 
-<div>🔫 Waffe: <b id="lobbyWeapon">Pistole</b></div>
-<div>❤️ Leben: <b id="lobbyHp">100</b></div>
-<div>🛡️ Schutz: <b id="lobbyShield">50</b></div>
-<div>💥 Schaden: <b id="lobbyDamage">0%</b></div>
+        <div class="lobbyInfo">
 
-<div>💀 Kills: <b id="lobbyKills">0</b></div>
+            <h1>⚡ Battle Zone</h1>
 
-<div>🎯 Schwierigkeit:
-<b id="lobbyDifficulty">Mittel</b>
-</div>
+            <p style="margin-top:10px">
+                Spieler:
+                <b id="lobbyName">Player</b>
+            </p>
 
-<div>🏠 Raumcode</div>
+            <p style="margin-top:8px">
+                Schwierigkeit:
+                <b id="lobbyDifficulty">Mittel</b>
+            </p>
 
-<div class="roomCode" id="roomCode">
-----</div>
+            <p style="margin-top:8px">
+                Bots:
+                <b id="lobbyBots">2</b>
+            </p>
 
-<button class="btn" id="copy">
-📋 Code kopieren
-</button>
+            <p style="margin-top:15px">
+                Raumcode:
+            </p>
 
-<button class="btn" id="play">
-▶ SPIELEN
-</button>
+            <div id="lobbyRoom" class="roomCode">
+                ----
+            </div>
 
-<button class="btn dark" id="back">
-Zurück
-</button>
+            <button id="playButton">
+                ▶ SPIELEN
+            </button>
 
-</div>
-</div>
-</div>
+            <button id="backButton" class="darkButton">
+                Zurück
+            </button>
 
-<!-- TUTORIAL -->
+        </div>
 
-<div id="tutorial" class="screen">
-
-<div class="tutorialBox">
-
-<h2 id="tutorialTitle">Tutorial</h2>
-
-<p id="tutorialText"></p>
-
-<div id="tutorialCounter"></div>
-
-<button class="btn" id="tutorialNext">
-Weiter
-</button>
+    </div>
 
 </div>
 
-</div>
 
 <!-- GAME -->
 
 <div id="game" class="screen">
 
-<canvas id="canvas"></canvas>
+    <canvas id="canvas"></canvas>
 
-<div class="hud">
+    <div class="hud">
 
-<div class="hudBox">
-🏠 <span id="hudRoom">----</span>
-</div>
+        <div class="hudBox">
+            🏠 <span id="hudRoom">----</span>
+        </div>
 
-<div class="hudBox">
-❤️ <span id="hudHp">100</span>
-</div>
+        <div class="hudBox health">
+            ❤️ <span id="hudHealth">100</span>
+        </div>
 
-<div class="hudBox">
-🛡️ <span id="hudShield">50</span>
-</div>
+        <div class="hudBox shield">
+            🛡️ <span id="hudShield">50</span>
+        </div>
 
-<div class="hudBox">
-🔫 <span id="hudWeapon">Pistole</span>
-</div>
+        <div class="hudBox">
+            💀 <span id="hudKills">0</span>
+        </div>
 
-<div class="hudBox">
-💀 <span id="hudKills">0</span>
-</div>
+        <div class="hudBox">
+            👥 <span id="hudPlayers">0</span>
+        </div>
 
-<div class="hudBox">
-🎯 <span id="hudDifficulty">Mittel</span>
-</div>
+    </div>
 
-</div>
+    <button id="healButton">
+        💚 HEILEN
+    </button>
 
-<div id="superBar">
-<div id="superFill"></div>
-</div>
+    <button id="shootButton">
+        🔥
+    </button>
 
-<button id="heal" class="control">
-💚 HEILEN
-</button>
+    <div id="joystick">
+        <div id="stick"></div>
+    </div>
 
-<button id="super" class="control">
-⚡ SUPER
-</button>
-
-<div id="joystick">
-<div id="stick"></div>
-</div>
-
-<button id="shoot">
-🔥
-</button>
-
-<div id="round">
-
-<h1 id="roundTitle">🏆 SIEG!</h1>
-
-<button class="roundBtn" id="newRound">
-🔄 Neue Runde
-</button>
-
-<button class="roundBtn" id="roundLobby">
-🏠 Lobby
-</button>
+    <div id="message"></div>
 
 </div>
 
-</div>
 
 <script>
 
 "use strict";
 
-/* ================= SERVER ================= */
+/* =========================
+   SERVER
+========================= */
 
 const SERVER_URL =
-location.protocol === "https:"
-? "wss://svgbattle-server.onrender.com"
-: "ws://localhost:3000";
+    "wss://svgbattle-server.onrender.com";
 
-let socket;
-let connected=false;
-let myId=null;
-let roomCode="";
-let players=[];
-let bots=[];
-let bullets=[];
-let effects=[];
-let walls=[];
-let map={width:1600,height:900};
-let skins=[];
-let difficulty="medium";
 
-let kills=Number(localStorage.getItem("battleKills")||0);
-let trophies=Number(localStorage.getItem("battleTrophies")||0);
-let selectedSkin=localStorage.getItem("battleSkin")||"standard";
+/* =========================
+   VARIABLES
+========================= */
 
-let keys={
-    up:false,
-    down:false,
-    left:false,
-    right:false
-};
+let socket = null;
+let connected = false;
 
-let joyX=0;
-let joyY=0;
-let firing=false;
-let aimX=innerWidth*.75;
-let aimY=innerHeight*.5;
+let myId = null;
+let roomCode = "";
 
-/* ================= DOM ================= */
+let players = [];
+let bots = [];
 
-const menu=document.getElementById("menu");
-const lobby=document.getElementById("lobby");
-const game=document.getElementById("game");
-const skinsScreen=document.getElementById("skins");
-const tutorialScreen=document.getElementById("tutorial");
+let gameStarted = false;
 
-const canvas=document.getElementById("canvas");
-const ctx=canvas.getContext("2d");
+let aimX = window.innerWidth / 2 + 100;
+let aimY = window.innerHeight / 2;
 
-function resize(){
-    canvas.width=innerWidth;
-    canvas.height=innerHeight;
+let joystickX = 0;
+let joystickY = 0;
+
+let shooting = false;
+
+let kills =
+    Number(localStorage.getItem("battleKills") || 0);
+
+let trophies =
+    Number(localStorage.getItem("battleTrophies") || 0);
+
+
+/* =========================
+   CANVAS
+========================= */
+
+const canvas =
+    document.getElementById("canvas");
+
+const ctx =
+    canvas.getContext("2d");
+
+
+function resizeCanvas() {
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
 }
 
-resize();
+resizeCanvas();
 
-addEventListener("resize",resize);
+window.addEventListener(
+    "resize",
+    resizeCanvas
+);
 
-/* ================= CONNECTION ================= */
 
-function connect(){
+/* =========================
+   UI
+========================= */
 
-    socket=new WebSocket(SERVER_URL);
+const menu =
+    document.getElementById("menu");
 
-    socket.onopen=()=>{
+const lobby =
+    document.getElementById("lobby");
 
-        connected=true;
+const game =
+    document.getElementById("game");
 
-        document.getElementById("connection").textContent=
-        "🟢 Server verbunden";
+
+function show(element) {
+
+    element.style.display = "flex";
+
+}
+
+
+function hide(element) {
+
+    element.style.display = "none";
+
+}
+
+
+function updateStats() {
+
+    document.getElementById("kills").textContent =
+        kills;
+
+    document.getElementById("trophies").textContent =
+        trophies;
+
+}
+
+updateStats();
+
+
+/* =========================
+   CONNECT
+========================= */
+
+function connect() {
+
+    try {
+
+        socket =
+            new WebSocket(SERVER_URL);
+
+    } catch (error) {
+
+        console.error(error);
+
+        return;
+
+    }
+
+
+    socket.onopen = function() {
+
+        connected = true;
+
+        console.log(
+            "Battle Zone Server verbunden"
+        );
 
     };
 
-    socket.onclose=()=>{
 
-        connected=false;
+    socket.onclose = function() {
 
-        document.getElementById("connection").textContent=
-        "🔴 Server getrennt";
+        connected = false;
 
-        setTimeout(connect,3000);
+        console.log(
+            "Server getrennt"
+        );
 
     };
 
-    socket.onerror=()=>{
-        document.getElementById("connection").textContent=
-        "🟠 Serverfehler";
+
+    socket.onerror = function(error) {
+
+        console.error(
+            "WebSocket Fehler:",
+            error
+        );
+
     };
 
-    socket.onmessage=e=>{
 
-        try{
+    socket.onmessage = function(event) {
 
-            const data=JSON.parse(e.data);
+        try {
+
+            const data =
+                JSON.parse(event.data);
 
             handleMessage(data);
 
-        }catch(err){
+        } catch (error) {
 
-            console.error(err);
+            console.error(
+                "Nachrichtenfehler:",
+                error
+            );
 
         }
 
@@ -784,97 +701,76 @@ function connect(){
 
 connect();
 
-/* ================= SEND ================= */
 
-function send(data){
+/* =========================
+   SEND
+========================= */
 
-    if(
+function send(data) {
+
+    if (
         socket &&
-        socket.readyState===WebSocket.OPEN
-    ){
+        socket.readyState === WebSocket.OPEN
+    ) {
 
-        socket.send(JSON.stringify(data));
+        socket.send(
+            JSON.stringify(data)
+        );
 
     }
 
 }
 
-/* ================= SERVER MESSAGES ================= */
 
-function handleMessage(data){
+/* =========================
+   SERVER MESSAGES
+========================= */
 
-    if(data.type==="connected"){
+function handleMessage(data) {
 
-        myId=data.id;
+    if (data.type === "connected") {
 
-        map=data.map||map;
-        walls=data.walls||[];
-
-        skins=data.skins||[];
-
-        renderSkins();
-
-        updateMenu();
+        myId = data.id;
 
         return;
     }
 
-    if(data.type==="roomCreated" ||
-       data.type==="joinedRoom"){
 
-        roomCode=data.code;
-        difficulty=data.difficulty||difficulty;
+    if (data.type === "roomCreated") {
+
+        roomCode = data.code;
 
         showLobby();
 
         return;
     }
 
-    if(data.type==="state"){
 
-        players=data.players||[];
-        bots=data.bots||[];
+    if (data.type === "joinedRoom") {
 
-        walls=data.walls||walls;
-        map=data.map||map;
-        difficulty=data.difficulty||difficulty;
+        roomCode = data.code;
 
-        updateHUD();
-        updateLobby();
+        showLobby();
 
         return;
     }
 
-    if(data.type==="bulletSpawn"){
 
-        bullets.push({
-            x:data.x,
-            y:data.y,
-            dx:data.dx,
-            dy:data.dy,
-            speed:data.speed||15,
-            color:data.color||"#facc15",
-            life:100
-        });
+    if (data.type === "state") {
+
+        players = data.players || [];
+
+        bots = data.bots || [];
+
+        updateGameHUD();
 
         return;
     }
 
-    if(data.type==="effect"){
 
-        effects.push({
-            x:data.x,
-            y:data.y,
-            type:data.effect||"hit",
-            life:20
-        });
+    if (data.type === "elimination") {
 
-        return;
-    }
-
-    if(data.type==="elimination"){
-
-        if(data.killer===myId){
+        if (data.killer === myId) {
 
             kills++;
             trophies++;
@@ -889,827 +785,707 @@ function handleMessage(data){
                 trophies
             );
 
-            updateMenu();
+            updateStats();
 
         }
 
         return;
     }
 
-    if(data.type==="roundEnd"){
 
-        document.getElementById("roundTitle").textContent=
-        data.winner===myId
-        ? "🏆 SIEG!"
-        : "💀 VERLOREN!";
+    if (data.type === "roundEnd") {
 
-        document.getElementById("round").style.display="flex";
+        gameStarted = false;
 
-        return;
-    }
+        const message =
+            document.getElementById("message");
 
-    if(data.type==="newRound"){
+        if (data.winner === myId) {
 
-        bullets=[];
-        effects=[];
+            message.textContent =
+                "🏆 SIEG!";
 
-        document.getElementById("round").style.display="none";
+        } else {
 
-        return;
-    }
-
-    if(data.type==="error"){
-
-        alert(data.message);
-
-    }
-
-}
-
-/* ================= MENU ================= */
-
-function updateMenu(){
-
-    document.getElementById("kills").textContent=kills;
-    document.getElementById("trophies").textContent=trophies;
-
-    const s=skins.find(x=>x.id===selectedSkin);
-
-    document.getElementById("skinName").textContent=
-    s ? s.name : "Rookie";
-
-}
-
-/* ================= CREATE ================= */
-
-document.getElementById("create").onclick=()=>{
-
-    if(!connected){
-
-        alert("Der Server ist noch nicht verbunden.");
-
-        return;
-    }
-
-    const name=
-    document.getElementById("playerName").value.trim()
-    ||"Player";
-
-    difficulty=
-    document.getElementById("difficulty").value;
-
-    let botsCount=prompt(
-        "Wie viele Bots? 0 bis 5",
-        "3"
-    );
-
-    botsCount=Math.max(
-        0,
-        Math.min(
-            5,
-            Number(botsCount)||0
-        )
-    );
-
-    send({
-
-        type:"createRoom",
-
-        name:name,
-
-        bots:botsCount,
-
-        difficulty:difficulty,
-
-        skin:selectedSkin
-
-    });
-
-};
-
-/* ================= JOIN ================= */
-
-document.getElementById("join").onclick=()=>{
-
-    if(!connected){
-
-        alert("Server ist noch nicht verbunden.");
-
-        return;
-    }
-
-    const name=
-    document.getElementById("playerName").value.trim()
-    ||"Player";
-
-    const code=
-    document.getElementById("roomInput")
-    .value
-    .trim()
-    .toUpperCase();
-
-    if(code.length!==4){
-
-        alert("Der Raumcode muss 4 Zeichen haben.");
-
-        return;
-    }
-
-    send({
-
-        type:"joinRoom",
-
-        name:name,
-
-        code:code,
-
-        skin:selectedSkin
-
-    });
-
-};
-
-/* ================= LOBBY ================= */
-
-function showLobby(){
-
-    menu.style.display="none";
-    skinsScreen.style.display="none";
-    lobby.style.display="flex";
-
-    document.getElementById("roomCode").textContent=roomCode;
-
-    updateLobby();
-
-}
-
-function updateLobby(){
-
-    const me=players.find(
-        p=>p.id===myId
-    );
-
-    const skin=
-    skins.find(s=>
-        s.id===(me?.skin||selectedSkin)
-    );
-
-    if(!skin)return;
-
-    document.getElementById("lobbySkin")
-    .textContent=skin.name;
-
-    document.getElementById("lobbyWeapon")
-    .textContent=skin.weapon;
-
-    document.getElementById("lobbyHp")
-    .textContent=100+skin.healthBonus;
-
-    document.getElementById("lobbyShield")
-    .textContent=50+skin.shieldBonus;
-
-    document.getElementById("lobbyDamage")
-    .textContent=
-    "+"+skin.damageBonus+"%";
-
-    document.getElementById("lobbyKills")
-    .textContent=
-    me?.kills??kills;
-
-    document.getElementById("lobbyDifficulty")
-    .textContent=
-    difficulty==="easy"
-    ?"Leicht"
-    :difficulty==="hard"
-    ?"Schwer"
-    :"Mittel";
-
-    document.getElementById("bigCharacter")
-    .style.background=
-    `linear-gradient(145deg,${skin.color},#111827)`;
-
-}
-
-/* ================= BUTTONS ================= */
-
-document.getElementById("play").onclick=()=>{
-
-    lobby.style.display="none";
-    game.style.display="block";
-
-    send({
-        type:"startGame"
-    });
-
-};
-
-document.getElementById("back").onclick=()=>{
-
-    lobby.style.display="none";
-    menu.style.display="flex";
-
-};
-
-document.getElementById("copy").onclick=()=>{
-
-    navigator.clipboard
-    ?.writeText(roomCode);
-
-    alert("Raumcode kopiert: "+roomCode);
-
-};
-
-/* ================= SKINS ================= */
-
-document.getElementById("skinsButton").onclick=()=>{
-
-    menu.style.display="none";
-    skinsScreen.style.display="block";
-
-    renderSkins();
-
-};
-
-document.getElementById("closeSkins").onclick=()=>{
-
-    skinsScreen.style.display="none";
-    menu.style.display="flex";
-
-};
-
-function renderSkins(){
-
-    const grid=document.getElementById("skinGrid");
-
-    grid.innerHTML="";
-
-    skins.forEach(s=>{
-
-        const card=document.createElement("div");
-
-        card.className="skinCard";
-
-        card.innerHTML=`
-
-        <div class="skinPreview">
-
-            <div
-            class="miniCharacter"
-            style="
-            background:linear-gradient(
-            145deg,
-            ${s.color},
-            #111827
-            )">
-            </div>
-
-        </div>
-
-        <h3>${s.name}</h3>
-
-        <p>⭐ ${s.rarity}</p>
-
-        <p>🔫 ${s.weapon}</p>
-
-        <p>❤️ +${s.healthBonus}</p>
-
-        <p>🛡️ +${s.shieldBonus}</p>
-
-        <p>💥 +${s.damageBonus}%</p>
-
-        <p>💀 Preis: ${s.price}</p>
-
-        `;
-
-        const button=document.createElement("button");
-
-        button.className="btn";
-
-        if(
-            selectedSkin===s.id
-        ){
-
-            button.textContent="✓ Ausgewählt";
-
-        }else if(
-            kills>=s.price
-        ){
-
-            button.textContent="Auswählen";
-
-            button.onclick=()=>{
-
-                selectedSkin=s.id;
-
-                localStorage.setItem(
-                    "battleSkin",
-                    selectedSkin
-                );
-
-                send({
-                    type:"changeSkin",
-                    skin:selectedSkin
-                });
-
-                updateMenu();
-                renderSkins();
-
-            };
-
-        }else{
-
-            button.textContent=
-            "🔒 "+s.price+" Kills";
+            message.textContent =
+                "💀 VERLOREN!";
 
         }
 
-        card.appendChild(button);
-
-        grid.appendChild(card);
-
-    });
-
-}
-
-/* ================= TUTORIAL ================= */
-
-let tutorialIndex=0;
-
-const tutorialData=[
-
-{
-title:"🎮 Bewegung",
-text:"Benutze auf dem PC die Pfeiltasten. Auf dem Handy benutzt du den Joystick."
-},
-
-{
-title:"🔥 Schießen",
-text:"Auf dem PC klickst du mit der Maus. Auf dem Handy benutzt du den roten Schuss-Button."
-},
-
-{
-title:"💚 Heilen",
-text:"Mit HEILEN kannst du verlorenes Leben wiederherstellen."
-},
-
-{
-title:"⚡ Super",
-text:"Dein Super lädt sich durch Schaden auf. Wenn er voll ist, kannst du ihn benutzen."
-},
-
-{
-title:"🏆 Gewinnen",
-text:"Besiege die Gegner und Bots. Am Ende der Runde gewinnt der letzte Spieler."
-}
-
-];
-
-document.getElementById("tutorialButton").onclick=()=>{
-
-    menu.style.display="none";
-    tutorialScreen.style.display="flex";
-
-    tutorialIndex=0;
-
-    renderTutorial();
-
-};
-
-function renderTutorial(){
-
-    const t=tutorialData[tutorialIndex];
-
-    document.getElementById("tutorialTitle")
-    .textContent=t.title;
-
-    document.getElementById("tutorialText")
-    .textContent=t.text;
-
-    document.getElementById("tutorialCounter")
-    .textContent=
-    `${tutorialIndex+1} / ${tutorialData.length}`;
-
-}
-
-document.getElementById("tutorialNext").onclick=()=>{
-
-    tutorialIndex++;
-
-    if(
-        tutorialIndex>=tutorialData.length
-    ){
-
-        tutorialScreen.style.display="none";
-        menu.style.display="flex";
+        message.style.display =
+            "block";
 
         return;
-
     }
 
-    renderTutorial();
 
-};
+    if (data.type === "newRound") {
 
-/* ================= KEYBOARD ================= */
+        document.getElementById(
+            "message"
+        ).style.display = "none";
 
-addEventListener("keydown",e=>{
+        gameStarted = true;
 
-    if(e.key==="ArrowUp"){
-        keys.up=true;
-        e.preventDefault();
-    }
-
-    if(e.key==="ArrowDown"){
-        keys.down=true;
-        e.preventDefault();
-    }
-
-    if(e.key==="ArrowLeft"){
-        keys.left=true;
-        e.preventDefault();
-    }
-
-    if(e.key==="ArrowRight"){
-        keys.right=true;
-        e.preventDefault();
-    }
-
-    if(e.key==="r"||e.key==="R"){
-
-        send({
-            type:"reload"
-        });
-
-    }
-
-});
-
-addEventListener("keyup",e=>{
-
-    if(e.key==="ArrowUp")
-        keys.up=false;
-
-    if(e.key==="ArrowDown")
-        keys.down=false;
-
-    if(e.key==="ArrowLeft")
-        keys.left=false;
-
-    if(e.key==="ArrowRight")
-        keys.right=false;
-
-});
-
-/* ================= MOVEMENT ================= */
-
-setInterval(()=>{
-
-    if(game.style.display!=="block")
         return;
-
-    let dx=
-    (keys.right?1:0)-
-    (keys.left?1:0);
-
-    let dy=
-    (keys.down?1:0)-
-    (keys.up?1:0);
-
-    dx+=joyX;
-    dy+=joyY;
-
-    if(dx!==0||dy!==0){
-
-        const length=Math.hypot(dx,dy);
-
-        if(length>1){
-
-            dx/=length;
-            dy/=length;
-
-        }
-
-        send({
-            type:"move",
-            dx:dx,
-            dy:dy
-        });
-
     }
 
-},33);
 
-/* ================= JOYSTICK ================= */
+    if (data.type === "error") {
 
-const joystick=
-document.getElementById("joystick");
-
-const stick=
-document.getElementById("stick");
-
-let joystickActive=false;
-
-joystick.addEventListener(
-"pointerdown",
-e=>{
-
-    joystickActive=true;
-
-    joystick.setPointerCapture(
-        e.pointerId
-    );
-
-    updateJoystick(
-        e.clientX,
-        e.clientY
-    );
-
-});
-
-joystick.addEventListener(
-"pointermove",
-e=>{
-
-    if(joystickActive){
-
-        updateJoystick(
-            e.clientX,
-            e.clientY
+        alert(
+            data.message || "Fehler"
         );
 
+        return;
     }
-
-});
-
-joystick.addEventListener(
-"pointerup",
-resetJoystick
-);
-
-joystick.addEventListener(
-"pointercancel",
-resetJoystick
-);
-
-function resetJoystick(){
-
-    joystickActive=false;
-
-    joyX=0;
-    joyY=0;
-
-    stick.style.left="41px";
-    stick.style.top="41px";
 
 }
 
-function updateJoystick(x,y){
 
-    const r=
-    joystick.getBoundingClientRect();
+/* =========================
+   CREATE ROOM
+========================= */
 
-    const cx=
-    r.left+r.width/2;
+document
+.getElementById("createButton")
+.addEventListener("click", function() {
 
-    const cy=
-    r.top+r.height/2;
+    if (!connected) {
 
-    let dx=x-cx;
-    let dy=y-cy;
+        alert(
+            "Server wird noch verbunden..."
+        );
 
-    const max=45;
-
-    const distance=
-    Math.hypot(dx,dy);
-
-    if(distance>max){
-
-        dx=dx/distance*max;
-        dy=dy/distance*max;
-
+        return;
     }
 
-    joyX=dx/max;
-    joyY=dy/max;
 
-    stick.style.left=
-    (r.width/2-31+dx)+"px";
+    const name =
+        document
+        .getElementById("playerName")
+        .value
+        .trim() || "Player";
 
-    stick.style.top=
-    (r.height/2-31+dy)+"px";
+
+    const difficulty =
+        document
+        .getElementById("difficulty")
+        .value;
+
+
+    const bots =
+        Number(
+            document
+            .getElementById("botCount")
+            .value
+        );
+
+
+    send({
+
+        type: "createRoom",
+
+        name: name,
+
+        difficulty: difficulty,
+
+        bots: bots
+
+    });
+
+});
+
+
+/* =========================
+   JOIN ROOM
+========================= */
+
+document
+.getElementById("joinButton")
+.addEventListener("click", function() {
+
+    if (!connected) {
+
+        alert(
+            "Server wird noch verbunden..."
+        );
+
+        return;
+    }
+
+
+    const name =
+        document
+        .getElementById("playerName")
+        .value
+        .trim() || "Player";
+
+
+    const code =
+        document
+        .getElementById("roomCodeInput")
+        .value
+        .trim()
+        .toUpperCase();
+
+
+    if (code.length !== 4) {
+
+        alert(
+            "Der Raumcode muss 4 Zeichen haben."
+        );
+
+        return;
+    }
+
+
+    send({
+
+        type: "joinRoom",
+
+        name: name,
+
+        code: code
+
+    });
+
+});
+
+
+/* =========================
+   LOBBY
+========================= */
+
+function showLobby() {
+
+    hide(menu);
+
+    show(lobby);
+
+    document
+    .getElementById("lobbyRoom")
+    .textContent = roomCode;
+
+
+    document
+    .getElementById("lobbyName")
+    .textContent =
+        document
+        .getElementById("playerName")
+        .value
+        .trim() || "Player";
+
+
+    const difficulty =
+        document
+        .getElementById("difficulty")
+        .value;
+
+
+    document
+    .getElementById("lobbyDifficulty")
+    .textContent =
+        difficulty === "easy"
+        ? "Leicht"
+        : difficulty === "hard"
+        ? "Schwer"
+        : "Mittel";
+
+
+    document
+    .getElementById("lobbyBots")
+    .textContent =
+        document
+        .getElementById("botCount")
+        .value;
 
 }
 
-/* ================= AIM ================= */
 
-addEventListener("mousemove",e=>{
+/* =========================
+   START GAME
+========================= */
 
-    aimX=e.clientX;
-    aimY=e.clientY;
+document
+.getElementById("playButton")
+.addEventListener("click", function() {
+
+    hide(lobby);
+
+    show(game);
+
+    gameStarted = true;
+
+    send({
+        type: "startGame"
+    });
 
 });
 
-addEventListener("mousedown",e=>{
 
-    if(
-        e.button===0 &&
-        game.style.display==="block"
-    ){
+/* =========================
+   BACK
+========================= */
 
-        firing=true;
+document
+.getElementById("backButton")
+.addEventListener("click", function() {
+
+    hide(lobby);
+
+    show(menu);
+
+});
+
+
+/* =========================
+   KEYBOARD
+========================= */
+
+const keys = {
+
+    up: false,
+    down: false,
+    left: false,
+    right: false
+
+};
+
+
+window.addEventListener(
+"keydown",
+function(event) {
+
+    if (event.key === "ArrowUp") {
+
+        keys.up = true;
+
+        event.preventDefault();
+
+    }
+
+    if (event.key === "ArrowDown") {
+
+        keys.down = true;
+
+        event.preventDefault();
+
+    }
+
+    if (event.key === "ArrowLeft") {
+
+        keys.left = true;
+
+        event.preventDefault();
+
+    }
+
+    if (event.key === "ArrowRight") {
+
+        keys.right = true;
+
+        event.preventDefault();
 
     }
 
 });
 
-addEventListener("mouseup",()=>{
 
-    firing=false;
+window.addEventListener(
+"keyup",
+function(event) {
+
+    if (event.key === "ArrowUp")
+        keys.up = false;
+
+    if (event.key === "ArrowDown")
+        keys.down = false;
+
+    if (event.key === "ArrowLeft")
+        keys.left = false;
+
+    if (event.key === "ArrowRight")
+        keys.right = false;
 
 });
 
-document.getElementById("shoot")
+
+/* =========================
+   MOVEMENT
+========================= */
+
+setInterval(
+function() {
+
+    if (!gameStarted)
+        return;
+
+
+    let dx = 0;
+    let dy = 0;
+
+
+    if (keys.right)
+        dx += 1;
+
+    if (keys.left)
+        dx -= 1;
+
+    if (keys.down)
+        dy += 1;
+
+    if (keys.up)
+        dy -= 1;
+
+
+    dx += joystickX;
+    dy += joystickY;
+
+
+    const length =
+        Math.sqrt(
+            dx * dx +
+            dy * dy
+        );
+
+
+    if (length > 1) {
+
+        dx /= length;
+        dy /= length;
+
+    }
+
+
+    if (
+        Math.abs(dx) > 0 ||
+        Math.abs(dy) > 0
+    ) {
+
+        send({
+
+            type: "move",
+
+            dx: dx,
+
+            dy: dy
+
+        });
+
+    }
+
+}, 50);
+
+
+/* =========================
+   MOUSE AIM
+========================= */
+
+window.addEventListener(
+"mousemove",
+function(event) {
+
+    aimX = event.clientX;
+    aimY = event.clientY;
+
+});
+
+
+/* =========================
+   SHOOT
+========================= */
+
+function shoot() {
+
+    if (!gameStarted)
+        return;
+
+
+    const centerX =
+        canvas.width / 2;
+
+    const centerY =
+        canvas.height / 2;
+
+
+    let dx =
+        aimX - centerX;
+
+    let dy =
+        aimY - centerY;
+
+
+    const length =
+        Math.sqrt(
+            dx * dx +
+            dy * dy
+        );
+
+
+    if (length < 5)
+        return;
+
+
+    dx /= length;
+    dy /= length;
+
+
+    send({
+
+        type: "shoot",
+
+        dx: dx,
+
+        dy: dy
+
+    });
+
+}
+
+
+document
+.getElementById("shootButton")
 .addEventListener(
 "pointerdown",
-e=>{
+function(event) {
 
-    e.preventDefault();
+    event.preventDefault();
 
-    firing=true;
+    shooting = true;
 
     shoot();
 
 });
 
-document.getElementById("shoot")
+
+document
+.getElementById("shootButton")
 .addEventListener(
 "pointerup",
-()=>firing=false
-);
+function() {
 
-document.getElementById("shoot")
-.addEventListener(
-"pointercancel",
-()=>firing=false
-);
+    shooting = false;
 
-setInterval(()=>{
+});
 
-    if(firing)
+
+setInterval(
+function() {
+
+    if (shooting)
         shoot();
 
-},120);
+}, 250);
 
-function shoot(){
 
-    const me=players.find(
-        p=>p.id===myId
+/* =========================
+   HEAL
+========================= */
+
+document
+.getElementById("healButton")
+.addEventListener(
+"click",
+function() {
+
+    send({
+        type: "heal"
+    });
+
+});
+
+
+/* =========================
+   JOYSTICK
+========================= */
+
+const joystick =
+    document.getElementById("joystick");
+
+const stick =
+    document.getElementById("stick");
+
+let joystickActive = false;
+
+
+joystick.addEventListener(
+"pointerdown",
+function(event) {
+
+    joystickActive = true;
+
+    joystick.setPointerCapture(
+        event.pointerId
     );
 
-    if(!me||!me.alive)
-        return;
-
-    const dx=
-    aimX-canvas.width/2;
-
-    const dy=
-    aimY-canvas.height/2;
-
-    if(Math.hypot(dx,dy)<5)
-        return;
-
-    send({
-        type:"shoot",
-        dx:dx,
-        dy:dy
-    });
-
-}
-
-/* ================= ACTIONS ================= */
-
-document.getElementById("heal").onclick=()=>{
-
-    send({
-        type:"heal"
-    });
-
-};
-
-document.getElementById("super").onclick=()=>{
-
-    send({
-        type:"super"
-    });
-
-};
-
-document.getElementById("newRound").onclick=()=>{
-
-    send({
-        type:"newRound"
-    });
-
-};
-
-document.getElementById("roundLobby").onclick=()=>{
-
-    document.getElementById("round")
-    .style.display="none";
-
-    game.style.display="none";
-    lobby.style.display="flex";
-
-};
-
-/* ================= HUD ================= */
-
-function updateHUD(){
-
-    const me=players.find(
-        p=>p.id===myId
+    updateJoystick(
+        event.clientX,
+        event.clientY
     );
 
-    if(!me)return;
+});
 
-    document.getElementById("hudHp")
-    .textContent=Math.max(0,Math.round(me.hp));
 
-    document.getElementById("hudShield")
-    .textContent=Math.max(0,Math.round(me.shield));
+joystick.addEventListener(
+"pointermove",
+function(event) {
 
-    document.getElementById("hudWeapon")
-    .textContent=me.weapon;
+    if (!joystickActive)
+        return;
 
-    document.getElementById("hudKills")
-    .textContent=me.kills;
+    updateJoystick(
+        event.clientX,
+        event.clientY
+    );
 
-    document.getElementById("hudRoom")
-    .textContent=roomCode;
+});
 
-    document.getElementById("hudDifficulty")
-    .textContent=
-    difficulty==="easy"
-    ?"Leicht"
-    :difficulty==="hard"
-    ?"Schwer"
-    :"Mittel";
 
-    const skin=
-    skins.find(s=>s.id===me.skin);
+joystick.addEventListener(
+"pointerup",
+resetJoystick
+);
 
-    if(skin&&skin.superNeed){
+joystick.addEventListener(
+"pointercancel",
+resetJoystick
+);
 
-        const percent=
-        Math.min(
-            100,
-            me.superCharge/
-            skin.superNeed*100
+
+function updateJoystick(x,y) {
+
+    const rect =
+        joystick.getBoundingClientRect();
+
+
+    const centerX =
+        rect.left +
+        rect.width / 2;
+
+
+    const centerY =
+        rect.top +
+        rect.height / 2;
+
+
+    let dx =
+        x - centerX;
+
+
+    let dy =
+        y - centerY;
+
+
+    const max =
+        40;
+
+
+    const distance =
+        Math.sqrt(
+            dx * dx +
+            dy * dy
         );
 
-        document.getElementById("superFill")
-        .style.width=percent+"%";
+
+    if (distance > max) {
+
+        dx =
+            dx / distance * max;
+
+        dy =
+            dy / distance * max;
 
     }
 
-}
 
-/* ================= CAMERA ================= */
+    joystickX =
+        dx / max;
 
-function worldX(x,cam){
+    joystickY =
+        dy / max;
 
-    return x-cam.x+
-    canvas.width/2;
 
-}
+    stick.style.left =
+        (40 + dx) + "px";
 
-function worldY(y,cam){
-
-    return y-cam.y+
-    canvas.height/2;
+    stick.style.top =
+        (40 + dy) + "px";
 
 }
 
-/* ================= ARENA ================= */
 
-function drawArena(cam){
+function resetJoystick() {
 
-    const gradient=
-    ctx.createLinearGradient(
-        0,0,0,canvas.height
-    );
+    joystickActive = false;
 
-    gradient.addColorStop(
-        0,
-        "#3f6745"
-    );
+    joystickX = 0;
+    joystickY = 0;
 
-    gradient.addColorStop(
-        1,
-        "#17291b"
-    );
+    stick.style.left = "40px";
+    stick.style.top = "40px";
 
-    ctx.fillStyle=gradient;
+}
+
+
+/* =========================
+   HUD
+========================= */
+
+function updateGameHUD() {
+
+    const me =
+        players.find(
+            player =>
+                player.id === myId
+        );
+
+
+    if (!me)
+        return;
+
+
+    document
+    .getElementById("hudRoom")
+    .textContent =
+        roomCode;
+
+
+    document
+    .getElementById("hudHealth")
+    .textContent =
+        me.hp;
+
+
+    document
+    .getElementById("hudShield")
+    .textContent =
+        me.shield;
+
+
+    document
+    .getElementById("hudKills")
+    .textContent =
+        me.kills;
+
+
+    document
+    .getElementById("hudPlayers")
+    .textContent =
+        players.length +
+        bots.length;
+
+}
+
+
+/* =========================
+   DRAW MAP
+========================= */
+
+function drawBackground() {
+
+    ctx.fillStyle =
+        "#263c28";
 
     ctx.fillRect(
         0,
@@ -1718,424 +1494,441 @@ function drawArena(cam){
         canvas.height
     );
 
-    const grid=50;
 
-    const ox=
-    (-cam.x+
-    canvas.width/2)%grid;
+    ctx.strokeStyle =
+        "rgba(255,255,255,.05)";
 
-    const oy=
-    (-cam.y+
-    canvas.height/2)%grid;
 
-    ctx.strokeStyle=
-    "rgba(255,255,255,.05)";
+    const size = 50;
 
-    ctx.lineWidth=1;
 
-    for(
-        let x=ox;
-        x<canvas.width;
-        x+=grid
-    ){
+    for (
+        let x = 0;
+        x < canvas.width;
+        x += size
+    ) {
 
         ctx.beginPath();
 
         ctx.moveTo(x,0);
-        ctx.lineTo(x,canvas.height);
+
+        ctx.lineTo(
+            x,
+            canvas.height
+        );
 
         ctx.stroke();
 
     }
 
-    for(
-        let y=oy;
-        y<canvas.height;
-        y+=grid
-    ){
+
+    for (
+        let y = 0;
+        y < canvas.height;
+        y += size
+    ) {
 
         ctx.beginPath();
 
         ctx.moveTo(0,y);
-        ctx.lineTo(canvas.width,y);
+
+        ctx.lineTo(
+            canvas.width,
+            y
+        );
 
         ctx.stroke();
 
     }
 
-    for(const w of walls){
-
-        const x=worldX(w.x,cam);
-        const y=worldY(w.y,cam);
-
-        ctx.fillStyle=
-        "rgba(0,0,0,.35)";
-
-        ctx.fillRect(
-            x+7,
-            y+8,
-            w.w,
-            w.h
-        );
-
-        ctx.fillStyle="#64748b";
-
-        ctx.fillRect(
-            x,
-            y,
-            w.w,
-            w.h
-        );
-
-        ctx.strokeStyle="#cbd5e1";
-
-        ctx.strokeRect(
-            x,
-            y,
-            w.w,
-            w.h
-        );
-
-    }
-
 }
 
-/* ================= CHARACTER ================= */
 
-function getSkin(id){
+/* =========================
+   DRAW PLAYER
+========================= */
 
-    return skins.find(
-        s=>s.id===id
-    );
+function drawPlayer(
+    player,
+    isMe
+) {
 
-}
+    const x =
+        canvas.width / 2 +
+        (player.x -
+        getMyPlayer().x);
 
-function drawCharacter(entity,cam){
 
-    const x=
-    worldX(entity.x,cam);
+    const y =
+        canvas.height / 2 +
+        (player.y -
+        getMyPlayer().y);
 
-    const y=
-    worldY(entity.y,cam);
 
-    const skin=
-    getSkin(entity.skin);
+    if (
+        x < -100 ||
+        x > canvas.width + 100 ||
+        y < -100 ||
+        y > canvas.height + 100
+    )
+        return;
 
-    const color=
-    skin?.color||"#38bdf8";
 
-    /* shadow */
+    /* SHADOW */
 
     ctx.beginPath();
 
     ctx.ellipse(
         x,
-        y+23,
+        y + 20,
         25,
         9,
         0,
         0,
-        Math.PI*2
+        Math.PI * 2
     );
 
-    ctx.fillStyle=
-    "rgba(0,0,0,.4)";
+    ctx.fillStyle =
+        "rgba(0,0,0,.35)";
 
     ctx.fill();
 
-    /* body */
 
-    const body=
-    ctx.createLinearGradient(
-        x-20,
-        y-10,
-        x+20,
-        y+35
-    );
-
-    body.addColorStop(
-        0,
-        color
-    );
-
-    body.addColorStop(
-        1,
-        "#111827"
-    );
-
-    ctx.fillStyle=body;
+    /* BODY */
 
     ctx.beginPath();
 
     ctx.roundRect(
-        x-18,
-        y-8,
+        x - 18,
+        y - 5,
         36,
         40,
         10
     );
 
+    ctx.fillStyle =
+        isMe
+        ? "#38bdf8"
+        : "#ef4444";
+
     ctx.fill();
 
-    /* head */
 
-    ctx.fillStyle="#dcae8e";
+    /* HEAD */
 
     ctx.beginPath();
 
     ctx.arc(
         x,
-        y-21,
+        y - 20,
         14,
         0,
-        Math.PI*2
+        Math.PI * 2
     );
+
+    ctx.fillStyle =
+        "#e8b995";
 
     ctx.fill();
 
-    /* weapon */
 
-    let angle=
-    entity.id===myId
-    ?
-    Math.atan2(
-        aimY-canvas.height/2,
-        aimX-canvas.width/2
-    )
-    :
-    entity.facing||0;
+    /* WEAPON */
 
     ctx.save();
 
-    ctx.translate(x,y);
+    ctx.translate(
+        x,
+        y
+    );
+
+
+    let angle = 0;
+
+
+    if (isMe) {
+
+        angle =
+            Math.atan2(
+                aimY -
+                canvas.height / 2,
+
+                aimX -
+                canvas.width / 2
+            );
+
+    } else {
+
+        angle =
+            player.angle || 0;
+
+    }
+
 
     ctx.rotate(angle);
 
-    ctx.strokeStyle="#e5e7eb";
 
-    ctx.lineWidth=7;
+    ctx.fillStyle =
+        "#111827";
 
-    ctx.lineCap="round";
+    ctx.fillRect(
+        5,
+        -4,
+        35,
+        8
+    );
 
-    ctx.beginPath();
-
-    ctx.moveTo(8,0);
-
-    ctx.lineTo(35,0);
-
-    ctx.stroke();
 
     ctx.restore();
 
-    /* HP */
 
-    const maxHp=
-    entity.maxHp||100;
+    /* HEALTH BAR */
 
-    ctx.fillStyle="#450a0a";
+    ctx.fillStyle =
+        "#450a0a";
 
     ctx.fillRect(
-        x-25,
-        y-40,
+        x - 25,
+        y - 45,
         50,
         5
     );
 
-    ctx.fillStyle="#22c55e";
+
+    ctx.fillStyle =
+        "#22c55e";
 
     ctx.fillRect(
-        x-25,
-        y-40,
-        50*
+        x - 25,
+        y - 45,
+        50 *
         Math.max(
             0,
-            entity.hp/maxHp
+            player.hp /
+            player.maxHp
         ),
         5
     );
 
-    /* shield */
 
-    if(entity.shield>0){
+    /* NAME */
 
-        ctx.strokeStyle=
-        "#38bdf8";
+    ctx.font =
+        "bold 12px Arial";
 
-        ctx.lineWidth=2;
+    ctx.textAlign =
+        "center";
 
-        ctx.beginPath();
-
-        ctx.arc(
-            x,
-            y,
-            30,
-            0,
-            Math.PI*2
-        );
-
-        ctx.stroke();
-
-    }
-
-    /* name */
-
-    ctx.font=
-    "bold 12px Arial";
-
-    ctx.textAlign="center";
-
-    ctx.fillStyle="white";
+    ctx.fillStyle =
+        "white";
 
     ctx.fillText(
-        entity.name||"Bot",
+        player.name,
         x,
-        y-48
+        y - 52
     );
 
 }
 
-/* ================= BULLETS ================= */
 
-function drawBullets(cam){
+function getMyPlayer() {
 
-    bullets=
-    bullets.filter(b=>{
-
-        b.x+=b.dx*b.speed/3;
-        b.y+=b.dy*b.speed/3;
-
-        b.life--;
-
-        const x=
-        worldX(b.x,cam);
-
-        const y=
-        worldY(b.y,cam);
-
-        ctx.beginPath();
-
-        ctx.arc(
-            x,
-            y,
-            5,
-            0,
-            Math.PI*2
-        );
-
-        ctx.fillStyle=b.color;
-
-        ctx.shadowBlur=15;
-
-        ctx.shadowColor=b.color;
-
-        ctx.fill();
-
-        ctx.shadowBlur=0;
-
-        return b.life>0;
-
-    });
+    return players.find(
+        player =>
+            player.id === myId
+    );
 
 }
 
-/* ================= EFFECTS ================= */
 
-function drawEffects(cam){
+/* =========================
+   DRAW BOTS
+========================= */
 
-    effects=
-    effects.filter(e=>{
+function drawBot(bot) {
 
-        e.life--;
+    const me =
+        getMyPlayer();
 
-        const x=
-        worldX(e.x,cam);
 
-        const y=
-        worldY(e.y,cam);
+    if (!me)
+        return;
 
-        ctx.beginPath();
 
-        ctx.arc(
-            x,
-            y,
-            10+(20-e.life)*2,
+    const x =
+        canvas.width / 2 +
+        (bot.x - me.x);
+
+
+    const y =
+        canvas.height / 2 +
+        (bot.y - me.y);
+
+
+    if (
+        x < -100 ||
+        x > canvas.width + 100 ||
+        y < -100 ||
+        y > canvas.height + 100
+    )
+        return;
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x,
+        y,
+        22,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fillStyle =
+        "#ef4444";
+
+    ctx.fill();
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x,
+        y - 25,
+        12,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fillStyle =
+        "#e8b995";
+
+    ctx.fill();
+
+
+    ctx.fillStyle =
+        "#450a0a";
+
+    ctx.fillRect(
+        x - 25,
+        y - 43,
+        50,
+        5
+    );
+
+
+    ctx.fillStyle =
+        "#22c55e";
+
+    ctx.fillRect(
+        x - 25,
+        y - 43,
+        50 *
+        Math.max(
             0,
-            Math.PI*2
-        );
+            bot.hp /
+            bot.maxHp
+        ),
+        5
+    );
 
-        ctx.strokeStyle=
-        e.type==="heal"
-        ?" #4ade80"
-        :"#facc15";
 
-        ctx.lineWidth=4;
+    ctx.font =
+        "bold 12px Arial";
 
-        ctx.stroke();
+    ctx.textAlign =
+        "center";
 
-        return e.life>0;
+    ctx.fillStyle =
+        "white";
 
-    });
+    ctx.fillText(
+        bot.name,
+        x,
+        y - 50
+    );
 
 }
 
-/* ================= GAME LOOP ================= */
 
-function render(){
+/* =========================
+   GAME LOOP
+========================= */
+
+function render() {
 
     requestAnimationFrame(render);
 
-    if(game.style.display!=="block")
+
+    if (!gameStarted)
         return;
 
-    const me=players.find(
-        p=>p.id===myId
+
+    drawBackground();
+
+
+    const me =
+        getMyPlayer();
+
+
+    if (!me)
+        return;
+
+
+    players.forEach(
+        player => {
+
+            if (player.alive) {
+
+                drawPlayer(
+                    player,
+                    player.id === myId
+                );
+
+            }
+
+        }
     );
 
-    if(!me){
 
-        ctx.fillStyle="#15231a";
+    bots.forEach(
+        bot => {
 
-        ctx.fillRect(
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        );
+            if (bot.alive) {
 
-        return;
+                drawBot(bot);
 
-    }
+            }
 
-    const cam={
-        x:me.x,
-        y:me.y
-    };
-
-    drawArena(cam);
-
-    players.forEach(p=>{
-
-        if(p.alive)
-            drawCharacter(p,cam);
-
-    });
-
-    bots.forEach(b=>{
-
-        if(b.alive)
-            drawCharacter(b,cam);
-
-    });
-
-    drawBullets(cam);
-
-    drawEffects(cam);
+        }
+    );
 
 }
 
+
 render();
 
-updateMenu();
+
+/* =========================
+   TUTORIAL
+========================= */
+
+document
+.getElementById("tutorialButton")
+.addEventListener(
+"click",
+function() {
+
+    alert(
+        "BATTLE ZONE\n\n" +
+        "PC: Pfeiltasten zum Bewegen.\n" +
+        "Maus zum Zielen.\n" +
+        "Linksklick zum Schießen.\n\n" +
+        "Handy: Joystick zum Bewegen.\n" +
+        "Roter Knopf zum Schießen.\n\n" +
+        "Besiege die Bots!"
+    );
+
+});
 
 </script>
 
