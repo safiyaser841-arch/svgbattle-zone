@@ -2,322 +2,320 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>Battle Zone</title>
 
 <style>
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
 }
 
-html, body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
-    background: #101820;
-    color: white;
+html,body{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    font-family:Arial,sans-serif;
+    background:#07111f;
+    color:white;
+    touch-action:none;
 }
 
-button,
-input,
-select {
-    font-family: Arial, sans-serif;
+button,input,select{
+    font:inherit;
 }
 
-button {
-    cursor: pointer;
+button{
+    cursor:pointer;
+    border:0;
 }
 
-.screen {
-    width: 100%;
-    height: 100%;
+.screen{
+    position:fixed;
+    inset:0;
 }
 
-/* MENU */
-
-#menu {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+#menu{
+    display:flex;
+    align-items:center;
+    justify-content:center;
     background:
-        radial-gradient(circle at center, #214b70 0%, #101820 55%, #05080c 100%);
+        radial-gradient(circle at center,#164e70 0%,#07111f 55%,#02060b 100%);
 }
 
-.menuBox {
-    width: min(450px, 92%);
-    background: rgba(10, 17, 27, 0.96);
-    padding: 30px;
-    border-radius: 22px;
-    text-align: center;
-    box-shadow: 0 0 50px rgba(0,0,0,.6);
+.menuBox{
+    width:min(500px,92vw);
+    background:rgba(10,20,32,.97);
+    border:1px solid #334155;
+    border-radius:22px;
+    padding:28px;
+    text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,.6);
 }
 
-.logo {
-    font-size: 42px;
-    font-weight: 900;
-    color: #38bdf8;
-    margin-bottom: 8px;
+.logo{
+    font-size:clamp(38px,10vw,60px);
+    font-weight:900;
+    color:#38bdf8;
+    margin-bottom:5px;
 }
 
-.subtitle {
-    color: #94a3b8;
-    margin-bottom: 25px;
+.subtitle{
+    color:#94a3b8;
+    margin-bottom:22px;
 }
 
-input,
-select {
-    width: 100%;
-    padding: 13px;
-    margin-top: 9px;
-    border: 1px solid #334155;
-    border-radius: 10px;
-    background: #111827;
-    color: white;
-    outline: none;
+.input,
+.select{
+    width:100%;
+    padding:13px;
+    margin:6px 0;
+    border-radius:10px;
+    border:1px solid #334155;
+    background:#111827;
+    color:white;
+    outline:none;
 }
 
-button {
-    width: 100%;
-    padding: 13px;
-    margin-top: 9px;
-    border: none;
-    border-radius: 10px;
-    color: white;
-    font-weight: bold;
-    background: #2563eb;
+.button{
+    width:100%;
+    padding:13px;
+    margin-top:8px;
+    border-radius:10px;
+    color:white;
+    background:linear-gradient(135deg,#38bdf8,#2563eb);
+    font-weight:bold;
 }
 
-button:hover {
-    filter: brightness(1.15);
+.button.dark{
+    background:#1e293b;
 }
 
-.darkButton {
-    background: #1e293b;
+.info{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:7px;
+    margin-bottom:10px;
 }
 
-.stats {
-    display: grid;
-    grid-template-columns: repeat(3,1fr);
-    gap: 7px;
-    margin-bottom: 10px;
+.info div{
+    background:#0f172a;
+    padding:10px 5px;
+    border-radius:9px;
+    font-size:12px;
 }
 
-.stat {
-    background: #0b1220;
-    padding: 10px;
-    border-radius: 9px;
-    font-size: 12px;
+.info b{
+    display:block;
+    color:#38bdf8;
+    margin-top:4px;
 }
 
-.stat strong {
-    display: block;
-    margin-top: 4px;
-    color: #38bdf8;
+#lobby,
+#game{
+    display:none;
 }
 
-/* LOBBY */
-
-#lobby {
-    display: none;
-    justify-content: center;
-    align-items: center;
-    background:
-        radial-gradient(circle, #1e4968, #060a0f);
+#lobby{
+    align-items:center;
+    justify-content:center;
+    background:radial-gradient(circle,#164e70,#02060b);
 }
 
-.lobbyBox {
-    width: min(850px, 94%);
-    background: rgba(10,17,27,.97);
-    border-radius: 20px;
-    padding: 22px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
+.lobbyBox{
+    width:min(850px,94vw);
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+    padding:20px;
+    border-radius:20px;
+    background:#0b1420;
 }
 
-.characterArea {
-    min-height: 400px;
-    border-radius: 15px;
-    background:
-        radial-gradient(circle, #355d7d, #0b1118);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
+.character{
+    min-height:400px;
+    border-radius:15px;
+    background:radial-gradient(circle,#315d7a,#08101a);
+    display:flex;
+    justify-content:center;
+    align-items:center;
 }
 
-.character {
-    width: 90px;
-    height: 120px;
-    border-radius: 30px 30px 20px 20px;
-    background: linear-gradient(145deg,#38bdf8,#164e63);
-    position: relative;
-    box-shadow: 0 20px 30px rgba(0,0,0,.5);
+.playerPreview{
+    width:100px;
+    height:130px;
+    background:#38bdf8;
+    border-radius:35px 35px 20px 20px;
+    position:relative;
+    box-shadow:0 15px 35px rgba(0,0,0,.5);
 }
 
-.character::before {
-    content: "";
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: #e8b995;
-    position: absolute;
-    left: 15px;
-    top: -40px;
+.playerPreview:before{
+    content:"";
+    position:absolute;
+    width:65px;
+    height:65px;
+    background:#f1c6a6;
+    border-radius:50%;
+    left:18px;
+    top:-50px;
 }
 
-.lobbyInfo {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+.lobbyInfo{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:10px;
 }
 
-.roomCode {
-    font-size: 45px;
-    font-weight: 900;
-    letter-spacing: 8px;
-    color: #38bdf8;
-    margin: 10px 0;
+.roomCode{
+    font-size:45px;
+    font-weight:bold;
+    letter-spacing:7px;
+    color:#38bdf8;
+    text-align:center;
 }
 
-/* GAME */
-
-#game {
-    display: none;
-    position: relative;
-    background: #263c28;
+#game{
+    background:#203b25;
 }
 
-canvas {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
+canvas{
+    width:100%;
+    height:100%;
+    display:block;
 }
 
-.hud {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    display: flex;
-    gap: 7px;
-    flex-wrap: wrap;
-    z-index: 10;
+.hud{
+    position:fixed;
+    top:8px;
+    left:8px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    z-index:10;
 }
 
-.hudBox {
-    background: rgba(0,0,0,.65);
-    padding: 8px 11px;
-    border-radius: 8px;
-    font-size: 13px;
+.hudBox{
+    background:rgba(0,0,0,.7);
+    border:1px solid #334155;
+    padding:8px 10px;
+    border-radius:8px;
+    font-size:13px;
 }
 
-.health {
-    color: #4ade80;
+#healthBar{
+    position:fixed;
+    top:55px;
+    left:10px;
+    width:220px;
+    height:13px;
+    background:#3f1010;
+    border-radius:10px;
+    overflow:hidden;
+    z-index:10;
 }
 
-.shield {
-    color: #38bdf8;
+#healthFill{
+    width:100%;
+    height:100%;
+    background:#22c55e;
 }
 
-/* CONTROLS */
-
-#shootButton {
-    position: absolute;
-    right: 25px;
-    bottom: 25px;
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    background: #dc2626;
-    font-size: 30px;
-    z-index: 20;
+#joystick{
+    display:none;
+    position:fixed;
+    left:20px;
+    bottom:20px;
+    width:145px;
+    height:145px;
+    border-radius:50%;
+    background:rgba(255,255,255,.12);
+    border:2px solid rgba(255,255,255,.25);
+    z-index:20;
 }
 
-#healButton {
-    position: absolute;
-    right: 140px;
-    bottom: 40px;
-    width: 85px;
-    height: 50px;
-    background: #15803d;
-    z-index: 20;
+#stick{
+    position:absolute;
+    width:60px;
+    height:60px;
+    left:40px;
+    top:40px;
+    border-radius:50%;
+    background:rgba(255,255,255,.55);
 }
 
-#joystick {
-    display: none;
-    position: absolute;
-    left: 25px;
-    bottom: 25px;
-    width: 140px;
-    height: 140px;
-    border-radius: 50%;
-    background: rgba(255,255,255,.12);
-    border: 2px solid rgba(255,255,255,.3);
-    z-index: 20;
+#shoot{
+    display:none;
+    position:fixed;
+    right:25px;
+    bottom:30px;
+    width:100px;
+    height:100px;
+    border-radius:50%;
+    background:#ef4444;
+    border:4px solid white;
+    color:white;
+    font-size:28px;
+    z-index:20;
 }
 
-#stick {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: rgba(255,255,255,.55);
-    position: absolute;
-    left: 40px;
-    top: 40px;
+#gameOver{
+    display:none;
+    position:fixed;
+    inset:0;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,.75);
+    z-index:30;
 }
 
-/* MESSAGE */
-
-#message {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%,-50%);
-    font-size: 55px;
-    font-weight: 900;
-    text-align: center;
-    display: none;
-    z-index: 30;
+.gameOverBox{
+    width:min(400px,90vw);
+    padding:30px;
+    background:#0f172a;
+    border-radius:20px;
+    text-align:center;
 }
 
-/* MOBILE */
+@media(pointer:coarse){
+    #joystick,
+    #shoot{
+        display:block;
+    }
 
-@media (pointer: coarse) {
-    #joystick {
-        display: block;
+    .lobbyBox{
+        grid-template-columns:1fr;
+    }
+
+    .character{
+        min-height:230px;
     }
 }
 
-@media (max-width: 700px) {
-
-    .logo {
-        font-size: 32px;
+@media(max-width:650px){
+    .menuBox{
+        padding:20px;
     }
 
-    .menuBox {
-        padding: 20px;
+    .logo{
+        font-size:38px;
     }
+}
 
-    .lobbyBox {
-        grid-template-columns: 1fr;
-    }
-
-    .characterArea {
-        min-height: 220px;
-    }
-
-    .lobbyInfo {
-        text-align: center;
-    }
-
-    .roomCode {
-        font-size: 35px;
+@media(orientation:portrait) and (pointer:coarse){
+    #game:after{
+        content:"Bitte Handy drehen ↔️";
+        position:fixed;
+        inset:0;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:#02060b;
+        z-index:100;
+        font-size:25px;
+        font-weight:bold;
     }
 }
 </style>
@@ -325,86 +323,67 @@ canvas {
 
 <body>
 
-<!-- MENU -->
+<!-- ================= MENU ================= -->
 
 <div id="menu" class="screen">
 
     <div class="menuBox">
 
         <div class="logo">⚡ BATTLE ZONE</div>
+        <div class="subtitle">Simple Multiplayer Arena</div>
 
-        <div class="subtitle">
-            Simple Multiplayer Battle Arena
-        </div>
-
-        <div class="stats">
-
-            <div class="stat">
+        <div class="info">
+            <div>
                 🏆 Trophäen
-                <strong id="trophies">0</strong>
+                <b id="trophies">0</b>
             </div>
 
-            <div class="stat">
+            <div>
                 💀 Kills
-                <strong id="kills">0</strong>
+                <b id="kills">0</b>
             </div>
 
-            <div class="stat">
+            <div>
                 👤 Spieler
-                <strong>Online</strong>
+                <b id="playerNameDisplay">Player</b>
             </div>
-
         </div>
 
         <input
-            id="playerName"
+            id="name"
+            class="input"
             maxlength="15"
             placeholder="Dein Name"
         >
 
-        <select id="difficulty">
-
-            <option value="easy">
-                🟢 Leicht
-            </option>
-
-            <option value="medium" selected>
-                🟡 Mittel
-            </option>
-
-            <option value="hard">
-                🔴 Schwer
-            </option>
-
+        <select id="difficulty" class="select">
+            <option value="easy">🟢 Leicht</option>
+            <option value="medium" selected>🟡 Mittel</option>
+            <option value="hard">🔴 Schwer</option>
         </select>
 
-        <select id="botCount">
-
+        <select id="bots" class="select">
             <option value="0">0 Bots</option>
             <option value="1">1 Bot</option>
             <option value="2" selected>2 Bots</option>
             <option value="3">3 Bots</option>
             <option value="4">4 Bots</option>
             <option value="5">5 Bots</option>
-
         </select>
 
-        <button id="createButton">
-            🎮 Lobby erstellen
+        <button id="create" class="button">
+            🎮 LOBBY ERSTELLEN
         </button>
 
         <input
-            id="roomCodeInput"
+            id="room"
+            class="input"
             maxlength="4"
             placeholder="Raumcode"
         >
 
-        <button id="joinButton" class="darkButton">
-            👥 Lobby beitreten
-        </button>
-
-        <button id="tutorialButton" class="darkButton">
-            📖 Tutorial
+        <button id="join" class="button dark">
+            👥 LOBBY BEITRETEN
         </button>
 
     </div>
@@ -412,54 +391,53 @@ canvas {
 </div>
 
 
-<!-- LOBBY -->
+<!-- ================= LOBBY ================= -->
 
 <div id="lobby" class="screen">
 
     <div class="lobbyBox">
 
-        <div class="characterArea">
-
-            <div
-                id="lobbyCharacter"
-                class="character">
-            </div>
-
+        <div class="character">
+            <div class="playerPreview"></div>
         </div>
 
         <div class="lobbyInfo">
 
             <h1>⚡ Battle Zone</h1>
 
-            <p style="margin-top:10px">
+            <div>
                 Spieler:
                 <b id="lobbyName">Player</b>
-            </p>
+            </div>
 
-            <p style="margin-top:8px">
+            <div>
                 Schwierigkeit:
                 <b id="lobbyDifficulty">Mittel</b>
-            </p>
+            </div>
 
-            <p style="margin-top:8px">
+            <div>
                 Bots:
                 <b id="lobbyBots">2</b>
-            </p>
+            </div>
 
-            <p style="margin-top:15px">
+            <div>
                 Raumcode:
-            </p>
+            </div>
 
-            <div id="lobbyRoom" class="roomCode">
+            <div id="code" class="roomCode">
                 ----
             </div>
 
-            <button id="playButton">
-                ▶ SPIELEN
+            <button id="copy" class="button">
+                📋 CODE KOPIEREN
             </button>
 
-            <button id="backButton" class="darkButton">
-                Zurück
+            <button id="play" class="button">
+                ▶ SPIEL STARTEN
+            </button>
+
+            <button id="back" class="button dark">
+                ← ZURÜCK
             </button>
 
         </div>
@@ -469,7 +447,7 @@ canvas {
 </div>
 
 
-<!-- GAME -->
+<!-- ================= GAME ================= -->
 
 <div id="game" class="screen">
 
@@ -481,37 +459,58 @@ canvas {
             🏠 <span id="hudRoom">----</span>
         </div>
 
-        <div class="hudBox health">
-            ❤️ <span id="hudHealth">100</span>
-        </div>
-
-        <div class="hudBox shield">
-            🛡️ <span id="hudShield">50</span>
+        <div class="hudBox">
+            ❤️ <span id="hp">100</span>
         </div>
 
         <div class="hudBox">
-            💀 <span id="hudKills">0</span>
+            🛡️ <span id="shield">50</span>
         </div>
 
         <div class="hudBox">
-            👥 <span id="hudPlayers">0</span>
+            🔫 <span id="weapon">Pistole</span>
+        </div>
+
+        <div class="hudBox">
+            💀 <span id="gameKills">0</span>
         </div>
 
     </div>
 
-    <button id="healButton">
-        💚 HEILEN
-    </button>
-
-    <button id="shootButton">
-        🔥
-    </button>
+    <div id="healthBar">
+        <div id="healthFill"></div>
+    </div>
 
     <div id="joystick">
         <div id="stick"></div>
     </div>
 
-    <div id="message"></div>
+    <button id="shoot">
+        🔥
+    </button>
+
+</div>
+
+
+<!-- ================= GAME OVER ================= -->
+
+<div id="gameOver">
+
+    <div class="gameOverBox">
+
+        <h1 id="gameOverTitle">🏆 SIEG!</h1>
+
+        <br>
+
+        <button id="again" class="button">
+            🔄 NOCHMAL
+        </button>
+
+        <button id="menuButton" class="button dark">
+            🏠 MENÜ
+        </button>
+
+    </div>
 
 </div>
 
@@ -520,47 +519,126 @@ canvas {
 
 "use strict";
 
-/* =========================
-   SERVER
-========================= */
+/* ================= SERVER ================= */
 
 const SERVER_URL =
     "wss://svgbattle-server.onrender.com";
 
+let socket;
 
-/* =========================
-   VARIABLES
-========================= */
+function connectServer(){
 
-let socket = null;
-let connected = false;
+    socket = new WebSocket(SERVER_URL);
+
+    socket.onopen = function(){
+        console.log("Server verbunden");
+    };
+
+    socket.onclose = function(){
+        console.log("Server getrennt");
+
+        setTimeout(connectServer,3000);
+    };
+
+    socket.onerror = function(error){
+        console.log("WebSocket Fehler",error);
+    };
+
+    socket.onmessage = function(event){
+
+        try{
+
+            const data =
+                JSON.parse(event.data);
+
+            handleMessage(data);
+
+        }catch(error){
+
+            console.error(
+                "Serverdaten konnten nicht gelesen werden:",
+                error
+            );
+
+        }
+
+    };
+}
+
+connectServer();
+
+
+function send(data){
+
+    if(
+        socket &&
+        socket.readyState === WebSocket.OPEN
+    ){
+
+        socket.send(JSON.stringify(data));
+
+    }
+
+}
+
+
+/* ================= VARIABLES ================= */
 
 let myId = null;
 let roomCode = "";
-
 let players = [];
 let bots = [];
 
+let map = {
+    width:1600,
+    height:900
+};
+
+let walls = [];
+
 let gameStarted = false;
 
-let aimX = window.innerWidth / 2 + 100;
-let aimY = window.innerHeight / 2;
+let keys = {
+    up:false,
+    down:false,
+    left:false,
+    right:false
+};
 
-let joystickX = 0;
-let joystickY = 0;
+let moveX = 0;
+let moveY = 0;
+
+let aimX = 800;
+let aimY = 450;
 
 let shooting = false;
 
-let kills =
+
+/* ================= LOCAL DATA ================= */
+
+let storedKills =
     Number(localStorage.getItem("battleKills") || 0);
 
-let trophies =
+let storedTrophies =
     Number(localStorage.getItem("battleTrophies") || 0);
 
+document.getElementById("kills").textContent =
+    storedKills;
 
-/* =========================
-   CANVAS
-========================= */
+document.getElementById("trophies").textContent =
+    storedTrophies;
+
+
+/* ================= ELEMENTS ================= */
+
+const menu =
+    document.getElementById("menu");
+
+const lobby =
+    document.getElementById("lobby");
+
+const game =
+    document.getElementById("game");
 
 const canvas =
     document.getElementById("canvas");
@@ -569,10 +647,13 @@ const ctx =
     canvas.getContext("2d");
 
 
-function resizeCanvas() {
+function resizeCanvas(){
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width =
+        window.innerWidth;
+
+    canvas.height =
+        window.innerHeight;
 
 }
 
@@ -584,159 +665,23 @@ window.addEventListener(
 );
 
 
-/* =========================
-   UI
-========================= */
+/* ================= SERVER MESSAGES ================= */
 
-const menu =
-    document.getElementById("menu");
+function handleMessage(data){
 
-const lobby =
-    document.getElementById("lobby");
-
-const game =
-    document.getElementById("game");
-
-
-function show(element) {
-
-    element.style.display = "flex";
-
-}
-
-
-function hide(element) {
-
-    element.style.display = "none";
-
-}
-
-
-function updateStats() {
-
-    document.getElementById("kills").textContent =
-        kills;
-
-    document.getElementById("trophies").textContent =
-        trophies;
-
-}
-
-updateStats();
-
-
-/* =========================
-   CONNECT
-========================= */
-
-function connect() {
-
-    try {
-
-        socket =
-            new WebSocket(SERVER_URL);
-
-    } catch (error) {
-
-        console.error(error);
-
-        return;
-
-    }
-
-
-    socket.onopen = function() {
-
-        connected = true;
-
-        console.log(
-            "Battle Zone Server verbunden"
-        );
-
-    };
-
-
-    socket.onclose = function() {
-
-        connected = false;
-
-        console.log(
-            "Server getrennt"
-        );
-
-    };
-
-
-    socket.onerror = function(error) {
-
-        console.error(
-            "WebSocket Fehler:",
-            error
-        );
-
-    };
-
-
-    socket.onmessage = function(event) {
-
-        try {
-
-            const data =
-                JSON.parse(event.data);
-
-            handleMessage(data);
-
-        } catch (error) {
-
-            console.error(
-                "Nachrichtenfehler:",
-                error
-            );
-
-        }
-
-    };
-
-}
-
-connect();
-
-
-/* =========================
-   SEND
-========================= */
-
-function send(data) {
-
-    if (
-        socket &&
-        socket.readyState === WebSocket.OPEN
-    ) {
-
-        socket.send(
-            JSON.stringify(data)
-        );
-
-    }
-
-}
-
-
-/* =========================
-   SERVER MESSAGES
-========================= */
-
-function handleMessage(data) {
-
-    if (data.type === "connected") {
+    if(data.type === "connected"){
 
         myId = data.id;
 
+        map = data.map || map;
+
+        walls = data.walls || [];
+
         return;
     }
 
 
-    if (data.type === "roomCreated") {
+    if(data.type === "roomCreated"){
 
         roomCode = data.code;
 
@@ -746,7 +691,7 @@ function handleMessage(data) {
     }
 
 
-    if (data.type === "joinedRoom") {
+    if(data.type === "joinedRoom"){
 
         roomCode = data.code;
 
@@ -756,36 +701,78 @@ function handleMessage(data) {
     }
 
 
-    if (data.type === "state") {
+    if(data.type === "state"){
 
         players = data.players || [];
 
         bots = data.bots || [];
 
-        updateGameHUD();
+        map = data.map || map;
+
+        walls = data.walls || [];
+
+        updateHUD();
 
         return;
     }
 
 
-    if (data.type === "elimination") {
+    if(data.type === "bullet"){
 
-        if (data.killer === myId) {
+        bullets.push({
 
-            kills++;
-            trophies++;
+            x:data.x,
+            y:data.y,
+
+            dx:data.dx,
+            dy:data.dy,
+
+            life:60
+
+        });
+
+        return;
+    }
+
+
+    if(data.type === "hit"){
+
+        hitEffects.push({
+
+            x:data.x,
+            y:data.y,
+
+            life:15
+
+        });
+
+        return;
+    }
+
+
+    if(data.type === "eliminated"){
+
+        if(data.killer === myId){
+
+            storedKills++;
+
+            storedTrophies++;
 
             localStorage.setItem(
                 "battleKills",
-                kills
+                storedKills
             );
 
             localStorage.setItem(
                 "battleTrophies",
-                trophies
+                storedTrophies
             );
 
-            updateStats();
+            document.getElementById("kills").textContent =
+                storedKills;
+
+            document.getElementById("trophies").textContent =
+                storedTrophies;
 
         }
 
@@ -793,49 +780,29 @@ function handleMessage(data) {
     }
 
 
-    if (data.type === "roundEnd") {
+    if(data.type === "roundEnd"){
 
-        gameStarted = false;
+        gameOver.style.display = "flex";
 
-        const message =
-            document.getElementById("message");
+        if(data.winner === myId){
 
-        if (data.winner === myId) {
-
-            message.textContent =
+            gameOverTitle.textContent =
                 "🏆 SIEG!";
 
-        } else {
+        }else{
 
-            message.textContent =
+            gameOverTitle.textContent =
                 "💀 VERLOREN!";
 
         }
 
-        message.style.display =
-            "block";
-
         return;
     }
 
 
-    if (data.type === "newRound") {
+    if(data.type === "error"){
 
-        document.getElementById(
-            "message"
-        ).style.display = "none";
-
-        gameStarted = true;
-
-        return;
-    }
-
-
-    if (data.type === "error") {
-
-        alert(
-            data.message || "Fehler"
-        );
+        alert(data.message);
 
         return;
     }
@@ -843,94 +810,58 @@ function handleMessage(data) {
 }
 
 
-/* =========================
-   CREATE ROOM
-========================= */
+/* ================= MENU ================= */
 
 document
-.getElementById("createButton")
-.addEventListener("click", function() {
-
-    if (!connected) {
-
-        alert(
-            "Server wird noch verbunden..."
-        );
-
-        return;
-    }
-
+.getElementById("create")
+.onclick = function(){
 
     const name =
-        document
-        .getElementById("playerName")
+        document.getElementById("name")
         .value
         .trim() || "Player";
 
-
     const difficulty =
-        document
-        .getElementById("difficulty")
+        document.getElementById("difficulty")
         .value;
-
 
     const bots =
         Number(
-            document
-            .getElementById("botCount")
+            document.getElementById("bots")
             .value
         );
 
-
     send({
 
-        type: "createRoom",
+        type:"createRoom",
 
-        name: name,
+        name:name,
 
-        difficulty: difficulty,
+        difficulty:difficulty,
 
-        bots: bots
+        bots:bots
 
     });
 
-});
+};
 
-
-/* =========================
-   JOIN ROOM
-========================= */
 
 document
-.getElementById("joinButton")
-.addEventListener("click", function() {
-
-    if (!connected) {
-
-        alert(
-            "Server wird noch verbunden..."
-        );
-
-        return;
-    }
-
+.getElementById("join")
+.onclick = function(){
 
     const name =
-        document
-        .getElementById("playerName")
+        document.getElementById("name")
         .value
         .trim() || "Player";
 
-
     const code =
-        document
-        .getElementById("roomCodeInput")
+        document.getElementById("room")
         .value
         .trim()
         .toUpperCase();
 
-
-    if (code.length !== 4) {
+    if(code.length !== 4){
 
         alert(
             "Der Raumcode muss 4 Zeichen haben."
@@ -939,305 +870,229 @@ document
         return;
     }
 
-
     send({
 
-        type: "joinRoom",
+        type:"joinRoom",
 
-        name: name,
+        name:name,
 
-        code: code
+        code:code
 
     });
-
-});
-
-
-/* =========================
-   LOBBY
-========================= */
-
-function showLobby() {
-
-    hide(menu);
-
-    show(lobby);
-
-    document
-    .getElementById("lobbyRoom")
-    .textContent = roomCode;
-
-
-    document
-    .getElementById("lobbyName")
-    .textContent =
-        document
-        .getElementById("playerName")
-        .value
-        .trim() || "Player";
-
-
-    const difficulty =
-        document
-        .getElementById("difficulty")
-        .value;
-
-
-    document
-    .getElementById("lobbyDifficulty")
-    .textContent =
-        difficulty === "easy"
-        ? "Leicht"
-        : difficulty === "hard"
-        ? "Schwer"
-        : "Mittel";
-
-
-    document
-    .getElementById("lobbyBots")
-    .textContent =
-        document
-        .getElementById("botCount")
-        .value;
-
-}
-
-
-/* =========================
-   START GAME
-========================= */
-
-document
-.getElementById("playButton")
-.addEventListener("click", function() {
-
-    hide(lobby);
-
-    show(game);
-
-    gameStarted = true;
-
-    send({
-        type: "startGame"
-    });
-
-});
-
-
-/* =========================
-   BACK
-========================= */
-
-document
-.getElementById("backButton")
-.addEventListener("click", function() {
-
-    hide(lobby);
-
-    show(menu);
-
-});
-
-
-/* =========================
-   KEYBOARD
-========================= */
-
-const keys = {
-
-    up: false,
-    down: false,
-    left: false,
-    right: false
 
 };
 
 
+function showLobby(){
+
+    menu.style.display = "none";
+
+    lobby.style.display = "flex";
+
+    document.getElementById("code")
+        .textContent = roomCode;
+
+    document.getElementById("lobbyName")
+        .textContent =
+        document.getElementById("name")
+        .value || "Player";
+
+    document.getElementById("lobbyDifficulty")
+        .textContent =
+        document.getElementById("difficulty")
+        .selectedOptions[0].textContent;
+
+    document.getElementById("lobbyBots")
+        .textContent =
+        document.getElementById("bots").value;
+
+}
+
+
+document
+.getElementById("copy")
+.onclick = async function(){
+
+    try{
+
+        await navigator.clipboard.writeText(
+            roomCode
+        );
+
+        alert("Raumcode kopiert!");
+
+    }catch{
+
+        alert(
+            "Raumcode: " + roomCode
+        );
+
+    }
+
+};
+
+
+document
+.getElementById("play")
+.onclick = function(){
+
+    lobby.style.display = "none";
+
+    game.style.display = "block";
+
+    gameStarted = true;
+
+};
+
+
+document
+.getElementById("back")
+.onclick = function(){
+
+    lobby.style.display = "none";
+
+    menu.style.display = "flex";
+
+};
+
+
+/* ================= KEYBOARD ================= */
+
 window.addEventListener(
-"keydown",
-function(event) {
+    "keydown",
+    function(e){
 
-    if (event.key === "ArrowUp") {
+        if(e.key === "ArrowUp"){
+            keys.up = true;
+            e.preventDefault();
+        }
 
-        keys.up = true;
+        if(e.key === "ArrowDown"){
+            keys.down = true;
+            e.preventDefault();
+        }
 
-        event.preventDefault();
+        if(e.key === "ArrowLeft"){
+            keys.left = true;
+            e.preventDefault();
+        }
 
-    }
-
-    if (event.key === "ArrowDown") {
-
-        keys.down = true;
-
-        event.preventDefault();
-
-    }
-
-    if (event.key === "ArrowLeft") {
-
-        keys.left = true;
-
-        event.preventDefault();
+        if(e.key === "ArrowRight"){
+            keys.right = true;
+            e.preventDefault();
+        }
 
     }
-
-    if (event.key === "ArrowRight") {
-
-        keys.right = true;
-
-        event.preventDefault();
-
-    }
-
-});
+);
 
 
 window.addEventListener(
-"keyup",
-function(event) {
+    "keyup",
+    function(e){
 
-    if (event.key === "ArrowUp")
-        keys.up = false;
+        if(e.key === "ArrowUp")
+            keys.up = false;
 
-    if (event.key === "ArrowDown")
-        keys.down = false;
+        if(e.key === "ArrowDown")
+            keys.down = false;
 
-    if (event.key === "ArrowLeft")
-        keys.left = false;
+        if(e.key === "ArrowLeft")
+            keys.left = false;
 
-    if (event.key === "ArrowRight")
-        keys.right = false;
+        if(e.key === "ArrowRight")
+            keys.right = false;
 
-});
+    }
+);
 
 
-/* =========================
-   MOVEMENT
-========================= */
+/* ================= MOVEMENT ================= */
 
 setInterval(
-function() {
+    function(){
 
-    if (!gameStarted)
+        if(!gameStarted)
+            return;
+
+        let x = 0;
+        let y = 0;
+
+        if(keys.left)
+            x--;
+
+        if(keys.right)
+            x++;
+
+        if(keys.up)
+            y--;
+
+        if(keys.down)
+            y++;
+
+        x += moveX;
+        y += moveY;
+
+        if(x !== 0 || y !== 0){
+
+            const length =
+                Math.hypot(x,y);
+
+            if(length > 1){
+
+                x /= length;
+                y /= length;
+
+            }
+
+            send({
+
+                type:"move",
+
+                dx:x,
+                dy:y
+
+            });
+
+        }
+
+    },
+    1000/30
+);
+
+
+/* ================= SHOOT ================= */
+
+function shoot(){
+
+    if(!gameStarted)
         return;
 
-
-    let dx = 0;
-    let dy = 0;
-
-
-    if (keys.right)
-        dx += 1;
-
-    if (keys.left)
-        dx -= 1;
-
-    if (keys.down)
-        dy += 1;
-
-    if (keys.up)
-        dy -= 1;
-
-
-    dx += joystickX;
-    dy += joystickY;
-
-
-    const length =
-        Math.sqrt(
-            dx * dx +
-            dy * dy
+    const me =
+        players.find(
+            p => p.id === myId
         );
 
-
-    if (length > 1) {
-
-        dx /= length;
-        dy /= length;
-
-    }
-
-
-    if (
-        Math.abs(dx) > 0 ||
-        Math.abs(dy) > 0
-    ) {
-
-        send({
-
-            type: "move",
-
-            dx: dx,
-
-            dy: dy
-
-        });
-
-    }
-
-}, 50);
-
-
-/* =========================
-   MOUSE AIM
-========================= */
-
-window.addEventListener(
-"mousemove",
-function(event) {
-
-    aimX = event.clientX;
-    aimY = event.clientY;
-
-});
-
-
-/* =========================
-   SHOOT
-========================= */
-
-function shoot() {
-
-    if (!gameStarted)
+    if(!me || !me.alive)
         return;
 
-
-    const centerX =
+    const dx =
+        aimX -
         canvas.width / 2;
 
-    const centerY =
+    const dy =
+        aimY -
         canvas.height / 2;
 
-
-    let dx =
-        aimX - centerX;
-
-    let dy =
-        aimY - centerY;
-
-
-    const length =
-        Math.sqrt(
-            dx * dx +
-            dy * dy
-        );
-
-
-    if (length < 5)
+    if(Math.hypot(dx,dy) < 5)
         return;
-
-
-    dx /= length;
-    dy /= length;
-
 
     send({
 
-        type: "shoot",
+        type:"shoot",
 
-        dx: dx,
+        dx:dx,
 
-        dy: dy
+        dy:dy
 
     });
 
@@ -1245,60 +1100,57 @@ function shoot() {
 
 
 document
-.getElementById("shootButton")
+.getElementById("shoot")
 .addEventListener(
-"pointerdown",
-function(event) {
+    "pointerdown",
+    function(e){
 
-    event.preventDefault();
+        e.preventDefault();
 
-    shooting = true;
+        shooting = true;
 
-    shoot();
-
-});
-
-
-document
-.getElementById("shootButton")
-.addEventListener(
-"pointerup",
-function() {
-
-    shooting = false;
-
-});
-
-
-setInterval(
-function() {
-
-    if (shooting)
         shoot();
 
-}, 250);
-
-
-/* =========================
-   HEAL
-========================= */
+    }
+);
 
 document
-.getElementById("healButton")
+.getElementById("shoot")
 .addEventListener(
-"click",
-function() {
+    "pointerup",
+    function(){
 
-    send({
-        type: "heal"
-    });
+        shooting = false;
 
-});
+    }
+);
+
+setInterval(
+    function(){
+
+        if(shooting)
+            shoot();
+
+    },
+    250
+);
 
 
-/* =========================
-   JOYSTICK
-========================= */
+/* ================= AIM ================= */
+
+canvas.addEventListener(
+    "pointermove",
+    function(e){
+
+        aimX = e.clientX;
+
+        aimY = e.clientY;
+
+    }
+);
+
+
+/* ================= JOYSTICK ================= */
 
 const joystick =
     document.getElementById("joystick");
@@ -1310,85 +1162,84 @@ let joystickActive = false;
 
 
 joystick.addEventListener(
-"pointerdown",
-function(event) {
+    "pointerdown",
+    function(e){
 
-    joystickActive = true;
+        joystickActive = true;
 
-    joystick.setPointerCapture(
-        event.pointerId
-    );
+        joystick.setPointerCapture(
+            e.pointerId
+        );
 
-    updateJoystick(
-        event.clientX,
-        event.clientY
-    );
+        updateJoystick(
+            e.clientX,
+            e.clientY
+        );
 
-});
-
-
-joystick.addEventListener(
-"pointermove",
-function(event) {
-
-    if (!joystickActive)
-        return;
-
-    updateJoystick(
-        event.clientX,
-        event.clientY
-    );
-
-});
-
-
-joystick.addEventListener(
-"pointerup",
-resetJoystick
-);
-
-joystick.addEventListener(
-"pointercancel",
-resetJoystick
+    }
 );
 
 
-function updateJoystick(x,y) {
+joystick.addEventListener(
+    "pointermove",
+    function(e){
+
+        if(joystickActive){
+
+            updateJoystick(
+                e.clientX,
+                e.clientY
+            );
+
+        }
+
+    }
+);
+
+
+joystick.addEventListener(
+    "pointerup",
+    function(){
+
+        joystickActive = false;
+
+        moveX = 0;
+
+        moveY = 0;
+
+        stick.style.left = "40px";
+
+        stick.style.top = "40px";
+
+    }
+);
+
+
+function updateJoystick(x,y){
 
     const rect =
         joystick.getBoundingClientRect();
-
 
     const centerX =
         rect.left +
         rect.width / 2;
 
-
     const centerY =
         rect.top +
         rect.height / 2;
 
-
     let dx =
         x - centerX;
-
 
     let dy =
         y - centerY;
 
-
-    const max =
-        40;
-
+    const max = 45;
 
     const distance =
-        Math.sqrt(
-            dx * dx +
-            dy * dy
-        );
+        Math.hypot(dx,dy);
 
-
-    if (distance > max) {
+    if(distance > max){
 
         dx =
             dx / distance * max;
@@ -1398,13 +1249,11 @@ function updateJoystick(x,y) {
 
     }
 
-
-    joystickX =
+    moveX =
         dx / max;
 
-    joystickY =
+    moveY =
         dy / max;
-
 
     stick.style.left =
         (40 + dx) + "px";
@@ -1415,77 +1264,105 @@ function updateJoystick(x,y) {
 }
 
 
-function resetJoystick() {
+/* ================= HUD ================= */
 
-    joystickActive = false;
-
-    joystickX = 0;
-    joystickY = 0;
-
-    stick.style.left = "40px";
-    stick.style.top = "40px";
-
-}
-
-
-/* =========================
-   HUD
-========================= */
-
-function updateGameHUD() {
+function updateHUD(){
 
     const me =
         players.find(
-            player =>
-                player.id === myId
+            p => p.id === myId
         );
 
-
-    if (!me)
+    if(!me)
         return;
 
+    document.getElementById("hudRoom")
+        .textContent = roomCode;
 
-    document
-    .getElementById("hudRoom")
-    .textContent =
-        roomCode;
+    document.getElementById("hp")
+        .textContent =
+        Math.max(0,Math.round(me.hp));
 
+    document.getElementById("shield")
+        .textContent =
+        Math.max(0,Math.round(me.shield));
 
-    document
-    .getElementById("hudHealth")
-    .textContent =
-        me.hp;
+    document.getElementById("weapon")
+        .textContent =
+        me.weapon || "Pistole";
 
+    document.getElementById("gameKills")
+        .textContent =
+        me.kills || 0;
 
-    document
-    .getElementById("hudShield")
-    .textContent =
-        me.shield;
+    const percent =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                me.hp / me.maxHp * 100
+            )
+        );
 
-
-    document
-    .getElementById("hudKills")
-    .textContent =
-        me.kills;
-
-
-    document
-    .getElementById("hudPlayers")
-    .textContent =
-        players.length +
-        bots.length;
+    document.getElementById("healthFill")
+        .style.width =
+        percent + "%";
 
 }
 
 
-/* =========================
-   DRAW MAP
-========================= */
+/* ================= RENDER ================= */
 
-function drawBackground() {
+let bullets = [];
 
-    ctx.fillStyle =
-        "#263c28";
+let hitEffects = [];
+
+
+function camera(){
+
+    const me =
+        players.find(
+            p => p.id === myId
+        );
+
+    if(!me){
+
+        return {
+            x:map.width/2,
+            y:map.height/2
+        };
+
+    }
+
+    return {
+        x:me.x,
+        y:me.y
+    };
+
+}
+
+
+function worldX(x,cam){
+
+    return x -
+        cam.x +
+        canvas.width/2;
+
+}
+
+
+function worldY(y,cam){
+
+    return y -
+        cam.y +
+        canvas.height/2;
+
+}
+
+
+function drawBackground(cam){
+
+    ctx.fillStyle = "#315a36";
 
     ctx.fillRect(
         0,
@@ -1494,48 +1371,48 @@ function drawBackground() {
         canvas.height
     );
 
+    const size = 50;
 
     ctx.strokeStyle =
         "rgba(255,255,255,.05)";
 
+    for(
+        let x =
+            (-cam.x +
+            canvas.width/2) %
+            size;
 
-    const size = 50;
-
-
-    for (
-        let x = 0;
         x < canvas.width;
+
         x += size
-    ) {
+    ){
 
         ctx.beginPath();
 
         ctx.moveTo(x,0);
 
-        ctx.lineTo(
-            x,
-            canvas.height
-        );
+        ctx.lineTo(x,canvas.height);
 
         ctx.stroke();
 
     }
 
+    for(
+        let y =
+            (-cam.y +
+            canvas.height/2) %
+            size;
 
-    for (
-        let y = 0;
         y < canvas.height;
+
         y += size
-    ) {
+    ){
 
         ctx.beginPath();
 
         ctx.moveTo(0,y);
 
-        ctx.lineTo(
-            canvas.width,
-            y
-        );
+        ctx.lineTo(canvas.width,y);
 
         ctx.stroke();
 
@@ -1544,48 +1421,64 @@ function drawBackground() {
 }
 
 
-/* =========================
-   DRAW PLAYER
-========================= */
+function drawWalls(cam){
 
-function drawPlayer(
-    player,
-    isMe
-) {
+    for(const wall of walls){
 
-    const x =
-        canvas.width / 2 +
-        (player.x -
-        getMyPlayer().x);
+        const x =
+            worldX(wall.x,cam);
+
+        const y =
+            worldY(wall.y,cam);
+
+        ctx.fillStyle =
+            "#64748b";
+
+        ctx.fillRect(
+            x,
+            y,
+            wall.w,
+            wall.h
+        );
+
+        ctx.strokeStyle =
+            "#cbd5e1";
+
+        ctx.strokeRect(
+            x,
+            y,
+            wall.w,
+            wall.h
+        );
+
+    }
+
+}
 
 
-    const y =
-        canvas.height / 2 +
-        (player.y -
-        getMyPlayer().y);
+function drawPlayer(player,cam){
 
-
-    if (
-        x < -100 ||
-        x > canvas.width + 100 ||
-        y < -100 ||
-        y > canvas.height + 100
-    )
+    if(!player.alive)
         return;
 
+    const x =
+        worldX(player.x,cam);
 
-    /* SHADOW */
+    const y =
+        worldY(player.y,cam);
+
+    /* shadow */
 
     ctx.beginPath();
 
     ctx.ellipse(
         x,
-        y + 20,
-        25,
+        y+20,
+        24,
         9,
         0,
         0,
-        Math.PI * 2
+        Math.PI*2
     );
 
     ctx.fillStyle =
@@ -1594,123 +1487,81 @@ function drawPlayer(
     ctx.fill();
 
 
-    /* BODY */
-
-    ctx.beginPath();
-
-    ctx.roundRect(
-        x - 18,
-        y - 5,
-        36,
-        40,
-        10
-    );
+    /* body */
 
     ctx.fillStyle =
-        isMe
+        player.id === myId
         ? "#38bdf8"
         : "#ef4444";
 
-    ctx.fill();
+    ctx.fillRect(
+        x-18,
+        y-5,
+        36,
+        38
+    );
 
 
-    /* HEAD */
+    /* head */
 
     ctx.beginPath();
 
     ctx.arc(
         x,
-        y - 20,
+        y-20,
         14,
         0,
-        Math.PI * 2
+        Math.PI*2
     );
 
     ctx.fillStyle =
-        "#e8b995";
+        "#f1c6a6";
 
     ctx.fill();
 
 
-    /* WEAPON */
+    /* weapon */
 
-    ctx.save();
+    ctx.strokeStyle =
+        "#e5e7eb";
 
-    ctx.translate(
-        x,
-        y
-    );
+    ctx.lineWidth = 6;
 
+    ctx.beginPath();
 
-    let angle = 0;
+    if(player.id === myId){
 
-
-    if (isMe) {
-
-        angle =
+        const angle =
             Math.atan2(
-                aimY -
-                canvas.height / 2,
-
-                aimX -
-                canvas.width / 2
+                aimY-canvas.height/2,
+                aimX-canvas.width/2
             );
 
-    } else {
+        ctx.moveTo(
+            x,
+            y
+        );
 
-        angle =
-            player.angle || 0;
+        ctx.lineTo(
+            x + Math.cos(angle)*35,
+            y + Math.sin(angle)*35
+        );
+
+    }else{
+
+        ctx.moveTo(x,y);
+
+        ctx.lineTo(
+            x+30,
+            y
+        );
 
     }
 
-
-    ctx.rotate(angle);
-
-
-    ctx.fillStyle =
-        "#111827";
-
-    ctx.fillRect(
-        5,
-        -4,
-        35,
-        8
-    );
+    ctx.stroke();
 
 
-    ctx.restore();
-
-
-    /* HEALTH BAR */
-
-    ctx.fillStyle =
-        "#450a0a";
-
-    ctx.fillRect(
-        x - 25,
-        y - 45,
-        50,
-        5
-    );
-
-
-    ctx.fillStyle =
-        "#22c55e";
-
-    ctx.fillRect(
-        x - 25,
-        y - 45,
-        50 *
-        Math.max(
-            0,
-            player.hp /
-            player.maxHp
-        ),
-        5
-    );
-
-
-    /* NAME */
+    /* name */
 
     ctx.font =
         "bold 12px Arial";
@@ -1724,183 +1575,196 @@ function drawPlayer(
     ctx.fillText(
         player.name,
         x,
-        y - 52
+        y-42
     );
 
-}
 
-
-function getMyPlayer() {
-
-    return players.find(
-        player =>
-            player.id === myId
-    );
-
-}
-
-
-/* =========================
-   DRAW BOTS
-========================= */
-
-function drawBot(bot) {
-
-    const me =
-        getMyPlayer();
-
-
-    if (!me)
-        return;
-
-
-    const x =
-        canvas.width / 2 +
-        (bot.x - me.x);
-
-
-    const y =
-        canvas.height / 2 +
-        (bot.y - me.y);
-
-
-    if (
-        x < -100 ||
-        x > canvas.width + 100 ||
-        y < -100 ||
-        y > canvas.height + 100
-    )
-        return;
-
-
-    ctx.beginPath();
-
-    ctx.arc(
-        x,
-        y,
-        22,
-        0,
-        Math.PI * 2
-    );
+    /* HP */
 
     ctx.fillStyle =
-        "#ef4444";
-
-    ctx.fill();
-
-
-    ctx.beginPath();
-
-    ctx.arc(
-        x,
-        y - 25,
-        12,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fillStyle =
-        "#e8b995";
-
-    ctx.fill();
-
-
-    ctx.fillStyle =
-        "#450a0a";
+        "#3f1010";
 
     ctx.fillRect(
-        x - 25,
-        y - 43,
+        x-25,
+        y-35,
         50,
         5
     );
-
 
     ctx.fillStyle =
         "#22c55e";
 
     ctx.fillRect(
-        x - 25,
-        y - 43,
+        x-25,
+        y-35,
         50 *
-        Math.max(
-            0,
-            bot.hp /
-            bot.maxHp
-        ),
+        (player.hp/player.maxHp),
         5
     );
 
 
-    ctx.font =
-        "bold 12px Arial";
+    /* shield */
 
-    ctx.textAlign =
-        "center";
+    if(player.shield > 0){
 
-    ctx.fillStyle =
-        "white";
+        ctx.strokeStyle =
+            "#38bdf8";
 
-    ctx.fillText(
-        bot.name,
-        x,
-        y - 50
-    );
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            y,
+            31,
+            0,
+            Math.PI*2
+        );
+
+        ctx.stroke();
+
+    }
 
 }
 
 
-/* =========================
-   GAME LOOP
-========================= */
+function drawBots(cam){
 
-function render() {
+    for(const bot of bots){
+
+        drawPlayer(
+            bot,
+            cam
+        );
+
+    }
+
+}
+
+
+function drawBullets(cam){
+
+    bullets =
+        bullets.filter(
+            bullet => {
+
+                bullet.x +=
+                    bullet.dx * 15;
+
+                bullet.y +=
+                    bullet.dy * 15;
+
+                bullet.life--;
+
+                const x =
+                    worldX(
+                        bullet.x,
+                        cam
+                    );
+
+                const y =
+                    worldY(
+                        bullet.y,
+                        cam
+                    );
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    x,
+                    y,
+                    5,
+                    0,
+                    Math.PI*2
+                );
+
+                ctx.fillStyle =
+                    "#facc15";
+
+                ctx.fill();
+
+                return bullet.life > 0;
+
+            }
+        );
+
+}
+
+
+function drawEffects(cam){
+
+    hitEffects =
+        hitEffects.filter(
+            effect => {
+
+                effect.life--;
+
+                const x =
+                    worldX(
+                        effect.x,
+                        cam
+                    );
+
+                const y =
+                    worldY(
+                        effect.y,
+                        cam
+                    );
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    x,
+                    y,
+                    10 + (15-effect.life),
+                    0,
+                    Math.PI*2
+                );
+
+                ctx.strokeStyle =
+                    "#facc15";
+
+                ctx.lineWidth = 3;
+
+                ctx.stroke();
+
+                return effect.life > 0;
+
+            }
+        );
+
+}
+
+
+function render(){
 
     requestAnimationFrame(render);
 
-
-    if (!gameStarted)
+    if(!gameStarted)
         return;
 
+    const cam =
+        camera();
 
-    drawBackground();
+    drawBackground(cam);
 
+    drawWalls(cam);
 
-    const me =
-        getMyPlayer();
+    for(const player of players){
 
+        drawPlayer(
+            player,
+            cam
+        );
 
-    if (!me)
-        return;
+    }
 
+    drawBots(cam);
 
-    players.forEach(
-        player => {
+    drawBullets(cam);
 
-            if (player.alive) {
-
-                drawPlayer(
-                    player,
-                    player.id === myId
-                );
-
-            }
-
-        }
-    );
-
-
-    bots.forEach(
-        bot => {
-
-            if (bot.alive) {
-
-                drawBot(bot);
-
-            }
-
-        }
-    );
+    drawEffects(cam);
 
 }
 
@@ -1908,27 +1772,43 @@ function render() {
 render();
 
 
-/* =========================
-   TUTORIAL
-========================= */
+/* ================= GAME BUTTONS ================= */
+
+const gameOver =
+    document.getElementById("gameOver");
+
+const gameOverTitle =
+    document.getElementById("gameOverTitle");
+
 
 document
-.getElementById("tutorialButton")
-.addEventListener(
-"click",
-function() {
+.getElementById("again")
+.onclick = function(){
 
-    alert(
-        "BATTLE ZONE\n\n" +
-        "PC: Pfeiltasten zum Bewegen.\n" +
-        "Maus zum Zielen.\n" +
-        "Linksklick zum Schießen.\n\n" +
-        "Handy: Joystick zum Bewegen.\n" +
-        "Roter Knopf zum Schießen.\n\n" +
-        "Besiege die Bots!"
-    );
+    gameOver.style.display = "none";
 
-});
+    send({
+        type:"newRound"
+    });
+
+};
+
+
+document
+.getElementById("menuButton")
+.onclick = function(){
+
+    gameOver.style.display = "none";
+
+    game.style.display = "none";
+
+    lobby.style.display = "none";
+
+    menu.style.display = "flex";
+
+    gameStarted = false;
+
+};
 
 </script>
 
