@@ -1,16 +1,15 @@
 {
-  "name": "svgbattle-server",
-  "version": "2.0.0",
-  "description": "Battle Zone multiplayer server",
+  "name": "battle-zone-server",
+  "version": "1.0.0",
+  "description": "Simple Battle Zone multiplayer server",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
   "engines": {
     "node": ">=18"
-  },
-  "dependencies": {
-    "express": "^4.21.2",
-    "ws": "^8.18.0"
   }
 }
