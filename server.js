@@ -1,365 +1,559 @@
 "use strict";
 
-const http = require("http");
 const WebSocket = require("ws");
 
 const PORT = process.env.PORT || 10000;
 
-
-/* =========================
-   HTTP SERVER
-========================= */
-
-const httpServer = http.createServer(
-    function(req, res) {
-
-        res.writeHead(200, {
-            "Content-Type": "text/plain; charset=utf-8"
-        });
-
-        res.end("Battle Zone Server läuft!");
-    }
-);
-
-
-/* =========================
-   WEBSOCKET SERVER
-========================= */
-
 const wss = new WebSocket.Server({
-    server: httpServer
+    port: PORT
 });
 
-
-/* =========================
-   GAME SETTINGS
-========================= */
-
-const MAP_WIDTH = 1600;
-const MAP_HEIGHT = 900;
-
-const PLAYER_SPEED = 5;
-
-const PLAYER_HP = 100;
-const PLAYER_SHIELD = 50;
-
-const BULLET_SPEED = 18;
-const BULLET_DAMAGE = 20;
-
-const BOT_HP = 130;
-
-const ROOMS = new Map();
+console.log("================================");
+console.log("BATTLE ZONE SERVER");
+console.log("Port:", PORT);
+console.log("Server gestartet!");
+console.log("================================");
 
 
-/* =========================
-   ROOM CODE
-========================= */
+/* ================= MAP ================= */
 
-function createRoomCode() {
+const MAP = {
+    width: 1600,
+    height: 900
+};
+
+
+const WALLS = [
+
+    {
+        x:350,
+        y:200,
+        w:250,
+        h:50
+    },
+
+    {
+        x:1000,
+        y:200,
+        w:250,
+        h:50
+    },
+
+    {
+        x:350,
+        y:650,
+        w:250,
+        h:50
+    },
+
+    {
+        x:1000,
+        y:650,
+        w:250,
+        h:50
+    },
+
+    {
+        x:750,
+        y:350,
+        w:100,
+        h:200
+    }
+
+];
+
+
+/* ================= ROOMS ================= */
+
+const rooms = new Map();
+
+
+/* ================= WEAPON ================= */
+
+const WEAPON = {
+
+    name: "Pistole",
+
+    damage: 20,
+
+    cooldown: 350,
+
+    speed: 18,
+
+    range: 900
+
+};
+
+
+/* ================= HELPERS ================= */
+
+function randomCode(){
 
     const chars =
-        "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
     let code = "";
 
-    do {
+    for(let i=0;i<4;i++){
 
-        code = "";
+        code +=
+            chars[
+                Math.floor(
+                    Math.random()*chars.length
+                )
+            ];
 
-        for (let i = 0; i < 4; i++) {
-
-            code +=
-                chars[
-                    Math.floor(
-                        Math.random() *
-                        chars.length
-                    )
-                ];
-
-        }
-
-    } while (ROOMS.has(code));
-
+    }
 
     return code;
+
 }
 
 
-/* =========================
-   RANDOM POSITION
-========================= */
+function createCode(){
 
-function randomPosition() {
+    let code;
+
+    do{
+
+        code = randomCode();
+
+    }while(rooms.has(code));
+
+    return code;
+
+}
+
+
+function distance(a,b){
+
+    return Math.hypot(
+        a.x-b.x,
+        a.y-b.y
+    );
+
+}
+
+
+function normalize(x,y){
+
+    const length =
+        Math.hypot(x,y);
+
+    if(length === 0){
+
+        return {
+            x:0,
+            y:0
+        };
+
+    }
 
     return {
-
-        x:
-            100 +
-            Math.random() *
-            (MAP_WIDTH - 200),
-
-        y:
-            100 +
-            Math.random() *
-            (MAP_HEIGHT - 200)
-
+        x:x/length,
+        y:y/length
     };
 
 }
 
 
-/* =========================
-   PLAYER
-========================= */
+function insideWall(x,y,radius){
+
+    for(const wall of WALLS){
+
+        if(
+
+            x + radius > wall.x &&
+            x - radius < wall.x + wall.w &&
+            y + radius > wall.y &&
+            y - radius < wall.y + wall.h
+
+        ){
+
+            return true;
+
+        }
+
+    }
+
+    return false;
+
+}
+
+
+function validPosition(x,y){
+
+    const radius = 22;
+
+    if(
+        x < radius ||
+        y < radius ||
+        x > MAP.width-radius ||
+        y > MAP.height-radius
+    ){
+
+        return false;
+
+    }
+
+    if(
+        insideWall(
+            x,
+            y,
+            radius
+        )
+    ){
+
+        return false;
+
+    }
+
+    return true;
+
+}
+
+
+function randomSpawn(){
+
+    for(let i=0;i<100;i++){
+
+        const x =
+            100 +
+            Math.random() *
+            (MAP.width-200);
+
+        const y =
+            100 +
+            Math.random() *
+            (MAP.height-200);
+
+        if(validPosition(x,y)){
+
+            return {
+                x:x,
+                y:y
+            };
+
+        }
+
+    }
+
+    return {
+        x:800,
+        y:450
+    };
+
+}
+
+
+/* ================= PLAYER ================= */
 
 function createPlayer(
-    socket,
+    ws,
     name
-) {
+){
 
-    const position =
-        randomPosition();
-
+    const spawn =
+        randomSpawn();
 
     return {
 
         id:
+            "p_" +
             Math.random()
             .toString(36)
-            .substring(2, 10),
+            .substring(2,10),
 
-        socket:
-
-            socket,
+        ws:ws,
 
         name:
-            String(name || "Player")
-            .substring(0, 15),
+            name || "Player",
 
-        x:
-            position.x,
+        x:spawn.x,
 
-        y:
-            position.y,
+        y:spawn.y,
 
-        hp:
-            PLAYER_HP,
+        hp:100,
 
-        maxHp:
-            PLAYER_HP,
+        maxHp:100,
 
-        shield:
-            PLAYER_SHIELD,
+        shield:50,
 
-        kills:
-            0,
+        alive:true,
 
-        alive:
-            true,
+        kills:0,
 
-        angle:
-            0,
+        weapon:"Pistole",
 
-        lastShot:
-            0,
+        lastShot:0,
 
-        lastHeal:
-            0
+        room:null
 
     };
 
 }
 
 
-/* =========================
-   BOT
-========================= */
+/* ================= BOT ================= */
 
-function createBot(number) {
+function createBot(){
 
-    const position =
-        randomPosition();
-
+    const spawn =
+        randomSpawn();
 
     return {
 
         id:
             "bot_" +
-            number +
-            "_" +
             Math.random()
             .toString(36)
-            .substring(2, 6),
+            .substring(2,10),
 
         name:
-            "Bot " + number,
+            "Bot",
 
-        x:
-            position.x,
+        x:spawn.x,
 
-        y:
-            position.y,
+        y:spawn.y,
 
-        hp:
-            BOT_HP,
+        hp:100,
 
-        maxHp:
-            BOT_HP,
+        maxHp:100,
 
-        shield:
-            20,
+        shield:50,
 
-        alive:
-            true,
+        alive:true,
 
-        angle:
-            0,
+        kills:0,
 
-        lastShot:
-            0,
+        weapon:"Pistole",
 
-        targetId:
-            null
+        lastShot:0,
+
+        target:null,
+
+        moveTimer:0,
+
+        moveX:0,
+
+        moveY:0
 
     };
 
 }
 
 
-/* =========================
-   ROOM
-========================= */
+/* ================= ROOM STATE ================= */
 
-function createRoom(
-    socket,
-    name,
-    botCount,
-    difficulty
-) {
+function roomState(room){
 
-    const code =
-        createRoomCode();
-
-
-    const player =
-        createPlayer(
-            socket,
-            name
+    const players =
+        room.players.map(
+            player => ({
+                id:player.id,
+                name:player.name,
+                x:player.x,
+                y:player.y,
+                hp:player.hp,
+                maxHp:player.maxHp,
+                shield:player.shield,
+                alive:player.alive,
+                kills:player.kills,
+                weapon:player.weapon
+            })
         );
 
+    const bots =
+        room.bots.map(
+            bot => ({
+                id:bot.id,
+                name:bot.name,
+                x:bot.x,
+                y:bot.y,
+                hp:bot.hp,
+                maxHp:bot.maxHp,
+                shield:bot.shield,
+                alive:bot.alive,
+                kills:bot.kills,
+                weapon:bot.weapon
+            })
+        );
 
-    const room = {
+    return {
 
-        code:
-            code,
+        type:"state",
 
-        players:
-            new Map(),
+        players:players,
 
-        bots:
-            [],
+        bots:bots,
 
-        difficulty:
-            difficulty || "medium",
+        map:MAP,
 
-        started:
-            false
+        walls:WALLS
 
     };
 
-
-    room.players.set(
-        player.id,
-        player
-    );
+}
 
 
-    for (
-        let i = 1;
-        i <= botCount;
+function broadcast(
+    room,
+    data
+){
+
+    const message =
+        JSON.stringify(data);
+
+    for(const player of room.players){
+
+        if(
+            player.ws &&
+            player.ws.readyState ===
+            WebSocket.OPEN
+        ){
+
+            player.ws.send(message);
+
+        }
+
+    }
+
+}
+
+
+/* ================= CREATE ROOM ================= */
+
+function createRoom(
+    ws,
+    data
+){
+
+    const code =
+        createCode();
+
+    const room = {
+
+        code:code,
+
+        difficulty:
+            data.difficulty || "medium",
+
+        players:[],
+
+        bots:[],
+
+        started:false
+
+    };
+
+    const player =
+        createPlayer(
+            ws,
+            data.name
+        );
+
+    player.room = code;
+
+    room.players.push(player);
+
+
+    const botCount =
+        Math.max(
+            0,
+            Math.min(
+                5,
+                Number(data.bots) || 0
+            )
+        );
+
+
+    for(
+        let i=0;
+        i<botCount;
         i++
-    ) {
+    ){
 
         room.bots.push(
-            createBot(i)
+            createBot()
         );
 
     }
 
 
-    ROOMS.set(
+    rooms.set(
         code,
         room
     );
 
 
-    socket.roomCode =
-        code;
+    ws.player = player;
 
-    socket.playerId =
-        player.id;
+    ws.room = room;
 
 
-    send(socket, {
+    ws.send(
+        JSON.stringify({
 
-        type:
-            "roomCreated",
+            type:"roomCreated",
 
-        code:
-            code
+            code:code
 
-    });
+        })
+    );
 
 
-    return room;
+    sendState(room);
 
 }
 
 
-/* =========================
-   JOIN ROOM
-========================= */
+/* ================= JOIN ROOM ================= */
 
 function joinRoom(
-    socket,
-    code,
-    name
-) {
+    ws,
+    data
+){
+
+    const code =
+        String(
+            data.code || ""
+        ).toUpperCase();
+
 
     const room =
-        ROOMS.get(code);
+        rooms.get(code);
 
 
-    if (!room) {
+    if(!room){
 
-        send(socket, {
+        ws.send(
+            JSON.stringify({
 
-            type:
-                "error",
+                type:"error",
 
-            message:
-                "Lobby nicht gefunden."
+                message:
+                    "Raum nicht gefunden."
 
-        });
+            })
+        );
 
         return;
 
     }
 
 
-    if (
-        room.players.size >= 8
-    ) {
+    if(room.players.length >= 8){
 
-        send(socket, {
+        ws.send(
+            JSON.stringify({
 
-            type:
-                "error",
+                type:"error",
 
-            message:
-                "Lobby ist voll."
+                message:
+                    "Der Raum ist voll."
 
-        });
+            })
+        );
 
         return;
 
@@ -368,286 +562,113 @@ function joinRoom(
 
     const player =
         createPlayer(
-            socket,
-            name
+            ws,
+            data.name
         );
 
+    player.room = code;
 
-    room.players.set(
-        player.id,
-        player
+    room.players.push(player);
+
+
+    ws.player = player;
+
+    ws.room = room;
+
+
+    ws.send(
+        JSON.stringify({
+
+            type:"joinedRoom",
+
+            code:code
+
+        })
     );
 
 
-    socket.roomCode =
-        code;
-
-    socket.playerId =
-        player.id;
-
-
-    send(socket, {
-
-        type:
-            "joinedRoom",
-
-        code:
-            code
-
-    });
+    sendState(room);
 
 }
 
 
-/* =========================
-   SEND
-========================= */
+/* ================= SEND STATE ================= */
 
-function send(
-    socket,
-    data
-) {
+function sendState(room){
 
-    if (
-        socket &&
-        socket.readyState ===
-        WebSocket.OPEN
-    ) {
-
-        socket.send(
-            JSON.stringify(data)
-        );
-
-    }
-
-}
-
-
-/* =========================
-   BROADCAST
-========================= */
-
-function broadcast(
-    room,
-    data
-) {
-
-    room.players.forEach(
-        player => {
-
-            send(
-                player.socket,
-                data
-            );
-
-        }
+    broadcast(
+        room,
+        roomState(room)
     );
 
 }
 
 
-/* =========================
-   DISTANCE
-========================= */
-
-function distance(
-    a,
-    b
-) {
-
-    return Math.sqrt(
-
-        Math.pow(
-            a.x - b.x,
-            2
-        )
-
-        +
-
-        Math.pow(
-            a.y - b.y,
-            2
-        )
-
-    );
-
-}
-
-
-/* =========================
-   MOVE
-========================= */
+/* ================= MOVE ================= */
 
 function movePlayer(
     player,
     dx,
     dy
-) {
+){
 
-    if (!player.alive)
+    if(!player.alive)
         return;
 
 
-    const length =
-        Math.sqrt(
-            dx * dx +
-            dy * dy
-        );
+    const direction =
+        normalize(dx,dy);
 
 
-    if (length === 0)
-        return;
+    const speed = 7;
 
 
-    dx /= length;
-    dy /= length;
+    const newX =
+        player.x +
+        direction.x * speed;
+
+    const newY =
+        player.y +
+        direction.y * speed;
 
 
-    player.x +=
-        dx *
-        PLAYER_SPEED;
+    if(
+        validPosition(
+            newX,
+            player.y
+        )
+    ){
 
-    player.y +=
-        dy *
-        PLAYER_SPEED;
-
-
-    player.x =
-        Math.max(
-            30,
-            Math.min(
-                MAP_WIDTH - 30,
-                player.x
-            )
-        );
-
-
-    player.y =
-        Math.max(
-            30,
-            Math.min(
-                MAP_HEIGHT - 30,
-                player.y
-            )
-        );
-
-
-    player.angle =
-        Math.atan2(
-            dy,
-            dx
-        );
-
-}
-
-
-/* =========================
-   SHOOT
-========================= */
-
-function playerShoot(
-    room,
-    player,
-    dx,
-    dy
-) {
-
-    if (!player.alive)
-        return;
-
-
-    const now =
-        Date.now();
-
-
-    if (
-        now -
-        player.lastShot <
-        250
-    ) {
-
-        return;
+        player.x =
+            newX;
 
     }
 
 
-    player.lastShot =
-        now;
-
-
-    const length =
-        Math.sqrt(
-            dx * dx +
-            dy * dy
-        );
-
-
-    if (length === 0)
-        return;
-
-
-    dx /= length;
-    dy /= length;
-
-
-    player.angle =
-        Math.atan2(
-            dy,
-            dx
-        );
-
-
-    const bullet = {
-
-        id:
-            Math.random()
-            .toString(36)
-            .substring(2),
-
-        owner:
-            player.id,
-
-        x:
+    if(
+        validPosition(
             player.x,
+            newY
+        )
+    ){
 
-        y:
-            player.y,
+        player.y =
+            newY;
 
-        dx:
-            dx,
-
-        dy:
-            dy,
-
-        life:
-            50
-
-    };
-
-
-    room.bullets =
-        room.bullets || [];
-
-
-    room.bullets.push(
-        bullet
-    );
+    }
 
 }
 
 
-/* =========================
-   DAMAGE
-========================= */
+/* ================= DAMAGE ================= */
 
-function damageTarget(
-    room,
+function damagePlayer(
     attacker,
     target,
     damage
-) {
+){
 
-    if (!target.alive)
+    if(!target.alive)
         return;
 
 
@@ -655,14 +676,13 @@ function damageTarget(
         damage;
 
 
-    if (target.shield > 0) {
+    if(target.shield > 0){
 
         const shieldDamage =
             Math.min(
                 target.shield,
                 remaining
             );
-
 
         target.shield -=
             shieldDamage;
@@ -673,7 +693,7 @@ function damageTarget(
     }
 
 
-    if (remaining > 0) {
+    if(remaining > 0){
 
         target.hp -=
             remaining;
@@ -681,293 +701,206 @@ function damageTarget(
     }
 
 
-    if (target.hp <= 0) {
+    if(target.hp <= 0){
 
         target.hp = 0;
 
-        target.alive =
-            false;
+        target.alive = false;
 
-
-        if (attacker) {
-
-            attacker.kills++;
-
-        }
+        attacker.kills++;
 
 
         broadcast(
-            room,
+            attacker.room,
             {
 
-                type:
-                    "elimination",
+                type:"eliminated",
 
-                killer:
-                    attacker
-                    ? attacker.id
-                    : null,
+                killer:attacker.id,
 
-                victim:
-                    target.id
+                target:target.id
 
             }
         );
 
 
-        checkRoundEnd(room);
+        checkRound(
+            attacker.room
+        );
 
     }
 
 }
 
 
-/* =========================
-   BULLETS
-========================= */
+/* ================= SHOOT ================= */
 
-function updateBullets(
-    room
-) {
+function shoot(
+    player,
+    dx,
+    dy
+){
 
-    if (!room.bullets)
-        room.bullets = [];
-
-
-    const remaining = [];
+    if(!player.alive)
+        return;
 
 
-    for (
-        const bullet of
-        room.bullets
-    ) {
-
-        bullet.x +=
-            bullet.dx *
-            BULLET_SPEED;
-
-        bullet.y +=
-            bullet.dy *
-            BULLET_SPEED;
-
-        bullet.life--;
+    const now =
+        Date.now();
 
 
-        if (
-            bullet.life <= 0
-        )
-            continue;
+    if(
+        now-player.lastShot <
+        WEAPON.cooldown
+    ){
+
+        return;
+
+    }
 
 
-        if (
-            bullet.x < 0 ||
-            bullet.x > MAP_WIDTH ||
-            bullet.y < 0 ||
-            bullet.y > MAP_HEIGHT
-        ) {
+    player.lastShot =
+        now;
+
+
+    const direction =
+        normalize(dx,dy);
+
+
+    broadcast(
+        player.room,
+        {
+
+            type:"bullet",
+
+            x:player.x,
+
+            y:player.y,
+
+            dx:direction.x,
+
+            dy:direction.y
+
+        }
+    );
+
+
+    let nearest = null;
+
+    let nearestDistance =
+        WEAPON.range;
+
+
+    const targets = [
+
+        ...player.room.players,
+        ...player.room.bots
+
+    ];
+
+
+    for(const target of targets){
+
+        if(
+            target.id === player.id ||
+            !target.alive
+        ){
 
             continue;
 
         }
 
 
-        let hit = false;
+        const vx =
+            target.x-player.x;
+
+        const vy =
+            target.y-player.y;
 
 
-        /* PLAYERS */
-
-        for (
-            const player of
-            room.players.values()
-        ) {
-
-            if (
-                !player.alive ||
-                player.id ===
-                bullet.owner
-            )
-                continue;
+        const length =
+            Math.hypot(vx,vy);
 
 
-            const d =
-                distance(
-                    bullet,
-                    player
-                );
-
-
-            if (d < 25) {
-
-                const attacker =
-                    findCombatant(
-                        room,
-                        bullet.owner
-                    );
-
-
-                damageTarget(
-                    room,
-                    attacker,
-                    player,
-                    BULLET_DAMAGE
-                );
-
-
-                hit = true;
-
-                break;
-
-            }
-
-        }
-
-
-        if (hit)
+        if(length > WEAPON.range)
             continue;
 
 
-        /* BOTS */
-
-        for (
-            const bot of
-            room.bots
-        ) {
-
-            if (!bot.alive)
-                continue;
+        const dot =
+            (
+                vx*direction.x +
+                vy*direction.y
+            ) / length;
 
 
-            if (
-                bot.id ===
-                bullet.owner
-            )
-                continue;
+        if(dot < 0.94)
+            continue;
 
 
-            const d =
-                distance(
-                    bullet,
-                    bot
-                );
+        if(length < nearestDistance){
 
+            nearest =
+                target;
 
-            if (d < 25) {
-
-                const attacker =
-                    findCombatant(
-                        room,
-                        bullet.owner
-                    );
-
-
-                damageTarget(
-                    room,
-                    attacker,
-                    bot,
-                    BULLET_DAMAGE
-                );
-
-
-                hit = true;
-
-                break;
-
-            }
-
-        }
-
-
-        if (!hit) {
-
-            remaining.push(
-                bullet
-            );
+            nearestDistance =
+                length;
 
         }
 
     }
 
 
-    room.bullets =
-        remaining;
+    if(nearest){
 
-}
-
-
-/* =========================
-   FIND PLAYER OR BOT
-========================= */
-
-function findCombatant(
-    room,
-    id
-) {
-
-    const player =
-        room.players.get(id);
-
-
-    if (player)
-        return player;
-
-
-    return room.bots.find(
-        bot =>
-            bot.id === id
-    ) || null;
-
-}
-
-
-/* =========================
-   SIMPLE BOTS
-========================= */
-
-function updateBots(
-    room
-) {
-
-    const alivePlayers =
-        Array.from(
-            room.players.values()
-        )
-        .filter(
-            player =>
-                player.alive
+        damagePlayer(
+            player,
+            nearest,
+            WEAPON.damage
         );
 
 
-    for (
-        const bot of
-        room.bots
-    ) {
+        broadcast(
+            player.room,
+            {
 
-        if (!bot.alive)
+                type:"hit",
+
+                x:nearest.x,
+
+                y:nearest.y
+
+            }
+        );
+
+    }
+
+}
+
+
+/* ================= BOT AI ================= */
+
+function updateBots(room){
+
+    for(const bot of room.bots){
+
+        if(!bot.alive){
+
             continue;
 
-
-        if (
-            alivePlayers.length === 0
-        )
-            continue;
+        }
 
 
-        /* FIND CLOSEST PLAYER */
-
-        let target =
-            alivePlayers[0];
+        let target = null;
 
         let bestDistance =
-            distance(
-                bot,
-                target
-            );
+            Infinity;
 
 
-        for (
-            const player of
-            alivePlayers
-        ) {
+        for(const player of room.players){
+
+            if(!player.alive)
+                continue;
+
 
             const d =
                 distance(
@@ -976,10 +909,7 @@ function updateBots(
                 );
 
 
-            if (
-                d <
-                bestDistance
-            ) {
+            if(d < bestDistance){
 
                 bestDistance =
                     d;
@@ -992,109 +922,78 @@ function updateBots(
         }
 
 
-        bot.targetId =
-            target.id;
+        if(target){
+
+            const dx =
+                target.x-bot.x;
+
+            const dy =
+                target.y-bot.y;
 
 
-        const dx =
-            target.x -
-            bot.x;
+            const direction =
+                normalize(dx,dy);
 
 
-        const dy =
-            target.y -
-            bot.y;
+            /* einfache Bewegung */
+
+            if(bestDistance > 180){
+
+                movePlayer(
+                    bot,
+                    direction.x,
+                    direction.y
+                );
+
+            }
 
 
-        const d =
-            Math.sqrt(
-                dx * dx +
-                dy * dy
+            /* Bot schießt nur aus Nähe */
+
+            if(
+                bestDistance < 450
+            ){
+
+                shoot(
+                    bot,
+                    dx,
+                    dy
+                );
+
+            }
+
+        }else{
+
+            /* Zufällige Bewegung */
+
+            bot.moveTimer--;
+
+            if(bot.moveTimer <= 0){
+
+                bot.moveTimer =
+                    60 +
+                    Math.floor(
+                        Math.random()*100
+                    );
+
+                const angle =
+                    Math.random() *
+                    Math.PI * 2;
+
+                bot.moveX =
+                    Math.cos(angle);
+
+                bot.moveY =
+                    Math.sin(angle);
+
+            }
+
+
+            movePlayer(
+                bot,
+                bot.moveX,
+                bot.moveY
             );
-
-
-        if (d > 120) {
-
-            bot.x +=
-                dx / d *
-                getBotSpeed(
-                    room
-                );
-
-            bot.y +=
-                dy / d *
-                getBotSpeed(
-                    room
-                );
-
-        }
-
-
-        bot.angle =
-            Math.atan2(
-                dy,
-                dx
-            );
-
-
-        /* SHOOT */
-
-        if (
-            d < 600 &&
-            Date.now() -
-            bot.lastShot >
-            getBotFireRate(
-                room
-            )
-        ) {
-
-            bot.lastShot =
-                Date.now();
-
-
-            const shootX =
-                dx / Math.max(
-                    d,
-                    1
-                );
-
-
-            const shootY =
-                dy / Math.max(
-                    d,
-                    1
-                );
-
-
-            room.bullets =
-                room.bullets || [];
-
-
-            room.bullets.push({
-
-                id:
-                    Math.random()
-                    .toString(36),
-
-                owner:
-                    bot.id,
-
-                x:
-                    bot.x,
-
-                y:
-                    bot.y,
-
-                dx:
-                    shootX,
-
-                dy:
-                    shootY,
-
-                life:
-                    40
-
-            });
 
         }
 
@@ -1103,117 +1002,12 @@ function updateBots(
 }
 
 
-/* =========================
-   BOT DIFFICULTY
-========================= */
+/* ================= ROUND ================= */
 
-function getBotSpeed(room) {
-
-    if (
-        room.difficulty ===
-        "easy"
-    ) {
-
-        return 1.2;
-
-    }
-
-
-    if (
-        room.difficulty ===
-        "hard"
-    ) {
-
-        return 2.5;
-
-    }
-
-
-    return 1.8;
-
-}
-
-
-function getBotFireRate(room) {
-
-    if (
-        room.difficulty ===
-        "easy"
-    ) {
-
-        return 1600;
-
-    }
-
-
-    if (
-        room.difficulty ===
-        "hard"
-    ) {
-
-        return 700;
-
-    }
-
-
-    return 1100;
-
-}
-
-
-/* =========================
-   HEAL
-========================= */
-
-function healPlayer(
-    player
-) {
-
-    if (!player.alive)
-        return;
-
-
-    const now =
-        Date.now();
-
-
-    if (
-        now -
-        player.lastHeal <
-        5000
-    ) {
-
-        return;
-
-    }
-
-
-    player.lastHeal =
-        now;
-
-
-    player.hp =
-        Math.min(
-            player.maxHp,
-            player.hp + 30
-        );
-
-}
-
-
-/* =========================
-   ROUND END
-========================= */
-
-function checkRoundEnd(
-    room
-) {
+function checkRound(room){
 
     const alivePlayers =
-        Array.from(
-            room.players.values()
-        )
-        .filter(
+        room.players.filter(
             player =>
                 player.alive
         );
@@ -1226,45 +1020,27 @@ function checkRoundEnd(
         );
 
 
-    if (
-        alivePlayers.length === 0
-    ) {
+    const alive =
+        [
+            ...alivePlayers,
+            ...aliveBots
+        ];
 
-        broadcast(
-            room,
-            {
 
-                type:
-                    "roundEnd",
-
-                winner:
-                    null
-
-            }
-        );
-
+    if(alive.length > 1)
         return;
 
-    }
 
-
-    if (
-        aliveBots.length === 0
-    ) {
-
-        const winner =
-            alivePlayers[0];
-
+    if(alive.length === 1){
 
         broadcast(
             room,
             {
 
-                type:
-                    "roundEnd",
+                type:"roundEnd",
 
                 winner:
-                    winner.id
+                    alive[0].id
 
             }
         );
@@ -1274,285 +1050,198 @@ function checkRoundEnd(
 }
 
 
-/* =========================
-   STATE
-========================= */
+function newRound(room){
 
-function sendState(
-    room
-) {
+    for(const player of room.players){
 
-    const players =
-        Array.from(
-            room.players.values()
-        )
-        .map(
-            player => ({
+        const spawn =
+            randomSpawn();
 
-                id:
-                    player.id,
+        player.x =
+            spawn.x;
 
-                name:
-                    player.name,
+        player.y =
+            spawn.y;
 
-                x:
-                    player.x,
+        player.hp =
+            player.maxHp;
 
-                y:
-                    player.y,
+        player.shield =
+            50;
 
-                hp:
-                    player.hp,
+        player.alive =
+            true;
 
-                maxHp:
-                    player.maxHp,
-
-                shield:
-                    player.shield,
-
-                kills:
-                    player.kills,
-
-                alive:
-                    player.alive,
-
-                angle:
-                    player.angle
-
-            })
-        );
+    }
 
 
-    const bots =
-        room.bots.map(
-            bot => ({
+    for(const bot of room.bots){
 
-                id:
-                    bot.id,
+        const spawn =
+            randomSpawn();
 
-                name:
-                    bot.name,
+        bot.x =
+            spawn.x;
 
-                x:
-                    bot.x,
+        bot.y =
+            spawn.y;
 
-                y:
-                    bot.y,
+        bot.hp =
+            bot.maxHp;
 
-                hp:
-                    bot.hp,
+        bot.shield =
+            50;
 
-                maxHp:
-                    bot.maxHp,
+        bot.alive =
+            true;
 
-                shield:
-                    bot.shield,
-
-                alive:
-                    bot.alive,
-
-                angle:
-                    bot.angle
-
-            })
-        );
+    }
 
 
     broadcast(
         room,
         {
 
-            type:
-                "state",
-
-            players:
-                players,
-
-            bots:
-                bots
+            type:"newRound"
 
         }
     );
+
+
+    sendState(room);
 
 }
 
 
-/* =========================
-   RESET ROUND
-========================= */
-
-function resetRound(
-    room
-) {
-
-    room.players.forEach(
-        player => {
-
-            const position =
-                randomPosition();
-
-
-            player.x =
-                position.x;
-
-            player.y =
-                position.y;
-
-            player.hp =
-                player.maxHp;
-
-            player.shield =
-                PLAYER_SHIELD;
-
-            player.alive =
-                true;
-
-        }
-    );
-
-
-    room.bots.forEach(
-        bot => {
-
-            const position =
-                randomPosition();
-
-
-            bot.x =
-                position.x;
-
-            bot.y =
-                position.y;
-
-            bot.hp =
-                BOT_HP;
-
-            bot.shield =
-                20;
-
-            bot.alive =
-                true;
-
-        }
-    );
-
-
-    room.bullets =
-        [];
-
-
-    broadcast(
-        room,
-        {
-
-            type:
-                "newRound"
-
-        }
-    );
-
-}
-
-
-/* =========================
-   SOCKET CONNECTION
-========================= */
+/* ================= CONNECTION ================= */
 
 wss.on(
-"connection",
-function(socket) {
+    "connection",
+    function(ws){
 
-    socket.roomCode =
-        null;
+        ws.send(
+            JSON.stringify({
 
-    socket.playerId =
-        null;
+                type:"connected",
 
+                id:
+                    "server_" +
+                    Math.random()
+                    .toString(36)
+                    .substring(2,8),
 
-    send(
-        socket,
-        {
+                map:MAP,
 
-            type:
-                "connected",
+                walls:WALLS
 
-            id:
-                "temporary"
-
-        }
-    );
+            })
+        );
 
 
-    socket.on(
-        "message",
-        function(raw) {
+        ws.on(
+            "message",
+            function(raw){
 
-            try {
+                try{
 
-                const data =
-                    JSON.parse(
-                        raw.toString()
-                    );
-
-
-                /* CREATE */
-
-                if (
-                    data.type ===
-                    "createRoom"
-                ) {
-
-                    const botCount =
-                        Math.max(
-                            0,
-                            Math.min(
-                                5,
-                                Number(
-                                    data.bots
-                                ) || 0
-                            )
+                    const data =
+                        JSON.parse(
+                            raw.toString()
                         );
 
 
-                    createRoom(
+                    if(data.type === "createRoom"){
 
-                        socket,
+                        createRoom(
+                            ws,
+                            data
+                        );
 
-                        data.name,
+                        return;
 
-                        botCount,
+                    }
 
-                        data.difficulty
 
+                    if(data.type === "joinRoom"){
+
+                        joinRoom(
+                            ws,
+                            data
+                        );
+
+                        return;
+
+                    }
+
+
+                    if(!ws.player){
+
+                        return;
+
+                    }
+
+
+                    if(data.type === "move"){
+
+                        movePlayer(
+                            ws.player,
+                            Number(data.dx) || 0,
+                            Number(data.dy) || 0
+                        );
+
+                        return;
+
+                    }
+
+
+                    if(data.type === "shoot"){
+
+                        shoot(
+                            ws.player,
+                            Number(data.dx) || 0,
+                            Number(data.dy) || 0
+                        );
+
+                        return;
+
+                    }
+
+
+                    if(data.type === "newRound"){
+
+                        if(ws.room){
+
+                            newRound(
+                                ws.room
+                            );
+
+                        }
+
+                        return;
+
+                    }
+
+                }catch(error){
+
+                    console.error(
+                        "Message error:",
+                        error
                     );
-
-
-                    return;
 
                 }
 
-
-                /* JOIN */
-
-                if (
-                    data.type ===
-                    "joinRoom"
-                ) {
-
-                    const code =
-                        String(
-                            data.code ||
-                            ""
-                        )
-                        .toUpperCase();
+            }
+        );
 
 
-                    joinRoom(
-                        socket,
-                        code,
-                        data.name
-                    );
+        ws.on(
+            "close",
+            function(){
 
+                if(
+                    !ws.player ||
+                    !ws.room
+                ){
 
                     return;
 
@@ -1560,221 +1249,63 @@ function(socket) {
 
 
                 const room =
-                    ROOMS.get(
-                        socket.roomCode
+                    ws.room;
+
+
+                room.players =
+                    room.players.filter(
+                        player =>
+                            player !== ws.player
                     );
 
 
-                if (!room)
-                    return;
+                if(room.players.length === 0){
 
-
-                const player =
-                    room.players.get(
-                        socket.playerId
+                    rooms.delete(
+                        room.code
                     );
 
+                }else{
 
-                if (!player)
-                    return;
-
-
-                /* START */
-
-                if (
-                    data.type ===
-                    "startGame"
-                ) {
-
-                    room.started =
-                        true;
-
-                    sendState(
-                        room
-                    );
-
-                    return;
+                    sendState(room);
 
                 }
-
-
-                /* MOVE */
-
-                if (
-                    data.type ===
-                    "move"
-                ) {
-
-                    movePlayer(
-
-                        player,
-
-                        Number(
-                            data.dx
-                        ) || 0,
-
-                        Number(
-                            data.dy
-                        ) || 0
-
-                    );
-
-                    return;
-
-                }
-
-
-                /* SHOOT */
-
-                if (
-                    data.type ===
-                    "shoot"
-                ) {
-
-                    playerShoot(
-
-                        room,
-
-                        player,
-
-                        Number(
-                            data.dx
-                        ) || 0,
-
-                        Number(
-                            data.dy
-                        ) || 0
-
-                    );
-
-                    return;
-
-                }
-
-
-                /* HEAL */
-
-                if (
-                    data.type ===
-                    "heal"
-                ) {
-
-                    healPlayer(
-                        player
-                    );
-
-                    return;
-
-                }
-
-            } catch (error) {
-
-                console.error(
-                    "Message error:",
-                    error
-                );
 
             }
+        );
 
-        }
-    );
-
-
-    socket.on(
-        "close",
-        function() {
-
-            const room =
-                ROOMS.get(
-                    socket.roomCode
-                );
+    }
+);
 
 
-            if (!room)
-                return;
-
-
-            room.players.delete(
-                socket.playerId
-            );
-
-
-            if (
-                room.players.size === 0
-            ) {
-
-                ROOMS.delete(
-                    socket.roomCode
-                );
-
-            }
-
-        }
-    );
-
-});
-
-
-/* =========================
-   GAME LOOP
-========================= */
+/* ================= GAME LOOP ================= */
 
 setInterval(
-function() {
+    function(){
 
-    for (
-        const room of
-        ROOMS.values()
-    ) {
+        for(const room of rooms.values()){
 
-        if (!room.started)
-            continue;
+            updateBots(room);
 
+            sendState(room);
 
-        updateBots(
-            room
-        );
+        }
 
-
-        updateBullets(
-            room
-        );
+    },
+    100
+);
 
 
-        sendState(
-            room
-        );
+/* ================= KEEP ALIVE ================= */
 
-    }
-
-}, 50);
-
-
-/* =========================
-   START SERVER
-========================= */
-
-httpServer.listen(
-    PORT,
-    "0.0.0.0",
-    function() {
+setInterval(
+    function(){
 
         console.log(
-            "================================"
+            "Battle Zone läuft | Räume:",
+            rooms.size
         );
 
-        console.log(
-            "BATTLE ZONE SERVER ONLINE"
-        );
-
-        console.log(
-            "Port:",
-            PORT
-        );
-
-        console.log(
-            "================================"
-        );
-
-    }
+    },
+    30000
 );
