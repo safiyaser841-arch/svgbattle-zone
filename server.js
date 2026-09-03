@@ -1,91 +1,492 @@
 const http = require("http");
+const fs = require("fs");
+const path = require("path");
 const WebSocket = require("ws");
 
-const PORT = process.env.PORT || 10000;
+const PORT = Number(process.env.PORT) || 10000;
+const HOST = "0.0.0.0";
 
-const html = `
-<!DOCTYPE html>
-<html>
-<body style="background:black;color:white;text-align:center;">
-<h1>Battle Zone Server läuft ✅</h1>
-<p>Spiel funktioniert.</p>
-</body>
-</html>
-`;
+const INDEX_FILE = path.join(__dirname, "index.html");
 
-const server = http.createServer((req,res)=>{
+const server = http.createServer((req, res) => {
+    if (req.url === "/health") {
+        res.writeHead(200, {
+            "Content-Type": "application/json"
+        });
 
-    res.writeHead(200,{
-        "Content-Type":"text/html"
+        res.end(JSON.stringify({
+            ok: true,
+            server: "Battle Zone"
+        }));
+
+        return;
+    }
+
+    if (req.url === "/" || req.url === "/index.html") {
+        fs.readFile(INDEX_FILE, (error, data) => {
+            if (error) {
+                console.error("index.html Fehler:", error);
+
+                res.writeHead(500, {
+                    "Content-Type": "text/plain; charset=utf-8"
+                });
+
+                res.end("index.html konnte nicht geladen werden.");
+                return;
+            }
+
+            res.writeHead(200, {
+                "Content-Type": "text/html; charset=utf-8"
+            });
+
+            res.end(data);
+        });
+
+        return;
+    }
+
+    res.writeHead(404, {
+        "Content-Type": "text/plain; charset=utf-8"
     });
 
-    res.end(html);
+    res.end("404 - Nicht gefunden");
 });
+
+
+/* =========================
+   WEBSOCKET
+========================= */
 
 const wss = new WebSocket.Server({
-    server,
-    path:"/ws"
+    server: server,
+    path: "/ws"
 });
 
-let players = {};
-let nextId = 1;
 
-wss.on("connection",(ws)=>{
+/* =========================
+   GAME
+========================= */
 
-    let id = String(nextId++);
+const MAP_WIDTH = 1600;
+const MAP_HEIGHT = 900;
 
-    players[id]={
-        id:id,
-        x:200+Math.random()*400,
-        y:200+Math.random()*300,
-        name:"Player"+id
+const PLAYER_SPEED = 6;
+
+const players = new Map();
+
+let nextPlayerId = 1;
+
+
+/* =========================
+   HILFSFUNKTIONEN
+========================= */
+
+function random(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+
+function createPlayer(ws, name, bot = false) {
+
+    const id = String(nextPlayerId++);
+
+    const player = {
+        id: id,
+
+        name:
+            name ||
+            (bot ? `Bot ${id}` : `Player ${id}`),
+
+        x: random(100, MAP_WIDTH - 100),
+        y: random(100, MAP_HEIGHT - 100),
+
+        hp: 100,
+
+        bot: bot,
+
+        keys: {
+            up: false,
+            down: false,
+            left: false,
+            right: false
+        }
     };
 
-    ws.send(JSON.stringify({
-        type:"connected",
-        id:id
-    }));
+    player.ws = ws;
 
-    ws.on("message",(msg)=>{
+    players.set(id, player);
+
+    return player;
+}
+
+
+function publicPlayer(player) {
+
+    return {
+        id: player.id,
+        name: player.name,
+
+        x: Math.round(player.x),
+        y: Math.round(player.y),
+
+        hp: player.hp,
+
+        bot: player.bot
+    };
+}
+
+
+function getState() {
+
+    const result = {};
+
+    for (const player of players.values()) {
+
+        result[player.id] = publicPlayer(player);
+
+    }
+
+    return result;
+}
+
+
+function send(ws, data) {
+
+    if (
+        ws &&
+        ws.readyState === WebSocket.OPEN
+    ) {
+
+        ws.send(JSON.stringify(data));
+
+    }
+}
+
+
+function broadcast(data) {
+
+    const message = JSON.stringify(data);
+
+    for (const player of players.values()) {
+
+        if (
+            player.ws &&
+            player.ws.readyState === WebSocket.OPEN
+        ) {
+
+            player.ws.send(message);
+
+        }
+
+    }
+}
+
+
+/* =========================
+   WEBSOCKET CONNECTION
+========================= */
+
+wss.on("connection", (ws) => {
+
+    const player = createPlayer(ws);
+
+    console.log(
+        "Spieler verbunden:",
+        player.id
+    );
+
+
+    send(ws, {
+        type: "connected",
+        id: player.id,
+        name: player.name
+    });
+
+
+    send(ws, {
+        type: "serverInfo",
+        mapWidth: MAP_WIDTH,
+        mapHeight: MAP_HEIGHT
+    });
+
+
+    ws.on("message", (raw) => {
 
         let data;
 
-        try{
-            data=JSON.parse(msg);
-        }catch{
+        try {
+
+            data = JSON.parse(raw.toString());
+
+        } catch (error) {
+
+            console.log("Ungültige Nachricht");
+
             return;
         }
 
-        if(data.type==="move"){
 
-            players[id].x += data.dx*5;
-            players[id].y += data.dy*5;
+        /* NAME */
+
+        if (data.type === "setName") {
+
+            if (
+                typeof data.name === "string" &&
+                data.name.trim().length > 0
+            ) {
+
+                player.name =
+                    data.name
+                        .trim()
+                        .substring(0, 16);
+
+            }
+
+            return;
         }
+
+
+        /* MOVEMENT */
+
+        if (data.type === "move") {
+
+            player.keys.up = !!data.up;
+            player.keys.down = !!data.down;
+            player.keys.left = !!data.left;
+            player.keys.right = !!data.right;
+
+            return;
+        }
+
+
+        /* STOP */
+
+        if (data.type === "stop") {
+
+            player.keys = {
+                up: false,
+                down: false,
+                left: false,
+                right: false
+            };
+
+            return;
+        }
+
+
+        /* CREATE BOT */
+
+        if (data.type === "addBot") {
+
+            createPlayer(null, "Bot", true);
+
+            return;
+        }
+
+
+        /* REMOVE BOTS */
+
+        if (data.type === "removeBots") {
+
+            for (const [id, p] of players) {
+
+                if (p.bot) {
+
+                    players.delete(id);
+
+                }
+
+            }
+
+            return;
+        }
+
     });
 
-    ws.on("close",()=>{
-        delete players[id];
+
+    ws.on("close", () => {
+
+        console.log(
+            "Spieler getrennt:",
+            player.id
+        );
+
+        players.delete(player.id);
+
     });
+
+
+    ws.on("error", (error) => {
+
+        console.log(
+            "WebSocket Fehler:",
+            error.message
+        );
+
+    });
+
 });
 
-setInterval(()=>{
 
-    const state={
-        type:"state",
-        players:players
-    };
+/* =========================
+   GAME LOOP
+========================= */
 
-    const text=JSON.stringify(state);
+setInterval(() => {
 
-    wss.clients.forEach(client=>{
-        if(client.readyState===WebSocket.OPEN){
-            client.send(text);
+    for (const player of players.values()) {
+
+        if (player.bot) {
+
+            updateBot(player);
+
         }
+
+        else {
+
+            updatePlayer(player);
+
+        }
+
+    }
+
+    broadcast({
+        type: "state",
+        players: getState()
     });
 
-},50);
+}, 50);
 
-server.listen(PORT,"0.0.0.0",()=>{
-    console.log("Server läuft auf Port",PORT);
+
+/* =========================
+   PLAYER MOVEMENT
+========================= */
+
+function updatePlayer(player) {
+
+    let dx = 0;
+    let dy = 0;
+
+
+    if (player.keys.up) {
+        dy -= 1;
+    }
+
+    if (player.keys.down) {
+        dy += 1;
+    }
+
+    if (player.keys.left) {
+        dx -= 1;
+    }
+
+    if (player.keys.right) {
+        dx += 1;
+    }
+
+
+    movePlayer(player, dx, dy);
+
+}
+
+
+/* =========================
+   BOT MOVEMENT
+========================= */
+
+function updateBot(player) {
+
+    if (!player.botDirection) {
+
+        player.botDirection = {
+            x: random(-1, 1),
+            y: random(-1, 1)
+        };
+
+        player.botTimer =
+            Date.now() + random(1000, 3000);
+
+    }
+
+
+    if (Date.now() > player.botTimer) {
+
+        player.botDirection = {
+            x: random(-1, 1),
+            y: random(-1, 1)
+        };
+
+        player.botTimer =
+            Date.now() + random(1000, 3000);
+
+    }
+
+
+    movePlayer(
+        player,
+        player.botDirection.x,
+        player.botDirection.y
+    );
+
+}
+
+
+/* =========================
+   MOVEMENT LIMITS
+========================= */
+
+function movePlayer(player, dx, dy) {
+
+    const length =
+        Math.sqrt(dx * dx + dy * dy);
+
+
+    if (length > 0) {
+
+        dx /= length;
+        dy /= length;
+
+    }
+
+
+    player.x += dx * PLAYER_SPEED;
+    player.y += dy * PLAYER_SPEED;
+
+
+    const radius = 25;
+
+
+    if (player.x < radius) {
+        player.x = radius;
+    }
+
+    if (player.y < radius) {
+        player.y = radius;
+    }
+
+    if (player.x > MAP_WIDTH - radius) {
+        player.x = MAP_WIDTH - radius;
+    }
+
+    if (player.y > MAP_HEIGHT - radius) {
+        player.y = MAP_HEIGHT - radius;
+    }
+
+}
+
+
+/* =========================
+   SERVER START
+========================= */
+
+server.listen(PORT, HOST, () => {
+
+    console.log("--------------------------------");
+    console.log("BATTLE ZONE SERVER");
+    console.log("--------------------------------");
+    console.log(`HTTP: http://${HOST}:${PORT}`);
+    console.log(`WebSocket: /ws`);
+    console.log(`Health: /health`);
+    console.log("--------------------------------");
+
 });
-       
