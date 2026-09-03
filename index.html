@@ -1,1107 +1,710 @@
 <!DOCTYPE html>
 <html lang="de">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
->
+<meta name="viewport"
+      content="width=device-width,
+      initial-scale=1.0,
+      maximum-scale=1.0,
+      user-scalable=no">
 
 <title>Battle Zone</title>
 
 <style>
-
 * {
     box-sizing: border-box;
-}
-
-html,
-body {
-
     margin: 0;
     padding: 0;
+}
 
-    width: 100%;
-    height: 100%;
-
+body {
     overflow: hidden;
-
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
     background: #111;
-
+    font-family: Arial, sans-serif;
     color: white;
-
+    touch-action: none;
 }
 
-
-#game {
-
-    position: fixed;
-
-    left: 0;
-    top: 0;
-
-    width: 100%;
-    height: 100%;
-
+canvas {
     display: block;
-
-    background:
-        linear-gradient(
-            #315c3c,
-            #23482f
-        );
-
+    width: 100vw;
+    height: 100vh;
+    background: #20252b;
 }
-
-
-/* =========================
-   MENU
-========================= */
-
-#menu {
-
-    position: fixed;
-
-    left: 50%;
-    top: 50%;
-
-    transform:
-        translate(-50%, -50%);
-
-    width: min(420px, 90vw);
-
-    padding: 30px;
-
-    border-radius: 20px;
-
-    background:
-        rgba(10, 10, 10, 0.90);
-
-    box-shadow:
-        0 20px 60px
-        rgba(0,0,0,.5);
-
-    text-align: center;
-
-    z-index: 10;
-
-}
-
-
-#menu h1 {
-
-    margin-top: 0;
-
-    font-size: 42px;
-
-}
-
-
-#nameInput {
-
-    width: 100%;
-
-    padding: 14px;
-
-    border: 0;
-
-    border-radius: 10px;
-
-    margin-bottom: 12px;
-
-    font-size: 16px;
-
-}
-
-
-button {
-
-    width: 100%;
-
-    padding: 14px;
-
-    margin-top: 8px;
-
-    border: 0;
-
-    border-radius: 10px;
-
-    background: #2878ff;
-
-    color: white;
-
-    font-size: 16px;
-
-    font-weight: bold;
-
-    cursor: pointer;
-
-}
-
-
-button:hover {
-
-    opacity: .85;
-
-}
-
-
-#connection {
-
-    margin-top: 15px;
-
-    font-size: 14px;
-
-}
-
-
-/* =========================
-   HUD
-========================= */
-
-#hud {
-
-    position: fixed;
-
-    top: 15px;
-    left: 15px;
-
-    z-index: 5;
-
-    padding: 12px 16px;
-
-    border-radius: 12px;
-
-    background:
-        rgba(0,0,0,.55);
-
-    backdrop-filter: blur(8px);
-
-}
-
 
 #status {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 10;
 
-    font-weight: bold;
+    padding: 10px 14px;
+    border-radius: 12px;
 
+    background: rgba(0,0,0,.65);
+    font-size: 14px;
 }
 
+#hud {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 10;
 
-#players {
+    padding: 10px 14px;
+    border-radius: 12px;
 
-    margin-top: 5px;
-
-    opacity: .8;
-
+    background: rgba(0,0,0,.65);
+    font-size: 15px;
 }
-
-
-/* =========================
-   MOBILE CONTROLS
-========================= */
 
 #mobileControls {
-
-    position: fixed;
-
-    left: 20px;
-    bottom: 20px;
-
-    width: 150px;
-    height: 150px;
-
-    z-index: 6;
-
     display: none;
-
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    pointer-events: none;
 }
 
-
-.joystick {
-
+#joystick {
     position: absolute;
+    left: 30px;
+    bottom: 30px;
 
-    width: 150px;
-    height: 150px;
+    width: 130px;
+    height: 130px;
 
     border-radius: 50%;
+    background: rgba(255,255,255,.12);
+    border: 2px solid rgba(255,255,255,.3);
 
-    background:
-        rgba(255,255,255,.12);
-
-    border:
-        2px solid
-        rgba(255,255,255,.25);
-
+    pointer-events: auto;
 }
 
-
-.stick {
-
+#stick {
     position: absolute;
 
-    left: 50%;
-    top: 50%;
+    width: 55px;
+    height: 55px;
 
-    width: 60px;
-    height: 60px;
-
-    transform:
-        translate(-50%, -50%);
+    left: 37px;
+    top: 37px;
 
     border-radius: 50%;
-
-    background:
-        rgba(255,255,255,.4);
-
+    background: rgba(255,255,255,.45);
 }
 
+#shootButton {
+    position: absolute;
 
-/* =========================
-   MOBILE
-========================= */
+    right: 35px;
+    bottom: 45px;
+
+    width: 100px;
+    height: 100px;
+
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,.5);
+
+    background: rgba(255,70,70,.65);
+
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+
+    pointer-events: auto;
+}
 
 @media (max-width: 800px) {
-
     #mobileControls {
-
         display: block;
-
     }
-
 }
-
 </style>
-
 </head>
 
 <body>
 
-
 <canvas id="game"></canvas>
 
-
-<div id="menu">
-
-    <h1>⚡ Battle Zone</h1>
-
-    <p>
-        Einfaches Multiplayer-Testspiel
-    </p>
-
-    <input
-        id="nameInput"
-        maxlength="16"
-        placeholder="Dein Name"
-        value="Player"
-    >
-
-    <button id="playButton">
-        SPIEL STARTEN
-    </button>
-
-    <button id="botButton">
-        BOT HINZUFÜGEN
-    </button>
-
-    <button id="removeBotsButton">
-        BOTS ENTFERNEN
-    </button>
-
-    <div id="connection">
-        Verbinde mit Server...
-    </div>
-
-</div>
-
+<div id="status">Verbinde...</div>
 
 <div id="hud">
-
-    <div id="status">
-        🔴 Nicht verbunden
-    </div>
-
-    <div id="players">
-        Spieler: 0
-    </div>
-
+    ❤️ <span id="hp">100</span>
+    &nbsp; 🏆 <span id="kills">0</span>
 </div>
-
 
 <div id="mobileControls">
 
-    <div class="joystick">
-
-        <div class="stick"></div>
-
+    <div id="joystick">
+        <div id="stick"></div>
     </div>
+
+    <button id="shootButton">
+        FIRE
+    </button>
 
 </div>
 
-
 <script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
-const canvas =
-    document.getElementById("game");
+const statusText = document.getElementById("status");
+const hpText = document.getElementById("hp");
+const killsText = document.getElementById("kills");
 
-const ctx =
-    canvas.getContext("2d");
-
-
-const menu =
-    document.getElementById("menu");
-
-const statusText =
-    document.getElementById("status");
-
-const playersText =
-    document.getElementById("players");
-
-const connectionText =
-    document.getElementById("connection");
-
-const nameInput =
-    document.getElementById("nameInput");
-
-const playButton =
-    document.getElementById("playButton");
-
-const botButton =
-    document.getElementById("botButton");
-
-const removeBotsButton =
-    document.getElementById("removeBotsButton");
-
-
-let players = {};
-
+let socket;
 let myId = null;
 
-let mapWidth = 1600;
+let game = {
+    map: {
+        width: 1200,
+        height: 700
+    },
+    walls: [],
+    players: [],
+    bullets: []
+};
 
-let mapHeight = 900;
+const keys = {
+    up: false,
+    down: false,
+    left: false,
+    right: false
+};
 
-let cameraX = 0;
+let mouseX = 0;
+let mouseY = 0;
+let mouseDown = false;
 
-let cameraY = 0;
+let joystick = {
+    active: false,
+    x: 0,
+    y: 0
+};
 
+function connect() {
 
-/* =========================
-   CANVAS
-========================= */
+    const protocol =
+        location.protocol === "https:"
+            ? "wss:"
+            : "ws:";
 
-function resize() {
-
-    canvas.width =
-        window.innerWidth;
-
-    canvas.height =
-        window.innerHeight;
-
-}
-
-window.addEventListener(
-    "resize",
-    resize
-);
-
-resize();
-
-
-/* =========================
-   WEBSOCKET
-========================= */
-
-const protocol =
-    location.protocol === "https:"
-        ? "wss://"
-        : "ws://";
-
-const socket =
-    new WebSocket(
-        protocol +
-        location.host +
-        "/ws"
+    socket = new WebSocket(
+        protocol + "//" + location.host
     );
 
+    socket.onopen = () => {
+        statusText.textContent = "🟢 Verbunden";
+    };
 
-socket.addEventListener(
-    "open",
-    () => {
+    socket.onclose = () => {
+        statusText.textContent = "🔴 Verbindung verloren";
 
-        statusText.textContent =
-            "🟢 Verbunden";
+        setTimeout(connect, 2000);
+    };
 
-        connectionText.textContent =
-            "Server verbunden";
+    socket.onerror = () => {
+        statusText.textContent = "🔴 Serverfehler";
+    };
 
-    }
-);
+    socket.onmessage = event => {
 
+        const data = JSON.parse(event.data);
 
-socket.addEventListener(
-    "close",
-    () => {
-
-        statusText.textContent =
-            "🔴 Verbindung getrennt";
-
-        connectionText.textContent =
-            "Verbindung zum Server verloren";
-
-    }
-);
-
-
-socket.addEventListener(
-    "error",
-    () => {
-
-        statusText.textContent =
-            "⚠️ Serverfehler";
-
-    }
-);
-
-
-socket.addEventListener(
-    "message",
-    event => {
-
-        let data;
-
-        try {
-
-            data =
-                JSON.parse(event.data);
-
-        } catch {
-
-            return;
-
-        }
-
-
-        if (
-            data.type ===
-            "connected"
-        ) {
-
+        if (data.type === "welcome") {
             myId = data.id;
-
+            return;
         }
 
+        if (data.type === "state") {
+            game = data;
 
-        if (
-            data.type ===
-            "serverInfo"
-        ) {
+            const me = game.players.find(
+                p => p.id === myId
+            );
 
-            mapWidth =
-                data.mapWidth;
+            if (me) {
+                hpText.textContent = Math.max(
+                    0,
+                    Math.round(me.hp)
+                );
 
-            mapHeight =
-                data.mapHeight;
-
+                killsText.textContent = me.kills;
+            }
         }
+    };
+}
 
-
-        if (
-            data.type ===
-            "state"
-        ) {
-
-            players =
-                data.players;
-
-            playersText.textContent =
-                "Spieler: " +
-                Object.keys(players).length;
-
-        }
-
-    }
-);
-
-
-/* =========================
-   SEND
-========================= */
+connect();
 
 function send(data) {
 
     if (
-        socket.readyState ===
-        WebSocket.OPEN
+        socket &&
+        socket.readyState === WebSocket.OPEN
     ) {
-
-        socket.send(
-            JSON.stringify(data)
-        );
-
+        socket.send(JSON.stringify(data));
     }
-
 }
 
+function updateInput() {
 
-/* =========================
-   START
-========================= */
+    let up = keys.up;
+    let down = keys.down;
+    let left = keys.left;
+    let right = keys.right;
 
-playButton.addEventListener(
-    "click",
-    () => {
+    if (joystick.active) {
 
-        const name =
-            nameInput.value.trim();
+        const deadzone = 0.2;
 
-        if (name.length > 0) {
+        if (joystick.y < -deadzone) up = true;
+        if (joystick.y > deadzone) down = true;
 
-            send({
-                type: "setName",
-                name: name
-            });
-
-        }
-
-        menu.style.display =
-            "none";
-
+        if (joystick.x < -deadzone) left = true;
+        if (joystick.x > deadzone) right = true;
     }
-);
-
-
-/* =========================
-   BOTS
-========================= */
-
-botButton.addEventListener(
-    "click",
-    () => {
-
-        send({
-            type: "addBot"
-        });
-
-    }
-);
-
-
-removeBotsButton.addEventListener(
-    "click",
-    () => {
-
-        send({
-            type: "removeBots"
-        });
-
-    }
-);
-
-
-/* =========================
-   KEYBOARD
-========================= */
-
-const keys = {
-
-    ArrowUp: false,
-    ArrowDown: false,
-    ArrowLeft: false,
-    ArrowRight: false
-
-};
-
-
-window.addEventListener(
-    "keydown",
-    event => {
-
-        if (
-            event.key in keys
-        ) {
-
-            keys[event.key] = true;
-
-            sendMovement();
-
-            event.preventDefault();
-
-        }
-
-    }
-);
-
-
-window.addEventListener(
-    "keyup",
-    event => {
-
-        if (
-            event.key in keys
-        ) {
-
-            keys[event.key] = false;
-
-            sendMovement();
-
-            event.preventDefault();
-
-        }
-
-    }
-);
-
-
-function sendMovement() {
 
     send({
-
-        type: "move",
-
-        up:
-            keys.ArrowUp,
-
-        down:
-            keys.ArrowDown,
-
-        left:
-            keys.ArrowLeft,
-
-        right:
-            keys.ArrowRight
-
+        type: "input",
+        up,
+        down,
+        left,
+        right
     });
-
 }
 
+setInterval(updateInput, 50);
 
-/* =========================
-   MOBILE JOYSTICK
-========================= */
+function getMe() {
+    return game.players.find(
+        p => p.id === myId
+    );
+}
 
-const joystick =
-    document.querySelector(
-        ".joystick"
+function shoot() {
+
+    const me = getMe();
+
+    if (!me) return;
+
+    const rect = canvas.getBoundingClientRect();
+
+    const worldX =
+        (mouseX - rect.left) /
+        rect.width *
+        game.map.width;
+
+    const worldY =
+        (mouseY - rect.top) /
+        rect.height *
+        game.map.height;
+
+    const angle = Math.atan2(
+        worldY - me.y,
+        worldX - me.x
     );
 
-const stick =
-    document.querySelector(
-        ".stick"
-    );
+    send({
+        type: "angle",
+        angle
+    });
 
-let joystickActive = false;
+    send({
+        type: "shoot",
+        angle
+    });
+}
 
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
 
-joystick.addEventListener(
-    "pointerdown",
-    event => {
+window.addEventListener("resize", resize);
+resize();
 
-        joystickActive = true;
-
-        joystick.setPointerCapture(
-            event.pointerId
-        );
-
-        updateJoystick(event);
-
-    }
-);
-
-
-joystick.addEventListener(
-    "pointermove",
-    event => {
-
-        if (
-            joystickActive
-        ) {
-
-            updateJoystick(event);
-
-        }
-
-    }
-);
-
-
-joystick.addEventListener(
-    "pointerup",
-    () => {
-
-        joystickActive = false;
-
-        stick.style.left = "50%";
-        stick.style.top = "50%";
-
-        send({
-
-            type: "move",
-
-            up: false,
-            down: false,
-            left: false,
-            right: false
-
-        });
-
-    }
-);
-
-
-function updateJoystick(event) {
-
-    const rect =
-        joystick.getBoundingClientRect();
-
-    const centerX =
-        rect.left +
-        rect.width / 2;
-
-    const centerY =
-        rect.top +
-        rect.height / 2;
-
-    let dx =
-        event.clientX -
-        centerX;
-
-    let dy =
-        event.clientY -
-        centerY;
-
-
-    const max =
-        45;
-
-    const distance =
-        Math.sqrt(
-            dx * dx +
-            dy * dy
-        );
-
+window.addEventListener("keydown", e => {
 
     if (
-        distance > max
+        e.key === "ArrowUp" ||
+        e.key.toLowerCase() === "w"
     ) {
-
-        dx =
-            dx / distance *
-            max;
-
-        dy =
-            dy / distance *
-            max;
-
+        keys.up = true;
     }
 
+    if (
+        e.key === "ArrowDown" ||
+        e.key.toLowerCase() === "s"
+    ) {
+        keys.down = true;
+    }
 
-    stick.style.left =
-        `calc(50% + ${dx}px)`;
+    if (
+        e.key === "ArrowLeft" ||
+        e.key.toLowerCase() === "a"
+    ) {
+        keys.left = true;
+    }
 
-    stick.style.top =
-        `calc(50% + ${dy}px)`;
+    if (
+        e.key === "ArrowRight" ||
+        e.key.toLowerCase() === "d"
+    ) {
+        keys.right = true;
+    }
 
+    if (e.code === "Space") {
+        shoot();
+    }
+});
 
-    send({
+window.addEventListener("keyup", e => {
 
-        type: "move",
+    if (
+        e.key === "ArrowUp" ||
+        e.key.toLowerCase() === "w"
+    ) {
+        keys.up = false;
+    }
 
-        up: dy < -10,
+    if (
+        e.key === "ArrowDown" ||
+        e.key.toLowerCase() === "s"
+    ) {
+        keys.down = false;
+    }
 
-        down: dy > 10,
+    if (
+        e.key === "ArrowLeft" ||
+        e.key.toLowerCase() === "a"
+    ) {
+        keys.left = false;
+    }
 
-        left: dx < -10,
+    if (
+        e.key === "ArrowRight" ||
+        e.key.toLowerCase() === "d"
+    ) {
+        keys.right = false;
+    }
+});
 
-        right: dx > 10
+canvas.addEventListener("mousemove", e => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+});
 
-    });
+canvas.addEventListener("mousedown", e => {
+    if (e.button === 0) {
+        mouseDown = true;
+        shoot();
+    }
+});
 
+canvas.addEventListener("mouseup", () => {
+    mouseDown = false;
+});
+
+setInterval(() => {
+    if (mouseDown) {
+        shoot();
+    }
+}, 250);
+
+const joystickElement =
+    document.getElementById("joystick");
+
+const stickElement =
+    document.getElementById("stick");
+
+let joystickPointer = null;
+
+joystickElement.addEventListener(
+    "pointerdown",
+    e => {
+
+        joystickPointer = e.pointerId;
+
+        joystickElement.setPointerCapture(
+            e.pointerId
+        );
+
+        joystick.active = true;
+
+        updateJoystick(e);
+    }
+);
+
+joystickElement.addEventListener(
+    "pointermove",
+    e => {
+
+        if (e.pointerId !== joystickPointer) {
+            return;
+        }
+
+        updateJoystick(e);
+    }
+);
+
+joystickElement.addEventListener(
+    "pointerup",
+    resetJoystick
+);
+
+joystickElement.addEventListener(
+    "pointercancel",
+    resetJoystick
+);
+
+function updateJoystick(e) {
+
+    const rect =
+        joystickElement.getBoundingClientRect();
+
+    const centerX =
+        rect.left + rect.width / 2;
+
+    const centerY =
+        rect.top + rect.height / 2;
+
+    let x =
+        (e.clientX - centerX) /
+        (rect.width / 2);
+
+    let y =
+        (e.clientY - centerY) /
+        (rect.height / 2);
+
+    const length = Math.hypot(x, y);
+
+    if (length > 1) {
+        x /= length;
+        y /= length;
+    }
+
+    joystick.x = x;
+    joystick.y = y;
+
+    stickElement.style.transform =
+        `translate(${x * 35}px, ${y * 35}px)`;
 }
 
+function resetJoystick() {
 
-/* =========================
-   DRAW
-========================= */
+    joystick.active = false;
+    joystick.x = 0;
+    joystick.y = 0;
 
-function drawBackground() {
+    stickElement.style.transform =
+        "translate(0,0)";
+}
 
-    ctx.fillStyle =
-        "#315c3c";
+document
+    .getElementById("shootButton")
+    .addEventListener("pointerdown", e => {
+        e.preventDefault();
+        shoot();
+    });
 
-    ctx.fillRect(
+function draw() {
+
+    ctx.clearRect(
         0,
         0,
         canvas.width,
         canvas.height
     );
 
+    const scaleX =
+        canvas.width / game.map.width;
 
-    const gridSize = 50;
+    const scaleY =
+        canvas.height / game.map.height;
 
-    ctx.strokeStyle =
-        "rgba(255,255,255,.05)";
+    ctx.save();
 
+    ctx.scale(scaleX, scaleY);
+
+    // Boden
+    ctx.fillStyle = "#252b31";
+
+    ctx.fillRect(
+        0,
+        0,
+        game.map.width,
+        game.map.height
+    );
+
+    // Raster
+    ctx.strokeStyle = "rgba(255,255,255,.035)";
     ctx.lineWidth = 1;
 
-
-    for (
-        let x = -cameraX % gridSize;
-        x < canvas.width;
-        x += gridSize
-    ) {
-
+    for (let x = 0; x < game.map.width; x += 50) {
         ctx.beginPath();
-
         ctx.moveTo(x, 0);
-
-        ctx.lineTo(
-            x,
-            canvas.height
-        );
-
+        ctx.lineTo(x, game.map.height);
         ctx.stroke();
-
     }
 
-
-    for (
-        let y = -cameraY % gridSize;
-        y < canvas.height;
-        y += gridSize
-    ) {
-
+    for (let y = 0; y < game.map.height; y += 50) {
         ctx.beginPath();
-
-        ctx.moveTo(
-            0,
-            y
-        );
-
-        ctx.lineTo(
-            canvas.width,
-            y
-        );
-
+        ctx.moveTo(0, y);
+        ctx.lineTo(game.map.width, y);
         ctx.stroke();
-
     }
 
-}
+    // Wände
+    for (const wall of game.walls) {
 
+        ctx.fillStyle = "#454d56";
 
-/* =========================
-   DRAW PLAYERS
-========================= */
+        ctx.fillRect(
+            wall.x,
+            wall.y,
+            wall.w,
+            wall.h
+        );
 
-function drawPlayers() {
+        ctx.strokeStyle = "#68727d";
+        ctx.lineWidth = 3;
 
-    for (
-        const id in players
-    ) {
+        ctx.strokeRect(
+            wall.x,
+            wall.y,
+            wall.w,
+            wall.h
+        );
+    }
 
-        const player =
-            players[id];
-
-
-        const screenX =
-            player.x -
-            cameraX;
-
-        const screenY =
-            player.y -
-            cameraY;
-
-
-        /* BODY */
+    // Kugeln
+    for (const bullet of game.bullets) {
 
         ctx.beginPath();
 
         ctx.arc(
-            screenX,
-            screenY,
-            22,
+            bullet.x,
+            bullet.y,
+            5,
             0,
             Math.PI * 2
         );
 
+        ctx.fillStyle = "#ffd84d";
+        ctx.fill();
+    }
 
-        if (
-            id === myId
-        ) {
+    // Spieler
+    for (const player of game.players) {
 
-            ctx.fillStyle =
-                "#2997ff";
+        const isMe =
+            player.id === myId;
 
-        }
+        ctx.save();
 
-        else if (
-            player.bot
-        ) {
+        ctx.translate(
+            player.x,
+            player.y
+        );
 
-            ctx.fillStyle =
-                "#ff9f43";
+        ctx.rotate(player.angle);
 
-        }
+        // Schatten
+        ctx.beginPath();
+        ctx.arc(
+            3,
+            5,
+            19,
+            0,
+            Math.PI * 2
+        );
 
-        else {
-
-            ctx.fillStyle =
-                "#ff4d5a";
-
-        }
-
+        ctx.fillStyle =
+            "rgba(0,0,0,.3)";
 
         ctx.fill();
 
+        // Körper
+        ctx.beginPath();
 
-        /* BORDER */
+        ctx.arc(
+            0,
+            0,
+            18,
+            0,
+            Math.PI * 2
+        );
 
-        ctx.lineWidth = 3;
+        ctx.fillStyle =
+            isMe ? "#35a7ff" : "#ff4d5d";
 
-        ctx.strokeStyle =
-            "rgba(255,255,255,.8)";
+        ctx.fill();
+
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 2;
 
         ctx.stroke();
 
-
-        /* NAME */
-
-        ctx.font =
-            "bold 14px Arial";
-
-        ctx.textAlign =
-            "center";
-
-        ctx.fillStyle =
-            "white";
-
-        ctx.fillText(
-            player.name,
-            screenX,
-            screenY - 32
-        );
-
-
-        /* HP */
-
-        const barWidth = 50;
-
-        const hp =
-            Math.max(
-                0,
-                Math.min(
-                    100,
-                    player.hp
-                )
-            );
-
-
-        ctx.fillStyle =
-            "rgba(0,0,0,.6)";
+        // Waffe
+        ctx.fillStyle = "#202020";
 
         ctx.fillRect(
-            screenX -
-                barWidth / 2,
-            screenY + 30,
+            8,
+            -5,
+            25,
+            10
+        );
+
+        ctx.restore();
+
+        // Lebensbalken
+        const barWidth = 45;
+
+        ctx.fillStyle = "#111";
+
+        ctx.fillRect(
+            player.x - barWidth / 2,
+            player.y - 31,
             barWidth,
             6
         );
 
-
-        ctx.fillStyle =
-            "#54e36b";
+        ctx.fillStyle = "#42e66b";
 
         ctx.fillRect(
-            screenX -
-                barWidth / 2,
-            screenY + 30,
+            player.x - barWidth / 2,
+            player.y - 31,
             barWidth *
-                (hp / 100),
+                Math.max(
+                    0,
+                    player.hp / 100
+                ),
             6
         );
 
+        if (isMe) {
+
+            ctx.fillStyle = "white";
+            ctx.font = "12px Arial";
+            ctx.textAlign = "center";
+
+            ctx.fillText(
+                "DU",
+                player.x,
+                player.y - 38
+            );
+        }
     }
 
+    ctx.restore();
+
+    requestAnimationFrame(draw);
 }
 
-
-/* =========================
-   CAMERA
-========================= */
-
-function updateCamera() {
-
-    const me =
-        players[myId];
-
-    if (!me) {
-        return;
-    }
-
-
-    cameraX =
-        me.x -
-        canvas.width / 2;
-
-    cameraY =
-        me.y -
-        canvas.height / 2;
-
-
-    cameraX =
-        Math.max(
-            0,
-            Math.min(
-                cameraX,
-                mapWidth -
-                canvas.width
-            )
-        );
-
-
-    cameraY =
-        Math.max(
-            0,
-            Math.min(
-                cameraY,
-                mapHeight -
-                canvas.height
-            )
-        );
-
-}
-
-
-/* =========================
-   GAME LOOP
-========================= */
-
-function gameLoop() {
-
-    updateCamera();
-
-    drawBackground();
-
-    drawPlayers();
-
-    requestAnimationFrame(
-        gameLoop
-    );
-
-}
-
-
-gameLoop();
-
+draw();
 </script>
 
 </body>
