@@ -3,490 +3,491 @@ const fs = require("fs");
 const path = require("path");
 const WebSocket = require("ws");
 
-const PORT = Number(process.env.PORT) || 10000;
-const HOST = "0.0.0.0";
+const PORT = process.env.PORT || 10000;
 
-const INDEX_FILE = path.join(__dirname, "index.html");
+const MAP = {
+    width: 1200,
+    height: 700
+};
 
-const server = http.createServer((req, res) => {
-    if (req.url === "/health") {
-        res.writeHead(200, {
-            "Content-Type": "application/json"
-        });
+const PLAYER_RADIUS = 18;
+const MAX_HP = 100;
+const BULLET_SPEED = 850;
+const BULLET_DAMAGE = 25;
+const FIRE_COOLDOWN = 250;
 
-        res.end(JSON.stringify({
-            ok: true,
-            server: "Battle Zone"
-        }));
+const walls = [
+    { x: 250, y: 120, w: 180, h: 30 },
+    { x: 770, y: 120, w: 180, h: 30 },
 
-        return;
-    }
+    { x: 250, y: 550, w: 180, h: 30 },
+    { x: 770, y: 550, w: 180, h: 30 },
 
-    if (req.url === "/" || req.url === "/index.html") {
-        fs.readFile(INDEX_FILE, (error, data) => {
-            if (error) {
-                console.error("index.html Fehler:", error);
+    { x: 560, y: 220, w: 80, h: 260 },
 
-                res.writeHead(500, {
-                    "Content-Type": "text/plain; charset=utf-8"
-                });
-
-                res.end("index.html konnte nicht geladen werden.");
-                return;
-            }
-
-            res.writeHead(200, {
-                "Content-Type": "text/html; charset=utf-8"
-            });
-
-            res.end(data);
-        });
-
-        return;
-    }
-
-    res.writeHead(404, {
-        "Content-Type": "text/plain; charset=utf-8"
-    });
-
-    res.end("404 - Nicht gefunden");
-});
-
-
-/* =========================
-   WEBSOCKET
-========================= */
-
-const wss = new WebSocket.Server({
-    server: server,
-    path: "/ws"
-});
-
-
-/* =========================
-   GAME
-========================= */
-
-const MAP_WIDTH = 1600;
-const MAP_HEIGHT = 900;
-
-const PLAYER_SPEED = 6;
+    { x: 80, y: 300, w: 180, h: 30 },
+    { x: 940, y: 300, w: 180, h: 30 }
+];
 
 const players = new Map();
+const bots = new Map();
+const bullets = [];
 
-let nextPlayerId = 1;
-
-
-/* =========================
-   HILFSFUNKTIONEN
-========================= */
+let nextBotId = 1;
 
 function random(min, max) {
     return Math.random() * (max - min) + min;
 }
 
+function distance(a, b) {
+    return Math.hypot(a.x - b.x, a.y - b.y);
+}
 
-function createPlayer(ws, name, bot = false) {
+function circleRectCollision(x, y, radius, rect) {
+    const closestX = Math.max(rect.x, Math.min(x, rect.x + rect.w));
+    const closestY = Math.max(rect.y, Math.min(y, rect.y + rect.h));
 
-    const id = String(nextPlayerId++);
+    const dx = x - closestX;
+    const dy = y - closestY;
+
+    return dx * dx + dy * dy < radius * radius;
+}
+
+function insideWall(x, y) {
+    for (const wall of walls) {
+        if (circleRectCollision(x, y, PLAYER_RADIUS, wall)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function validPosition(x, y) {
+    if (
+        x < PLAYER_RADIUS ||
+        y < PLAYER_RADIUS ||
+        x > MAP.width - PLAYER_RADIUS ||
+        y > MAP.height - PLAYER_RADIUS
+    ) {
+        return false;
+    }
+
+    return !insideWall(x, y);
+}
+
+function getSpawn() {
+    for (let i = 0; i < 100; i++) {
+        const x = random(50, MAP.width - 50);
+        const y = random(50, MAP.height - 50);
+
+        if (!validPosition(x, y)) continue;
+
+        let occupied = false;
+
+        for (const p of players.values()) {
+            if (distance({ x, y }, p) < 100) {
+                occupied = true;
+                break;
+            }
+        }
+
+        if (!occupied) {
+            for (const b of bots.values()) {
+                if (distance({ x, y }, b) < 100) {
+                    occupied = true;
+                    break;
+                }
+            }
+        }
+
+        if (!occupied) {
+            return { x, y };
+        }
+    }
+
+    return { x: 100, y: 100 };
+}
+
+function createPlayer(ws) {
+    const spawn = getSpawn();
 
     const player = {
-        id: id,
-
-        name:
-            name ||
-            (bot ? `Bot ${id}` : `Player ${id}`),
-
-        x: random(100, MAP_WIDTH - 100),
-        y: random(100, MAP_HEIGHT - 100),
-
-        hp: 100,
-
-        bot: bot,
-
-        keys: {
+        id: "p_" + Math.random().toString(36).slice(2),
+        type: "player",
+        x: spawn.x,
+        y: spawn.y,
+        angle: 0,
+        hp: MAX_HP,
+        kills: 0,
+        input: {
             up: false,
             down: false,
             left: false,
             right: false
-        }
+        },
+        lastShot: 0,
+        ws
     };
 
-    player.ws = ws;
-
-    players.set(id, player);
+    players.set(player.id, player);
 
     return player;
 }
 
+function createBot() {
+    const spawn = getSpawn();
 
-function publicPlayer(player) {
+    const bot = {
+        id: "b_" + nextBotId++,
+        type: "bot",
+        x: spawn.x,
+        y: spawn.y,
+        angle: random(0, Math.PI * 2),
+        hp: MAX_HP,
+        kills: 0,
+        speed: 125,
+        lastShot: 0,
+        target: null,
+        changeDirection: 0
+    };
 
+    bots.set(bot.id, bot);
+}
+
+for (let i = 0; i < 5; i++) {
+    createBot();
+}
+
+function moveEntity(entity, dx, dy) {
+    let newX = entity.x + dx;
+    let newY = entity.y + dy;
+
+    if (validPosition(newX, entity.y)) {
+        entity.x = newX;
+    }
+
+    if (validPosition(entity.x, newY)) {
+        entity.y = newY;
+    }
+}
+
+function shoot(shooter, angle) {
+    const now = Date.now();
+
+    if (now - shooter.lastShot < FIRE_COOLDOWN) {
+        return;
+    }
+
+    shooter.lastShot = now;
+
+    bullets.push({
+        x: shooter.x + Math.cos(angle) * 25,
+        y: shooter.y + Math.sin(angle) * 25,
+        vx: Math.cos(angle) * BULLET_SPEED,
+        vy: Math.sin(angle) * BULLET_SPEED,
+        owner: shooter.id,
+        life: 1.5
+    });
+}
+
+function damageTarget(target, bullet) {
+    target.hp -= BULLET_DAMAGE;
+
+    if (target.hp <= 0) {
+        const killer =
+            players.get(bullet.owner) ||
+            bots.get(bullet.owner);
+
+        if (killer) {
+            killer.kills++;
+        }
+
+        respawn(target);
+    }
+}
+
+function respawn(entity) {
+    const spawn = getSpawn();
+
+    entity.x = spawn.x;
+    entity.y = spawn.y;
+    entity.hp = MAX_HP;
+    entity.angle = random(0, Math.PI * 2);
+}
+
+function updatePlayers(dt) {
+    for (const player of players.values()) {
+        let dx = 0;
+        let dy = 0;
+
+        if (player.input.up) dy -= 1;
+        if (player.input.down) dy += 1;
+        if (player.input.left) dx -= 1;
+        if (player.input.right) dx += 1;
+
+        if (dx !== 0 || dy !== 0) {
+            const length = Math.hypot(dx, dy);
+
+            dx /= length;
+            dy /= length;
+
+            const speed = 260;
+
+            moveEntity(
+                player,
+                dx * speed * dt,
+                dy * speed * dt
+            );
+        }
+    }
+}
+
+function updateBots(dt) {
+    const targets = [
+        ...players.values(),
+        ...bots.values()
+    ];
+
+    for (const bot of bots.values()) {
+        let closest = null;
+        let closestDistance = Infinity;
+
+        for (const target of targets) {
+            if (target.id === bot.id) continue;
+
+            const d = distance(bot, target);
+
+            if (d < closestDistance) {
+                closestDistance = d;
+                closest = target;
+            }
+        }
+
+        if (!closest) continue;
+
+        bot.target = closest;
+
+        const dx = closest.x - bot.x;
+        const dy = closest.y - bot.y;
+
+        const angle = Math.atan2(dy, dx);
+
+        bot.angle = angle;
+
+        if (closestDistance > 250) {
+            moveEntity(
+                bot,
+                Math.cos(angle) * bot.speed * dt,
+                Math.sin(angle) * bot.speed * dt
+            );
+        } else if (closestDistance < 150) {
+            moveEntity(
+                bot,
+                -Math.cos(angle) * bot.speed * dt,
+                -Math.sin(angle) * bot.speed * dt
+            );
+        }
+
+        if (closestDistance < 600) {
+            shoot(bot, angle);
+        }
+    }
+}
+
+function updateBullets(dt) {
+    for (let i = bullets.length - 1; i >= 0; i--) {
+        const bullet = bullets[i];
+
+        bullet.x += bullet.vx * dt;
+        bullet.y += bullet.vy * dt;
+
+        bullet.life -= dt;
+
+        let remove = false;
+
+        if (
+            bullet.life <= 0 ||
+            bullet.x < 0 ||
+            bullet.y < 0 ||
+            bullet.x > MAP.width ||
+            bullet.y > MAP.height
+        ) {
+            remove = true;
+        }
+
+        for (const wall of walls) {
+            if (
+                bullet.x >= wall.x &&
+                bullet.x <= wall.x + wall.w &&
+                bullet.y >= wall.y &&
+                bullet.y <= wall.y + wall.h
+            ) {
+                remove = true;
+                break;
+            }
+        }
+
+        if (!remove) {
+            for (const target of players.values()) {
+                if (target.id === bullet.owner) continue;
+
+                if (distance(bullet, target) < PLAYER_RADIUS) {
+                    damageTarget(target, bullet);
+                    remove = true;
+                    break;
+                }
+            }
+        }
+
+        if (!remove) {
+            for (const target of bots.values()) {
+                if (target.id === bullet.owner) continue;
+
+                if (distance(bullet, target) < PLAYER_RADIUS) {
+                    damageTarget(target, bullet);
+                    remove = true;
+                    break;
+                }
+            }
+        }
+
+        if (remove) {
+            bullets.splice(i, 1);
+        }
+    }
+}
+
+function gameState() {
     return {
-        id: player.id,
-        name: player.name,
-
-        x: Math.round(player.x),
-        y: Math.round(player.y),
-
-        hp: player.hp,
-
-        bot: player.bot
+        type: "state",
+        map: MAP,
+        walls,
+        players: [
+            ...players.values(),
+            ...bots.values()
+        ].map(p => ({
+            id: p.id,
+            type: p.type,
+            x: p.x,
+            y: p.y,
+            angle: p.angle,
+            hp: p.hp,
+            kills: p.kills
+        })),
+        bullets: bullets.map(b => ({
+            x: b.x,
+            y: b.y
+        }))
     };
 }
 
-
-function getState() {
-
-    const result = {};
+function broadcast() {
+    const data = JSON.stringify(gameState());
 
     for (const player of players.values()) {
-
-        result[player.id] = publicPlayer(player);
-
-    }
-
-    return result;
-}
-
-
-function send(ws, data) {
-
-    if (
-        ws &&
-        ws.readyState === WebSocket.OPEN
-    ) {
-
-        ws.send(JSON.stringify(data));
-
+        if (player.ws.readyState === WebSocket.OPEN) {
+            player.ws.send(data);
+        }
     }
 }
 
+const server = http.createServer((req, res) => {
+    let file = req.url === "/" ? "index.html" : req.url.slice(1);
 
-function broadcast(data) {
+    file = path.join(__dirname, file);
 
-    const message = JSON.stringify(data);
-
-    for (const player of players.values()) {
-
-        if (
-            player.ws &&
-            player.ws.readyState === WebSocket.OPEN
-        ) {
-
-            player.ws.send(message);
-
-        }
-
+    if (!file.startsWith(__dirname)) {
+        res.writeHead(403);
+        res.end();
+        return;
     }
-}
 
+    fs.readFile(file, (err, data) => {
+        if (err) {
+            res.writeHead(404);
+            res.end("Not found");
+            return;
+        }
 
-/* =========================
-   WEBSOCKET CONNECTION
-========================= */
+        let contentType = "text/html";
 
-wss.on("connection", (ws) => {
+        if (file.endsWith(".js")) {
+            contentType = "text/javascript";
+        }
 
-    const player = createPlayer(ws);
+        if (file.endsWith(".css")) {
+            contentType = "text/css";
+        }
 
-    console.log(
-        "Spieler verbunden:",
-        player.id
-    );
+        res.writeHead(200, {
+            "Content-Type": contentType
+        });
 
-
-    send(ws, {
-        type: "connected",
-        id: player.id,
-        name: player.name
+        res.end(data);
     });
-
-
-    send(ws, {
-        type: "serverInfo",
-        mapWidth: MAP_WIDTH,
-        mapHeight: MAP_HEIGHT
-    });
-
-
-    ws.on("message", (raw) => {
-
-        let data;
-
-        try {
-
-            data = JSON.parse(raw.toString());
-
-        } catch (error) {
-
-            console.log("Ungültige Nachricht");
-
-            return;
-        }
-
-
-        /* NAME */
-
-        if (data.type === "setName") {
-
-            if (
-                typeof data.name === "string" &&
-                data.name.trim().length > 0
-            ) {
-
-                player.name =
-                    data.name
-                        .trim()
-                        .substring(0, 16);
-
-            }
-
-            return;
-        }
-
-
-        /* MOVEMENT */
-
-        if (data.type === "move") {
-
-            player.keys.up = !!data.up;
-            player.keys.down = !!data.down;
-            player.keys.left = !!data.left;
-            player.keys.right = !!data.right;
-
-            return;
-        }
-
-
-        /* STOP */
-
-        if (data.type === "stop") {
-
-            player.keys = {
-                up: false,
-                down: false,
-                left: false,
-                right: false
-            };
-
-            return;
-        }
-
-
-        /* CREATE BOT */
-
-        if (data.type === "addBot") {
-
-            createPlayer(null, "Bot", true);
-
-            return;
-        }
-
-
-        /* REMOVE BOTS */
-
-        if (data.type === "removeBots") {
-
-            for (const [id, p] of players) {
-
-                if (p.bot) {
-
-                    players.delete(id);
-
-                }
-
-            }
-
-            return;
-        }
-
-    });
-
-
-    ws.on("close", () => {
-
-        console.log(
-            "Spieler getrennt:",
-            player.id
-        );
-
-        players.delete(player.id);
-
-    });
-
-
-    ws.on("error", (error) => {
-
-        console.log(
-            "WebSocket Fehler:",
-            error.message
-        );
-
-    });
-
 });
 
+const wss = new WebSocket.Server({ server });
 
-/* =========================
-   GAME LOOP
-========================= */
+wss.on("connection", ws => {
+    const player = createPlayer(ws);
 
-setInterval(() => {
+    ws.send(JSON.stringify({
+        type: "welcome",
+        id: player.id
+    }));
 
-    for (const player of players.values()) {
+    ws.on("message", message => {
+        try {
+            const data = JSON.parse(message);
 
-        if (player.bot) {
+            if (data.type === "input") {
+                player.input = {
+                    up: !!data.up,
+                    down: !!data.down,
+                    left: !!data.left,
+                    right: !!data.right
+                };
+            }
 
-            updateBot(player);
+            if (data.type === "angle") {
+                player.angle = Number(data.angle) || 0;
+            }
 
+            if (data.type === "shoot") {
+                shoot(player, Number(data.angle) || 0);
+            }
+
+        } catch (error) {
+            console.log("Invalid message");
         }
-
-        else {
-
-            updatePlayer(player);
-
-        }
-
-    }
-
-    broadcast({
-        type: "state",
-        players: getState()
     });
 
-}, 50);
+    ws.on("close", () => {
+        players.delete(player.id);
+    });
+});
 
+let lastTime = Date.now();
 
-/* =========================
-   PLAYER MOVEMENT
-========================= */
+setInterval(() => {
+    const now = Date.now();
+    const dt = Math.min((now - lastTime) / 1000, 0.05);
 
-function updatePlayer(player) {
+    lastTime = now;
 
-    let dx = 0;
-    let dy = 0;
+    updatePlayers(dt);
+    updateBots(dt);
+    updateBullets(dt);
 
+    broadcast();
+}, 1000 / 60);
 
-    if (player.keys.up) {
-        dy -= 1;
-    }
-
-    if (player.keys.down) {
-        dy += 1;
-    }
-
-    if (player.keys.left) {
-        dx -= 1;
-    }
-
-    if (player.keys.right) {
-        dx += 1;
-    }
-
-
-    movePlayer(player, dx, dy);
-
-}
-
-
-/* =========================
-   BOT MOVEMENT
-========================= */
-
-function updateBot(player) {
-
-    if (!player.botDirection) {
-
-        player.botDirection = {
-            x: random(-1, 1),
-            y: random(-1, 1)
-        };
-
-        player.botTimer =
-            Date.now() + random(1000, 3000);
-
-    }
-
-
-    if (Date.now() > player.botTimer) {
-
-        player.botDirection = {
-            x: random(-1, 1),
-            y: random(-1, 1)
-        };
-
-        player.botTimer =
-            Date.now() + random(1000, 3000);
-
-    }
-
-
-    movePlayer(
-        player,
-        player.botDirection.x,
-        player.botDirection.y
-    );
-
-}
-
-
-/* =========================
-   MOVEMENT LIMITS
-========================= */
-
-function movePlayer(player, dx, dy) {
-
-    const length =
-        Math.sqrt(dx * dx + dy * dy);
-
-
-    if (length > 0) {
-
-        dx /= length;
-        dy /= length;
-
-    }
-
-
-    player.x += dx * PLAYER_SPEED;
-    player.y += dy * PLAYER_SPEED;
-
-
-    const radius = 25;
-
-
-    if (player.x < radius) {
-        player.x = radius;
-    }
-
-    if (player.y < radius) {
-        player.y = radius;
-    }
-
-    if (player.x > MAP_WIDTH - radius) {
-        player.x = MAP_WIDTH - radius;
-    }
-
-    if (player.y > MAP_HEIGHT - radius) {
-        player.y = MAP_HEIGHT - radius;
-    }
-
-}
-
-
-/* =========================
-   SERVER START
-========================= */
-
-server.listen(PORT, HOST, () => {
-
-    console.log("--------------------------------");
+server.listen(PORT, () => {
+    console.log("=================================");
     console.log("BATTLE ZONE SERVER");
-    console.log("--------------------------------");
-    console.log(`HTTP: http://${HOST}:${PORT}`);
-    console.log(`WebSocket: /ws`);
-    console.log(`Health: /health`);
-    console.log("--------------------------------");
-
+    console.log("Port:", PORT);
+    console.log("Server is running!");
+    console.log("=================================");
 });
